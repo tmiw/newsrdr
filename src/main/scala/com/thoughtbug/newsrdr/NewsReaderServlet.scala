@@ -6,7 +6,7 @@ import scala.slick.session.Database
 
 class NewsReaderServlet(db: Database) extends NewsrdrStack {
 
-  get("/") {
+  get("/") {        
     <html>
       <body>
         <h1>Hello, world!</h1>

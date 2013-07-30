@@ -76,13 +76,13 @@ object NewsFeeds extends Table[NewsFeed]("NewsFeeds") {
 
 object NewsFeedCategories extends Table[(Int, Int, Int)]("NewsFeedCategories") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def feedId = column[Int]("feedIdentifier")
+    def feedId = column[Int]("feedId")
     def categoryId = column[Int]("categoryId")
   
     def * = id ~ feedId ~ categoryId
   
-    def feed = foreignKey("feedIdentifier", id, NewsFeeds)(_.id)
-    def category = foreignKey("feedCategory", id, Categories)(_.id)
+    def feed = foreignKey("feedIdentifierKey", feedId, NewsFeeds)(_.id)
+    def category = foreignKey("categoryIdKey", categoryId, Categories)(_.id)
 }
 
 case class NewsFeedArticle(
@@ -128,7 +128,7 @@ object NewsFeedArticles extends Table[NewsFeedArticle]("NewsFeedArticles") {
 	  enclosureUrl ~ enclosureLength ~ enclosureType ~ guid ~ isGuidPermalink ~
 	  pubDate ~ source <> (NewsFeedArticle, NewsFeedArticle.unapply _)
 	  
-	def feed = foreignKey("feedIdentifier", id, NewsFeeds)(_.id)
+	def feed = foreignKey("feedIdKey", feedId, NewsFeeds)(_.id)
 }
 
 object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticleCategories") {
@@ -138,6 +138,6 @@ object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticle
   
     def * = id ~ articleId ~ categoryId
   
-    def article = foreignKey("articleIdentifier", id, NewsFeedArticles)(_.id)
-    def category = foreignKey("articleCategory", id, Categories)(_.id)
+    def article = foreignKey("articleIdentifierKey", articleId, NewsFeedArticles)(_.id)
+    def category = foreignKey("categoryFeedIdKey", categoryId, Categories)(_.id)
 }
