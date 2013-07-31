@@ -143,6 +143,36 @@ object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticle
     def category = foreignKey("categoryFeedIdKey", categoryId, Categories)(_.id)
 }
 
+case class User(
+    id: Option[Int],
+    username: String,
+    password: String,
+    google_api_token: String)
+   
+object Users extends Table[User]("Users") {
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def username = column[String]("username")
+  def password = column[String]("password")
+  def google_api_token = column[String]("google_api_token")
+  
+  def * = id.? ~ username ~ password ~ google_api_token <> (User, User.unapply _)
+}
+
+case class UserArticle(
+    id: Option[Int],
+    articleId: Int,
+    articleRead: Boolean)
+
+object UserArticles extends Table[UserArticle]("UserArticles") {
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def articleId = column[Int]("articleId")
+  def articleRead = column[Boolean]("articleRead")
+  
+  def * = id.? ~ articleId ~ articleRead <> (UserArticle, UserArticle.unapply _)
+  
+  def article = foreignKey("userArticleIdKey", articleId, NewsFeedArticles)(_.id)
+}
+
 class RSSFeed {
     var feedProperties : NewsFeed = _
     var feedCategories : List[String] = _
