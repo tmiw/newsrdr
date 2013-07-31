@@ -160,17 +160,36 @@ object Users extends Table[User]("Users") {
 
 case class UserArticle(
     id: Option[Int],
+    userId: Int,
     articleId: Int,
     articleRead: Boolean)
 
 object UserArticles extends Table[UserArticle]("UserArticles") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def userId = column[Int]("userId")
   def articleId = column[Int]("articleId")
   def articleRead = column[Boolean]("articleRead")
   
-  def * = id.? ~ articleId ~ articleRead <> (UserArticle, UserArticle.unapply _)
+  def * = id.? ~ userId ~ articleId ~ articleRead <> (UserArticle, UserArticle.unapply _)
   
   def article = foreignKey("userArticleIdKey", articleId, NewsFeedArticles)(_.id)
+  def user = foreignKey("userArticleUserIdKey", userId, Users)(_.id)
+}
+
+case class UserFeed(
+    id: Option[Int],
+    userId: Int,
+    feedId: Int)
+
+object UserFeeds extends Table[UserFeed]("UserFeeds") {
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def userId = column[Int]("userId")
+  def feedId = column[Int]("feedId")
+  
+  def * = id.? ~ userId ~ feedId <> (UserFeed, UserFeed.unapply _)
+  
+  def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
+  def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
 }
 
 class RSSFeed {
