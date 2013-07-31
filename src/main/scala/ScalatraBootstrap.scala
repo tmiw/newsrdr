@@ -9,11 +9,15 @@ import Database.threadLocalSession
 import scala.slick.session.Database
 import com.thoughtbug.newsrdr.models._;
 
+import org.quartz.impl.StdSchedulerFactory
+
 class ScalatraBootstrap extends LifeCycle {
   val logger = LoggerFactory.getLogger(getClass)
   
   val cpds = new ComboPooledDataSource
   logger.info("Created c3p0 connection pool")
+  
+  val scheduler = StdSchedulerFactory.getDefaultScheduler()
   
   override def init(context: ServletContext) {
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
@@ -28,6 +32,9 @@ class ScalatraBootstrap extends LifeCycle {
       // auth code is in place
       Users.insert(User(None, "admin", "xyz", ""))
     }
+    
+    // Start Quartz scheduler.
+    scheduler.start()
   }
   
   private def closeDbConnection() {
@@ -37,6 +44,7 @@ class ScalatraBootstrap extends LifeCycle {
 
   override def destroy(context: ServletContext) {
     super.destroy(context)
+    scheduler.shutdown()
     closeDbConnection
   }
 }

@@ -31,6 +31,7 @@ object NewsrdrBuild extends Build {
         "org.slf4j" % "slf4j-nop" % "1.6.4",
         "com.h2database" % "h2" % "1.3.166",
         "c3p0" % "c3p0" % "0.9.1.2",
+        "org.quartz-scheduler" % "quartz" % "2.1.6",
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.8.v20121106" % "container",
         "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container;provided;test" artifacts (Artifact("javax.servlet", "jar", "jar"))
       ),
