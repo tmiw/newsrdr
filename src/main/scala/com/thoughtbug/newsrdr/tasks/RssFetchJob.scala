@@ -69,11 +69,11 @@ class RssFetchJob extends Job {
     
     // Insert or update article as needed.
     val existingEntryId = for { 
-      e <- NewsFeedArticles if e.guid === newPost.guid || 
+      e <- NewsFeedArticles if (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
                               (e.title === newPost.title && e.link === newPost.link && e.description === newPost.description)
       } yield e.id
     val entry = for { 
-      e <- NewsFeedArticles if e.guid === newPost.guid || 
+      e <- NewsFeedArticles if (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
                               (e.title === newPost.title && e.link === newPost.link && e.description === newPost.description)
       } yield (
           e.title ~ e.link ~ e.description ~ e.author ~ e.comments ~ e.enclosureLength ~ 
