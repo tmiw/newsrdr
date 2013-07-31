@@ -1,5 +1,6 @@
 package com.thoughtbug.newsrdr.models
 
+import scala.xml._
 import java.sql.Timestamp;
 
 // TODO: support drivers other than H2
@@ -140,4 +141,81 @@ object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticle
   
     def article = foreignKey("articleIdentifierKey", articleId, NewsFeedArticles)(_.id)
     def category = foreignKey("categoryFeedIdKey", categoryId, Categories)(_.id)
+}
+
+class RSSFeed {
+    var feedProperties : NewsFeed = _
+    var feedCategories : List[String] = _
+    var entries : List[(NewsFeedArticle, List[String])] = _
+    
+    def load(url: String) = {
+        val xmlDoc = XML.load(url)
+        
+        feedProperties = NewsFeed(
+            None,
+            (xmlDoc \\ "title").text,
+            (xmlDoc \\ "link").text,
+            (xmlDoc \\ "description").text,
+            url,
+            generateOptionValue((xmlDoc \\ "language").text),
+            generateOptionValue((xmlDoc \\ "copyright").text),
+            generateOptionValue((xmlDoc \\ "managingEditor").text),
+            generateOptionValue((xmlDoc \\ "webMaster").text),
+            generateOptionValueTimestamp((xmlDoc \\ "pubDate").text),
+            generateOptionValueTimestamp((xmlDoc \\ "lastBuildDate").text),
+            generateOptionValue((xmlDoc \\ "generator").text),
+            generateOptionValue((xmlDoc \\ "docs").text),
+            generateOptionValueInt((xmlDoc \\ "ttl").text),
+            generateOptionValue((xmlDoc \\ "image" \ "url").text),
+            generateOptionValue((xmlDoc \\ "image" \ "title").text),
+            generateOptionValue((xmlDoc \\ "image" \ "link").text)
+            )
+        
+        feedCategories = (xmlDoc \\ "channel" \ "category").map((x) => x.text).toList
+        
+        entries = (xmlDoc \\ "item").map(createArticle).toList
+    }
+    
+    private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
+        var article = NewsFeedArticle(
+            None,
+            0,
+            (x \\ "title").text,
+            (x \\ "link").text,
+            (x \\ "description").text,
+            generateOptionValue((x \\ "author").text),
+            generateOptionValue((x \\ "comments").text),
+            generateOptionValue((x \\ "enclosure@url").text),
+            generateOptionValueInt((x \\ "enclosure@length").text),
+            generateOptionValue((x \\ "enclosure@type").text),
+            generateOptionValue((x \\ "guid").text),
+            generateOptionValueBool((x \\ "guid@isPermaLink").text),
+            generateOptionValueTimestamp((x \\ "pubDate").text),
+            generateOptionValue((x \\ "source").text)
+        )
+        
+        var articleCategories = (x \\ "category").map((x) => x.text).toList
+        
+        (article, articleCategories)
+    }
+    
+    private def generateOptionValue(x: String) : Option[String] = {
+        if (x.isEmpty) { Some(x) }
+        else { None }
+    }
+    
+    private def generateOptionValueTimestamp(x: String) : Option[Timestamp] = {
+        if (x.isEmpty) { Some(Timestamp.valueOf(x)) }
+        else { None }
+    }
+    
+    private def generateOptionValueInt(x: String) : Option[Int] = {
+        if (x.isEmpty) { Some(x.toInt) }
+        else { None }
+    }
+    
+    private def generateOptionValueBool(x: String) : Option[Boolean] = {
+        if (x.isEmpty) { Some(x.toBoolean) }
+        else { None }
+    }
 }
