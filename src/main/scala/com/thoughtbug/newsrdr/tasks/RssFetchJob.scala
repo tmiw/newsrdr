@@ -14,7 +14,7 @@ class RssFetchJob extends Job {
     val feed = new RSSFeed
     feed.load(feedUrl)
     
-    BackgroundJobManager.db withSession {
+    BackgroundJobManager.db withTransaction {
       // Update feed's contents with whatever we've fetched from the server.
       val feedQuery = Query(NewsFeeds)
       val newsFeedId = (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f.id).first
