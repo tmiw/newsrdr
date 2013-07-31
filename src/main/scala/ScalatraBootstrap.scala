@@ -21,7 +21,12 @@ class ScalatraBootstrap extends LifeCycle {
     
     db withSession {
       (Categories.ddl ++ NewsFeeds.ddl ++ NewsFeedCategories.ddl ++
-          NewsFeedArticles.ddl ++ NewsFeedArticleCategories.ddl).create
+          NewsFeedArticles.ddl ++ NewsFeedArticleCategories.ddl ++
+          Users.ddl ++ UserArticles.ddl).create
+      
+      // HACK: create single user that all API code will assume until
+      // auth code is in place
+      Users.insert(User(None, "admin", "xyz", ""))
     }
   }
   
