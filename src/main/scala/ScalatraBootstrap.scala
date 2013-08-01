@@ -18,6 +18,7 @@ class ScalatraBootstrap extends LifeCycle {
   override def init(context: ServletContext) {
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
     context.mount(new NewsReaderServlet(db), "/*")
+    context.mount(new FeedServlet(db), "/feeds/*")
     
     db withSession {
       (Categories.ddl ++ NewsFeeds.ddl ++ NewsFeedCategories.ddl ++
