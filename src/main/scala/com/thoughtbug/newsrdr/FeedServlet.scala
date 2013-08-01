@@ -42,7 +42,8 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         
   get("/", operation(getFeeds)) {        
     db withSession {
-      Query(NewsFeeds).list
+      // TODO: stop using hardcoded admin user.
+      for { uf <- UserFeeds if uf.userId === 1 } yield uf
     }
   }
   
@@ -57,7 +58,40 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
 
     // TODO: handle possible exceptions and output error data.
     // We probably also want to return validation error info above.
-    var fetchJob = new RssFetchJob
-    fetchJob.fetch(url)
+    db withTransaction {
+      // Grab feed from database, creating if it doesn't already exist.
+      var fetchJob = new RssFetchJob
+      var feed = fetchJob.fetch(url)
+      
+      // Add subscription at the user level.
+      // TODO: stop using hardcoded admin user.
+      var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === feed.id } yield uf
+      userFeed.firstOption match {
+        case Some(uf) => ()
+        case None => {
+          UserFeeds.insert(UserFeed(None, feed.id.get, 1))
+          ()
+        }
+      }
+    }
+  }
+  
+  val deleteFeeds =
+    (apiOperation("deleteFeeds")
+        summary "Unsubscribes from a feed"
+        notes "Unsubscribes the currently logged in user from the given feed."
+        parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from."))
+        
+  delete("/:id", operation(deleteFeeds)) {
+    val id = params.getOrElse("id", halt(422))
+    
+    // TODO: handle possible exceptions and output error data.
+    // We probably also want to return validation error info above.
+    db withTransaction {
+      // Remove subscription at the user level.
+      // TODO: stop using hardcoded admin user.
+      var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === Integer.parseInt(id) } yield uf
+      userFeed.delete
+    }
   }
 }
