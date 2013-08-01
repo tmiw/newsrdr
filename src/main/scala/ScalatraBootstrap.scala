@@ -11,6 +11,7 @@ import com.thoughtbug.newsrdr.tasks.BackgroundJobManager
 
 class ScalatraBootstrap extends LifeCycle {
   val logger = LoggerFactory.getLogger(getClass)
+  implicit val swagger = new ApiSwagger
   
   val cpds = new ComboPooledDataSource
   logger.info("Created c3p0 connection pool")
@@ -18,7 +19,8 @@ class ScalatraBootstrap extends LifeCycle {
   override def init(context: ServletContext) {
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
     context.mount(new NewsReaderServlet(db), "/*")
-    context.mount(new FeedServlet(db), "/feeds/*")
+    context.mount(new FeedServlet(db, swagger), "/feeds/*")
+    context mount(new ResourcesApp, "/api-docs/*")
     
     db withSession {
       (Categories.ddl ++ NewsFeeds.ddl ++ NewsFeedCategories.ddl ++

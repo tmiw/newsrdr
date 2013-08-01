@@ -17,9 +17,15 @@ import org.json4s.{DefaultFormats, Formats}
 // JSON handling support from Scalatra
 import org.scalatra.json._
 
-class FeedServlet(db: Database) extends NewsrdrStack
-  with NativeJsonSupport /*with SwaggerSupport*/ {
+// Swagger support
+import org.scalatra.swagger._
 
+class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrStack
+  with NativeJsonSupport with SwaggerSupport {
+
+  override protected val applicationName = Some("feeds")
+  protected val applicationDescription = "The feeds API. This exposes operations for manipulating the feed list."
+    
   // Sets up automatic case class to JSON output serialization
   protected implicit val jsonFormats: Formats = DefaultFormats
 
@@ -28,7 +34,12 @@ class FeedServlet(db: Database) extends NewsrdrStack
     contentType = formats("json")
   }
   
-  get("/") {        
+  val getFeeds = 
+    (apiOperation[List[NewsFeed]]("getFeeds")
+        summary "Shows all feeds"
+        notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
+        
+  get("/", operation(getFeeds)) {        
     db withSession {
       Query(NewsFeeds).list
     }
