@@ -10,37 +10,67 @@ import Database.threadLocalSession
 class RssFetchJob extends Job {
   def execute(ctxt: JobExecutionContext) {
     var feedUrl = ctxt.get("feedUrl").toString()
-    
+    fetch(feedUrl)
+  }
+  
+  def fetch(feedUrl: String) {    
     val feed = new RSSFeed
     feed.load(feedUrl)
     
     BackgroundJobManager.db withTransaction {
       // Update feed's contents with whatever we've fetched from the server.
+      // If it doesn't already exist, create.
       val feedQuery = Query(NewsFeeds)
-      val newsFeedId = (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f.id).first
       val newsFeed = 
         for { f <- NewsFeeds if f.feedUrl === feedUrl } yield
         (f.copyright ~ f.description ~ f.docs ~ f.generator ~ f.imageLink ~
          f.imageTitle ~ f.imageUrl ~ f.language ~ f.lastBuildDate ~ f.link ~
          f.managingEditor ~ f.pubDate ~ f.title ~ f.ttl ~ f.webMaster)
       
-      newsFeed.update(
-        (feed.feedProperties.copyright, 
-         feed.feedProperties.description,
-         feed.feedProperties.docs, 
-         feed.feedProperties.generator,
-         feed.feedProperties.imageLink,
-         feed.feedProperties.imageTitle, 
-         feed.feedProperties.imageUrl, 
-         feed.feedProperties.language, 
-         feed.feedProperties.lastBuildDate, 
-         feed.feedProperties.link,
-         feed.feedProperties.managingEditor, 
-         feed.feedProperties.pubDate, 
-         feed.feedProperties.title, 
-         feed.feedProperties.ttl, 
-         feed.feedProperties.webMaster))
+      newsFeed.firstOption match {
+          case Some(fd) => {
+            newsFeed.update(
+		        (feed.feedProperties.copyright, 
+		         feed.feedProperties.description,
+		         feed.feedProperties.docs, 
+		         feed.feedProperties.generator,
+		         feed.feedProperties.imageLink,
+		         feed.feedProperties.imageTitle, 
+		         feed.feedProperties.imageUrl, 
+		         feed.feedProperties.language, 
+		         feed.feedProperties.lastBuildDate, 
+		         feed.feedProperties.link,
+		         feed.feedProperties.managingEditor, 
+		         feed.feedProperties.pubDate, 
+		         feed.feedProperties.title, 
+		         feed.feedProperties.ttl, 
+		         feed.feedProperties.webMaster))
+          }
+          case None => {
+            (NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
+             NewsFeeds.imageTitle ~ NewsFeeds.imageUrl ~ NewsFeeds.language ~ NewsFeeds.lastBuildDate ~ NewsFeeds.link ~
+             NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster).insert(
+                 feed.feedProperties.copyright, 
+		         feed.feedProperties.description,
+		         feed.feedProperties.docs, 
+		         feed.feedProperties.generator,
+		         feed.feedProperties.imageLink,
+		         feed.feedProperties.imageTitle, 
+		         feed.feedProperties.imageUrl, 
+		         feed.feedProperties.language, 
+		         feed.feedProperties.lastBuildDate, 
+		         feed.feedProperties.link,
+		         feed.feedProperties.managingEditor, 
+		         feed.feedProperties.pubDate, 
+		         feed.feedProperties.title, 
+		         feed.feedProperties.ttl, 
+		         feed.feedProperties.webMaster
+            )
+          }
+        }
     
+      val newsFeedId = (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f.id).first
+            
       // Insert categories that don't exist, then refresh feed categories with the current
       // set.
       val categoryIds = feed.feedCategories.map((c) => {
@@ -61,6 +91,8 @@ class RssFetchJob extends Job {
       
       // Now update/insert each individual post in the feed.
       for { p <- feed.entries } insertOrUpdateEntry(newsFeedId, p)
+      
+      (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f).first
     } 
   }
   

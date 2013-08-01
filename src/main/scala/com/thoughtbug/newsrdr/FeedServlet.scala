@@ -4,6 +4,7 @@ import org.scalatra._
 import scalate.ScalateSupport
 import scala.slick.session.Database
 import com.thoughtbug.newsrdr.models._
+import com.thoughtbug.newsrdr.tasks._
 
 // Use H2Driver to connect to an H2 database
 import scala.slick.driver.H2Driver.simple._
@@ -45,4 +46,18 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     }
   }
   
+  val postFeeds =
+    (apiOperation[NewsFeed]("postFeeds")
+        summary "Adds a new feed"
+        notes "Subscribes the currently logged-in user to the given feed. It will perform the initial fetch of the feed if it doesn't already exist, so fetching the unread posts for this feed would be a good idea."
+        parameter queryParam[String]("url").description("The URL to the given feed to add."))
+   
+  post("/", operation(postFeeds)) {
+    val url = params.getOrElse("url", halt(422))
+
+    // TODO: handle possible exceptions and output error data.
+    // We probably also want to return validation error info above.
+    var fetchJob = new RssFetchJob
+    fetchJob.fetch(url)
+  }
 }
