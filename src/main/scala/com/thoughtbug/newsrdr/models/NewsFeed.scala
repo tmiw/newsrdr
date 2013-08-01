@@ -2,6 +2,7 @@ package com.thoughtbug.newsrdr.models
 
 import scala.xml._
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat
 
 // TODO: support drivers other than H2
 
@@ -199,28 +200,29 @@ class RSSFeed {
     
     def load(url: String) = {
         val xmlDoc = XML.load(url)
+        val channel = (xmlDoc \\ "channel")
         
         feedProperties = NewsFeed(
             None,
-            (xmlDoc \\ "title").text,
-            (xmlDoc \\ "link").text,
-            (xmlDoc \\ "description").text,
+            (channel \ "title").text,
+            (channel \ "link").text,
+            (channel \ "description").text,
             url,
-            generateOptionValue((xmlDoc \\ "language").text),
-            generateOptionValue((xmlDoc \\ "copyright").text),
-            generateOptionValue((xmlDoc \\ "managingEditor").text),
-            generateOptionValue((xmlDoc \\ "webMaster").text),
-            generateOptionValueTimestamp((xmlDoc \\ "pubDate").text),
-            generateOptionValueTimestamp((xmlDoc \\ "lastBuildDate").text),
-            generateOptionValue((xmlDoc \\ "generator").text),
-            generateOptionValue((xmlDoc \\ "docs").text),
-            generateOptionValueInt((xmlDoc \\ "ttl").text),
-            generateOptionValue((xmlDoc \\ "image" \ "url").text),
-            generateOptionValue((xmlDoc \\ "image" \ "title").text),
-            generateOptionValue((xmlDoc \\ "image" \ "link").text)
+            generateOptionValue((channel \ "language").text),
+            generateOptionValue((channel \ "copyright").text),
+            generateOptionValue((channel \ "managingEditor").text),
+            generateOptionValue((channel \ "webMaster").text),
+            generateOptionValueTimestamp((channel \ "pubDate").text),
+            generateOptionValueTimestamp((channel \ "lastBuildDate").text),
+            generateOptionValue((channel \ "generator").text),
+            generateOptionValue((channel \ "docs").text),
+            generateOptionValueInt((channel \ "ttl").text),
+            generateOptionValue((channel \ "image" \ "url").text),
+            generateOptionValue((channel \ "image" \ "title").text),
+            generateOptionValue((channel \ "image" \ "link").text)
             )
         
-        feedCategories = (xmlDoc \\ "channel" \ "category").map((x) => x.text).toList
+        feedCategories = (channel \ "category").map((x) => x.text).toList
         
         entries = (xmlDoc \\ "item").map(createArticle).toList
     }
@@ -249,22 +251,27 @@ class RSSFeed {
     }
     
     private def generateOptionValue(x: String) : Option[String] = {
-        if (x.isEmpty) { Some(x) }
+        if (!x.isEmpty) { Some(x) }
         else { None }
     }
     
     private def generateOptionValueTimestamp(x: String) : Option[Timestamp] = {
-        if (x.isEmpty) { Some(Timestamp.valueOf(x)) }
+        if (!x.isEmpty) { 
+          var sourceFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
+          var destFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+          var date = sourceFormat.parse(x)
+          Some(Timestamp.valueOf(destFormat.format(date)))
+        }
         else { None }
     }
     
     private def generateOptionValueInt(x: String) : Option[Int] = {
-        if (x.isEmpty) { Some(x.toInt) }
+        if (!x.isEmpty) { Some(x.toInt) }
         else { None }
     }
     
     private def generateOptionValueBool(x: String) : Option[Boolean] = {
-        if (x.isEmpty) { Some(x.toBoolean) }
+        if (!x.isEmpty) { Some(x.toBoolean) }
         else { None }
     }
 }

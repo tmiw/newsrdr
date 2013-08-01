@@ -13,7 +13,7 @@ class RssFetchJob extends Job {
     fetch(feedUrl)
   }
   
-  def fetch(feedUrl: String) {    
+  def fetch(feedUrl: String): NewsFeed = {    
     val feed = new RSSFeed
     feed.load(feedUrl)
     
@@ -47,9 +47,10 @@ class RssFetchJob extends Job {
 		         feed.feedProperties.webMaster))
           }
           case None => {
-            (NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
+            (NewsFeeds.feedUrl ~ NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
              NewsFeeds.imageTitle ~ NewsFeeds.imageUrl ~ NewsFeeds.language ~ NewsFeeds.lastBuildDate ~ NewsFeeds.link ~
              NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster).insert(
+                 feedUrl,
                  feed.feedProperties.copyright, 
 		         feed.feedProperties.description,
 		         feed.feedProperties.docs, 
