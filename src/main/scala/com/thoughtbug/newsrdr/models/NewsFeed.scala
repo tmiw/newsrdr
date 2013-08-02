@@ -108,6 +108,11 @@ case class NewsFeedArticle(
     source: Option[String]
     )
 
+case class NewsFeedArticleInfo(
+    article: NewsFeedArticle,
+    unread: Boolean
+)
+
 object NewsFeedArticles extends Table[NewsFeedArticle]("NewsFeedArticles") {
 	def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 	def feedId = column[Int]("feedId")

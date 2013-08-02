@@ -87,7 +87,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     }
   }
   
-  val deleteFeeds =
+  /*val deleteFeeds =
     (apiOperation("deleteFeeds")
         summary "Unsubscribes from a feed"
         notes "Unsubscribes the currently logged in user from the given feed."
@@ -104,5 +104,30 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === Integer.parseInt(id) } yield uf
       userFeed.delete
     }
+  }*/
+  
+  val getPostsForFeed =
+    (apiOperation[List[NewsFeedArticleInfo]]("getPostsForFeed")
+        summary "Retrieves posts for a feed"
+        notes "Retrieves posts for the given feed ID."
+        parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from.")
+        parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts."))
+        
+  get("/:id/posts", operation(getPostsForFeed)) {
+      var id = params.getOrElse("id", halt(422))
+      
+      // TODO: stop using hardcoded admin user.
+      db withSession {
+        var feed_posts = for { 
+            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+            	if nfa.feedId === Integer.parseInt(id) && ua.userId === 1} yield (nfa, ua.articleRead.?)
+      
+        params.get("unread_only") match {
+          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
+            for { (p, q) <- feed_posts.list if q.getOrElse(false) == true } yield NewsFeedArticleInfo(p, true)
+          }
+          case _ => for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(false))
+        }
+      }
   }
 }
