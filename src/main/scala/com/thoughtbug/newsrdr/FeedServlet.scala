@@ -60,8 +60,14 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     // We probably also want to return validation error info above.
     db withTransaction {
       // Grab feed from database, creating if it doesn't already exist.
-      var fetchJob = new RssFetchJob
-      var feed = fetchJob.fetch(url)
+      var feedQuery = for { f <- NewsFeeds if f.feedUrl === url } yield f
+      var feed = feedQuery.firstOption match {
+        case Some(f) => f
+        case None => {
+          var fetchJob = new RssFetchJob
+          fetchJob.fetch(url)
+        }
+      }
       
       // Add subscription at the user level.
       // TODO: stop using hardcoded admin user.
