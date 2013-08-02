@@ -90,8 +90,8 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     }
   }
   
-  /*val deleteFeeds =
-    (apiOperation("deleteFeeds")
+  val deleteFeeds =
+    (apiOperation[Int]("deleteFeeds")
         summary "Unsubscribes from a feed"
         notes "Unsubscribes the currently logged in user from the given feed."
         parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from."))
@@ -107,7 +107,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === Integer.parseInt(id) } yield uf
       userFeed.delete
     }
-  }*/
+  }
   
   val getPostsForFeed =
     (apiOperation[List[NewsFeedArticleInfo]]("getPostsForFeed")
