@@ -65,10 +65,12 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         case Some(f) => f
         case None => {
           var fetchJob = new RssFetchJob
-          fetchJob.fetch(url)
+          var f = fetchJob.fetch(url)
           
           // Schedule periodic feed updates
           BackgroundJobManager.scheduleFeedJob(url)
+          
+          f
         }
       }
       
