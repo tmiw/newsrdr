@@ -43,7 +43,10 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   get("/", operation(getFeeds)) {        
     db withSession {
       // TODO: stop using hardcoded admin user.
-      (for { uf <- UserFeeds if uf.userId === 1 } yield uf).list
+      (for { 
+        uf <- UserFeeds if uf.userId === 1
+        f <- NewsFeeds if f.id === uf.feedId
+        } yield f).list
     }
   }
   
