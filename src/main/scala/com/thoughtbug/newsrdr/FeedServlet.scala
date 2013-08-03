@@ -172,4 +172,37 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     //DeleteResult("")
     ""
   }
+  
+  val markUnreadCommand =
+    (apiOperation[String]("markUnread")
+        summary "Marks the given post as unread."
+        notes "Marks the given post as unread."
+        parameter pathParam[Int]("id").description("The ID of the feed.")
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  put("/:id/posts/:pid", operation(markUnreadCommand)) {
+    var id = params.getOrElse("id", halt(422))
+    var pid = params.getOrElse("pid", halt(422))
+    
+    // TODO: stop using hardcoded admin user.
+    db withTransaction {
+      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === 1 } yield uf
+      my_feed.firstOption match {
+        case Some(_) => {
+          var feed_posts = for {
+            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+            	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
+            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+          feed_posts.firstOption match {
+              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, false))
+              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), false))
+          }
+        }
+        case _ => halt(404)
+      }
+    }
+    
+    //DeleteResult("")
+    ""
+  }
 }

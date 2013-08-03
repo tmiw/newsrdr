@@ -55,4 +55,53 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       }
     }
   }
+  
+  val markReadCommand =
+    (apiOperation[String]("markRead")
+        summary "Marks the given post as read."
+        notes "Marks the given post as read."
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  delete("/:pid", operation(markReadCommand)) {
+    var pid = params.getOrElse("pid", halt(422))
+    
+    // TODO: stop using hardcoded admin user.
+    db withTransaction {
+      var feed_posts = for {
+            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+            	if ua.articleId === Integer.parseInt(pid)
+            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+          feed_posts.firstOption match {
+              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, true))
+              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), true))
+      }
+    }
+    
+    //DeleteResult("")
+    ""
+  }
+  
+  val markUnreadCommand =
+    (apiOperation[String]("markUnread")
+        summary "Marks the given post as unread."
+        notes "Marks the given post as unread."
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+  put("/:pid", operation(markUnreadCommand)) {
+    var pid = params.getOrElse("pid", halt(422))
+    
+    // TODO: stop using hardcoded admin user.
+    db withTransaction {
+      var feed_posts = for {
+            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+            	if ua.articleId === Integer.parseInt(pid)
+            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+          feed_posts.firstOption match {
+              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, false))
+              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), false))
+      }
+    }
+    
+    //DeleteResult("")
+    ""
+  }
 }
