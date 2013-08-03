@@ -138,4 +138,29 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         }
       }
   }
+  
+  val markReadCommand =
+    (apiOperation[DeleteResult]("markRead")
+        summary "Marks the given post as read."
+        notes "Marks the given post as read."
+        parameter pathParam[Int]("id").description("The ID of the feed.")
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  delete("/:id/posts/:pid", operation(markReadCommand)) {
+    var id = params.getOrElse("id", halt(422))
+    var pid = params.getOrElse("pid", halt(422))
+    
+    db withTransaction {
+      var feed_posts = for {
+        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+            	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
+            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+      feed_posts.firstOption match {
+              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, true))
+              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), true))
+            }
+    }
+    
+    DeleteResult("")
+  }
 }
