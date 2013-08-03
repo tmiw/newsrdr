@@ -57,7 +57,7 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   }
   
   val markReadCommand =
-    (apiOperation[String]("markRead")
+    (apiOperation[Unit]("markRead")
         summary "Marks the given post as read."
         notes "Marks the given post as read."
         parameter pathParam[Int]("pid").description("The ID of the post."))
@@ -76,13 +76,10 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
               case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), true))
       }
     }
-    
-    //DeleteResult("")
-    ""
   }
   
   val markUnreadCommand =
-    (apiOperation[String]("markUnread")
+    (apiOperation[Unit]("markUnread")
         summary "Marks the given post as unread."
         notes "Marks the given post as unread."
         parameter pathParam[Int]("pid").description("The ID of the post."))
@@ -100,8 +97,5 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
               case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), false))
       }
     }
-    
-    //DeleteResult("")
-    ""
   }
 }
