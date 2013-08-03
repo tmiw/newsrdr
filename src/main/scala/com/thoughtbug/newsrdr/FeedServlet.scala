@@ -22,7 +22,7 @@ import org.scalatra.json._
 import org.scalatra.swagger._
 
 class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrStack
-  with NativeJsonSupport with SwaggerSupport {
+  with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper {
 
   override protected val applicationName = Some("feeds")
   protected val applicationDescription = "The feeds API. This exposes operations for manipulating the feed list."
@@ -36,17 +36,20 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   }
   
   val getFeeds = 
-    (apiOperation[List[NewsFeed]]("getFeeds")
+    (apiOperation[FeedListApiResult]("getFeeds")
         summary "Shows all feeds"
         notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
         
-  get("/", operation(getFeeds)) {        
-    db withSession {
-      // TODO: stop using hardcoded admin user.
-      (for { 
-        uf <- UserFeeds if uf.userId === 1
-        f <- NewsFeeds if f.id === uf.feedId
-        } yield f).list
+  get("/", operation(getFeeds)) {
+    executeOrReturnError {
+      db withSession {
+        // TODO: stop using hardcoded admin user.
+        FeedListApiResult(true, None, 
+          (for { 
+            uf <- UserFeeds if uf.userId === 1
+            f <- NewsFeeds if f.id === uf.feedId
+            } yield f).list)
+      }
     }
   }
   
