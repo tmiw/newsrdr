@@ -150,15 +150,22 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     var id = params.getOrElse("id", halt(422))
     var pid = params.getOrElse("pid", halt(422))
     
+    // TODO: stop using hardcoded admin user.
     db withTransaction {
-      var feed_posts = for {
-        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === 1 } yield uf
+      my_feed.firstOption match {
+        case Some(_) => {
+          var feed_posts = for {
+            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
             	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
             uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
-      feed_posts.firstOption match {
+          feed_posts.firstOption match {
               case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, true))
               case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), true))
-            }
+          }
+        }
+        case _ => halt(404)
+      }
     }
     
     DeleteResult("")
