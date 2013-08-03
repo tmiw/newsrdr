@@ -20,6 +20,7 @@ class ScalatraBootstrap extends LifeCycle {
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
     context.mount(new NewsReaderServlet(db), "/*")
     context.mount(new FeedServlet(db, swagger), "/feeds/*")
+    context.mount(new PostServlet(db, swagger), "/posts/*")
     context mount(new ResourcesApp, "/api-docs/*")
     
     db withSession {

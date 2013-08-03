@@ -1,0 +1,58 @@
+package com.thoughtbug.newsrdr
+
+import org.scalatra._
+import scalate.ScalateSupport
+import scala.slick.session.Database
+import com.thoughtbug.newsrdr.models._
+import com.thoughtbug.newsrdr.tasks._
+
+// Use H2Driver to connect to an H2 database
+import scala.slick.driver.H2Driver.simple._
+
+// Use the implicit threadLocalSession
+import Database.threadLocalSession
+
+// JSON-related libraries
+import org.json4s.{DefaultFormats, Formats}
+
+// JSON handling support from Scalatra
+import org.scalatra.json._
+
+// Swagger support
+import org.scalatra.swagger._
+
+class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrStack
+  with NativeJsonSupport with SwaggerSupport {
+
+  override protected val applicationName = Some("posts")
+  protected val applicationDescription = "The posts API. This exposes operations for manipulating individual posts."
+    
+  // Sets up automatic case class to JSON output serialization
+  protected implicit val jsonFormats: Formats = DefaultFormats
+
+  // Before every action runs, set the content type to be in JSON format.
+  before() {
+    contentType = formats("json")
+  }
+  
+  val getPosts =
+    (apiOperation[List[NewsFeedArticleInfo]]("getPosts")
+        summary "Retrieves posts for all feeds."
+        notes "Retrieves posts for all feeds, sorted by post date."
+        parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts."))
+        
+  get("/", operation(getPosts)) {
+    db withSession {
+      var feed_posts = for { 
+          (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
+          uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+      
+      params.get("unread_only") match {
+        case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
+          for { (p, q) <- feed_posts.list if q.getOrElse(true) == true } yield NewsFeedArticleInfo(p, true)
+        }
+        case _ => for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(true))
+      }
+    }
+  }
+}

@@ -90,10 +90,10 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     }
   }
   
-  case class DeleteResult(error: String)
+  //case class DeleteResult(error: String)
   
   val deleteFeeds =
-    (apiOperation[DeleteResult]("deleteFeeds")
+    (apiOperation[String]("deleteFeeds")
         summary "Unsubscribes from a feed"
         notes "Unsubscribes the currently logged in user from the given feed."
         parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from."))
@@ -110,14 +110,15 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       userFeed.delete
     }
     
-    DeleteResult("")
+    ""
+    //DeleteResult("")
   }
   
   val getPostsForFeed =
     (apiOperation[List[NewsFeedArticleInfo]]("getPostsForFeed")
         summary "Retrieves posts for a feed"
         notes "Retrieves posts for the given feed ID."
-        parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from.")
+        parameter pathParam[Int]("id").description("The ID of the feed to operate upon.")
         parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts."))
         
   get("/:id/posts", operation(getPostsForFeed)) {
@@ -126,7 +127,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       // TODO: stop using hardcoded admin user.
       db withSession {
         var feed_posts = for { 
-            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+            (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
             	if nfa.feedId === Integer.parseInt(id)
             uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
       
@@ -140,7 +141,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   }
   
   val markReadCommand =
-    (apiOperation[DeleteResult]("markRead")
+    (apiOperation[String]("markRead")
         summary "Marks the given post as read."
         notes "Marks the given post as read."
         parameter pathParam[Int]("id").description("The ID of the feed.")
@@ -168,6 +169,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       }
     }
     
-    DeleteResult("")
+    //DeleteResult("")
+    ""
   }
 }
