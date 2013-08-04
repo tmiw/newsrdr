@@ -1,18 +1,6 @@
 (function(){
 
 NewsArticleModel = Backbone.Model.extend({
-	events: {
-		"change:unread": "onUnreadStatusChanged"
-	},
-	
-	markRead: function() {
-		this.set("unread", false);
-	},
-	
-	markUnead: function() {
-		this.set("unread", true);
-	},
-	
 	onUnreadStatusChanged: function() {
 		// We cannot rely on normal Backbone.sync() to update unread status
 		// due to the unusual REST API calls needed. Perform the jQuery AJAX
@@ -28,6 +16,18 @@ NewsArticleModel = Backbone.Model.extend({
 				// TODO
 			}
 		});
+	},
+	
+	initialize: function() {
+		this.on("change:unread", this.onUnreadStatusChanged);
+	},
+	
+	markRead: function() {
+		this.set("unread", false);
+	},
+	
+	markUnead: function() {
+		this.set("unread", true);
 	}
 });
 
