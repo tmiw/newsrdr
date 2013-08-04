@@ -9,7 +9,7 @@ import Database.threadLocalSession
 
 class RssFetchJob extends Job {
   def execute(ctxt: JobExecutionContext) {
-    var feedUrl = ctxt.get("feedUrl").toString()
+    var feedUrl = ctxt.getMergedJobDataMap().getString("url").toString()
     fetch(feedUrl)
   }
   

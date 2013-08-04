@@ -22,10 +22,11 @@ object BackgroundJobManager {
   }
   
   def scheduleFeedJob(url: String) {
-    if (scheduler.checkExists(new JobKey(url))) {
+    if (!scheduler.checkExists(new JobKey(url))) {
       val trigger = newTrigger()
     		.withIdentity(url)
     		.startAt(evenHourDate(null))
+    		.startNow()
     		.withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
     		.build()
       val job = newJob(classOf[RssFetchJob])
