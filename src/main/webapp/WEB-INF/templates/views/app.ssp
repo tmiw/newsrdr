@@ -1,7 +1,7 @@
 		<div class="leftcol">
 			<ul class="feedlist">
-				<li class="feedcategory">Home</li>
-				<li class="feedcategory selectedfeed">All <span class="unreadcount hide-element" id="allCount">0</span></li>
+				<li class="feedcategory selectedfeed" id="homeEntry">Home</li>
+				<li class="feedcategory" id="allFeedEntry">All <span class="unreadcount hide-element" id="allCount">0</span></li>
 				<ul class="feedlist" id="allfeeds">
 					<!-- dynamically added by js -->
 				</ul>

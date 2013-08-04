@@ -3,6 +3,11 @@
 NewsFeedController = Backbone.View.extend({
 	el: $("div .middle"),
 	
+	events: {
+		"click #allFeedEntry": function() { this.selectFeed(null); },
+		"click #homeEntry": "clearPosts"
+	},
+	
 	initialize: function() {
 		// TODO: we'll probably want to use local storage for persisting this
 		// at some point.
@@ -27,16 +32,26 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	selectFeed: function(feed) {
+		this.clearPosts();
+	
+		$("#homeEntry").removeClass("selectedfeed");
+		$("#allFeedEntry").removeClass("selectedfeed");
+		if (this.selectedFeed) {
+			this.selectedFeed.$el.removeClass("selectedfeed");
+		}
 		this.selectedFeed = feed;
 		
-		if (this.articleCollection) {
-			// clear event handlers
-			this.articleCollection.stopListening();
+		if (feed) {
+			this.articleCollection = new NewsArticleCollection([], {
+				url: '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread
+			});
+			feed.$el.addClass("selectedfeed");
+		} else {
+			this.articleCollection = new NewsArticleCollection([], {
+				url: '/posts/?unread_only=' + this.showOnlyUnread
+			});
+			this.$("#allFeedEntry").addClass("selectedfeed");
 		}
-		
-		this.articleCollection = new NewsArticleCollection([], {
-			url: '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread
-		});
 		
 		this.listenTo(this.articleCollection, 'add', this.addOneArticle);
 		this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
@@ -65,6 +80,21 @@ NewsFeedController = Backbone.View.extend({
 	
 	addAllArticles: function() {
 		NewsFeeds.each(this.addOneFeed, this);
+	},
+	
+	clearPosts: function() {
+		if (this.articleCollection) {
+			// clear event handlers
+			this.articleCollection.stopListening();
+			this.articleCollection = null;
+			
+			// remove posts
+			this.$("#postlist").empty();
+			
+			// set selected to Home
+			$(".selectedfeed").removeClass("selectedfeed");
+			$("#homeEntry").addClass("selectedfeed");
+		}
 	}
 });
 
