@@ -5,7 +5,9 @@ NewsFeedController = Backbone.View.extend({
 	
 	events: {
 		"click #allFeedEntry": function() { this.selectFeed(null); },
-		"click #homeEntry": "clearPosts"
+		"click #homeEntry": "clearPosts",
+		"click #showAllPosts": "toggleAllPosts",
+		"click #showUnreadPosts": "toggleUnreadPosts"
 	},
 	
 	initialize: function() {
@@ -122,6 +124,22 @@ NewsFeedController = Backbone.View.extend({
 				$(".allonly").removeClass("hide-element");
 			}
 		}
+	},
+	
+	toggleAllPosts: function() {
+		$("#showAllPosts").unwrap();
+		$("#showUnreadPosts").wrap("<a href=\"#\" />");
+		
+		this.showOnlyUnread = false;
+		this.selectFeed(this.selectedFeed);
+	},
+	
+	toggleUnreadPosts: function() {
+		$("#showUnreadPosts").unwrap();
+		$("#showAllPosts").wrap("<a href=\"#\" />");
+		
+		this.showOnlyUnread = true;
+		this.selectFeed(this.selectedFeed);
 	}
 });
 

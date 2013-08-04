@@ -9,7 +9,7 @@
 		</div>
 		<div class="rightcol">
 			<ul class="feedmenu">
-				<li class="feedmenuoption authonly feedonly allonly">viewing unread only [<a href="#">all posts</a>]</li>
+				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread only</span>|<a href="#"><span id="showAllPosts">all posts</span></a>]</li>
 				<li class="feedmenuoption authonly feedonly allonly"><a href="#">mark all as read</a></li>
 				<li class="feedmenuoption authonly feedonly"><a href="#">remove current feed</a></li>
 				<li class="feedmenuoption authonly feedonly"><a href="#">visit feed's website</a></li>
