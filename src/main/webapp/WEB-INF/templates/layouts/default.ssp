@@ -1,0 +1,25 @@
+<%@ val body: String %>
+<html>
+<head>
+	<title>newsrdr</title>
+	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
+	<link href='/static/css/layout.css' rel='stylesheet' type='text/css' />
+</head>
+<body>
+<div class="container">
+	<div class="top">
+		<div class="header">
+			newsrdr
+		</div>
+	</div>
+	<div class="middle">
+		<%= unescape(body) %>
+	</div>
+	<div class="bottom">
+		<div class="copyright">
+			copyright &copy; 2013 mooneer salem and others. <a href="https://github.com/tmiw/newsrdr">source code here</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>
