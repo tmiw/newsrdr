@@ -38,17 +38,20 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   val getFeeds = 
     (apiOperation[FeedListApiResult]("getFeeds")
         summary "Shows all feeds"
-        notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
+        notes "Returns the list of all feeds the currently logged-in user is subscribed to."
+        parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
         
-  get("/", operation(getFeeds)) {
+  get("/", operation(getFeeds)) {    
     executeOrReturnError {
+      var offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
+      
       db withSession {
         // TODO: stop using hardcoded admin user.
         FeedListApiResult(true, None, 
           (for { 
             uf <- UserFeeds if uf.userId === 1
             f <- NewsFeeds if f.id === uf.feedId
-            } yield f).list)
+            } yield f).drop(offset).take(Constants.ITEMS_PER_PAGE).list)
       }
     }
   }

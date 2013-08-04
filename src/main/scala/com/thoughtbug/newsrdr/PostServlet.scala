@@ -39,9 +39,12 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     (apiOperation[List[NewsFeedArticleInfo]]("getPosts")
         summary "Retrieves posts for all feeds."
         notes "Retrieves posts for all feeds, sorted by post date."
-        parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts."))
+        parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts.")
+        parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
         
   get("/", operation(getPosts)) {
+    var offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
+    
     db withSession {
       var feed_posts = for { 
           (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
@@ -49,9 +52,9 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       
       params.get("unread_only") match {
         case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-          for { (p, q) <- feed_posts.list if q.getOrElse(true) == true } yield NewsFeedArticleInfo(p, true)
+          (for { (p, q) <- feed_posts.list if q.getOrElse(true) == true } yield NewsFeedArticleInfo(p, true)).drop(offset).take(Constants.ITEMS_PER_PAGE)
         }
-        case _ => for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(true))
+        case _ => (for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(true))).drop(offset).take(Constants.ITEMS_PER_PAGE)
       }
     }
   }
