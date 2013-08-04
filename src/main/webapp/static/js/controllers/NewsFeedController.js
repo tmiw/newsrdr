@@ -59,6 +59,9 @@ NewsFeedController = Backbone.View.extend({
 				url: '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread
 			});
 			feed.$el.addClass("selectedfeed");
+			
+			// set up correct website URL that the feed provided.
+			$("#feedsiteurl").attr("href", feed.model.get("feed").link);
 		} else {
 			this.articleCollection = new NewsArticleCollection([], {
 				url: '/posts/?unread_only=' + this.showOnlyUnread
