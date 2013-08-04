@@ -3,39 +3,7 @@
 				<li class="feedcategory">Home</li>
 				<li class="feedcategory selectedfeed">All <span class="unreadcount">50</span></li>
 				<ul class="feedlist" id="allfeeds">
-					<!--<li class="feed1"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">2</span></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">3</span></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">5</span></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">20</span></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>-->
+					<!-- dynamically added by js -->
 				</ul>
 			</ul>
 		</div>
@@ -53,74 +21,14 @@
 				<li class="feedmenuoption"><a href="#">help</a></li>
 			</ul>
 			<ul class="feedpostlist" id="postlist">
-<!--				<li class="feedpost unread">
-					<div class="pubdate">
-						3 August 2013 20:49
-					</div>
-					<div class="title">
-						<a href="#" class="postlink">feed title</a>
-					</div>
-					<div class="author">
-						paul revere
-					</div>
-					<div class="fromfeed">
-						from <a href="#" class="feedlink">engadget</a>
-					</div>
-					<div class="body">
-						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed nunc aliquet, luctus quam bibendum, tristique lorem. Nunc augue quam, gravida sit amet neque sit amet, facilisis placerat nulla. Cras convallis euismod augue, eget aliquet dui congue nec. Etiam semper sit amet leo in egestas. Quisque quis hendrerit massa. Duis a accumsan tellus. Curabitur eget sapien ante. Nulla facilisi. Quisque sit amet interdum lacus. Integer tempor libero lacus, eget hendrerit lorem eleifend et.</p>
-
-						<p>Mauris ullamcorper lacinia augue, id commodo massa placerat vel. Suspendisse a lectus sem. Vivamus auctor est nisi, non interdum nisl pretium nec. Aliquam auctor velit vel eros auctor fringilla. Aliquam ut velit a leo sollicitudin feugiat eu non arcu. Maecenas et dui quis arcu vulputate faucibus. Quisque ac bibendum sem. Nulla euismod tellus dapibus nisl scelerisque, at convallis augue rutrum. Sed lobortis luctus suscipit. Nunc suscipit arcu felis, eget bibendum arcu cursus eu. Ut et felis sed felis sodales tincidunt.</p>
-					</div>
-				</li>
-				
-				<li class="feedpost">
-					<div class="pubdate">
-						3 August 2013 20:49
-					</div>
-					<div class="title">
-						<a href="#" class="postlink">feed title 2</a>
-					</div>
-					<div class="author">
-						paul revere
-					</div>
-					<div class="fromfeed">
-						from <a href="#" class="feedlink">engadget</a>
-					</div>
-					<div class="body">
-						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed nunc aliquet, luctus quam bibendum, tristique lorem. Nunc augue quam, gravida sit amet neque sit amet, facilisis placerat nulla. Cras convallis euismod augue, eget aliquet dui congue nec. Etiam semper sit amet leo in egestas. Quisque quis hendrerit massa. Duis a accumsan tellus. Curabitur eget sapien ante. Nulla facilisi. Quisque sit amet interdum lacus. Integer tempor libero lacus, eget hendrerit lorem eleifend et.</p>
-
-						<p>Mauris ullamcorper lacinia augue, id commodo massa placerat vel. Suspendisse a lectus sem. Vivamus auctor est nisi, non interdum nisl pretium nec. Aliquam auctor velit vel eros auctor fringilla. Aliquam ut velit a leo sollicitudin feugiat eu non arcu. Maecenas et dui quis arcu vulputate faucibus. Quisque ac bibendum sem. Nulla euismod tellus dapibus nisl scelerisque, at convallis augue rutrum. Sed lobortis luctus suscipit. Nunc suscipit arcu felis, eget bibendum arcu cursus eu. Ut et felis sed felis sodales tincidunt.</p>
-					</div>
-				</li>
-				
-				<li class="feedpost">
-					<div class="pubdate">
-						3 August 2013 20:49
-					</div>
-					<div class="title">
-						<a href="#" class="postlink">feed title 3</a>
-					</div>
-					<div class="author">
-						paul revere
-					</div>
-					<div class="fromfeed">
-						from <a href="#" class="feedlink">engadget</a>
-					</div>
-					<div class="body">
-						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed nunc aliquet, luctus quam bibendum, tristique lorem. Nunc augue quam, gravida sit amet neque sit amet, facilisis placerat nulla. Cras convallis euismod augue, eget aliquet dui congue nec. Etiam semper sit amet leo in egestas. Quisque quis hendrerit massa. Duis a accumsan tellus. Curabitur eget sapien ante. Nulla facilisi. Quisque sit amet interdum lacus. Integer tempor libero lacus, eget hendrerit lorem eleifend et.</p>
-
-						<p>Mauris ullamcorper lacinia augue, id commodo massa placerat vel. Suspendisse a lectus sem. Vivamus auctor est nisi, non interdum nisl pretium nec. Aliquam auctor velit vel eros auctor fringilla. Aliquam ut velit a leo sollicitudin feugiat eu non arcu. Maecenas et dui quis arcu vulputate faucibus. Quisque ac bibendum sem. Nulla euismod tellus dapibus nisl scelerisque, at convallis augue rutrum. Sed lobortis luctus suscipit. Nunc suscipit arcu felis, eget bibendum arcu cursus eu. Ut et felis sed felis sodales tincidunt.</p>
-					</div>
-				</li>
-				
-				<li class="nomoreposts">
+				<!--<li class="nomoreposts">
 					no more posts.
 				</li>-->
 			</ul>
 		</div>
 		
 <script type="text/template" id="news-feed-row-template">
-<a class="feedlink">{{title}}</a>
+<a class="feedlink">{{feed.title}}</a>{{#numUnread}}<span class="unreadcount">{{numUnread}}</span>{{/numUnread}}
 </script>
 
 <script type="text/template" id="news-article-template">

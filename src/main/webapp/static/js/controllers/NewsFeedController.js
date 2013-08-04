@@ -4,6 +4,10 @@ NewsFeedController = Backbone.View.extend({
 	el: $("div .middle"),
 	
 	initialize: function() {
+		// TODO: we'll probably want to use local storage for persisting this
+		// at some point.
+		this.showOnlyUnread = true;
+		
 		this.listenTo(NewsFeeds, 'add', this.addOneFeed);
 		this.listenTo(NewsFeeds, 'reset', this.addAllFeeds);
 		this.listenTo(NewsFeeds, 'all', this.render);
@@ -20,7 +24,7 @@ NewsFeedController = Backbone.View.extend({
 		}
 		
 		this.articleCollection = new NewsArticleCollection([], {
-			url: '/feeds/' + feed.model.id + "/posts"
+			url: '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread
 		});
 		
 		this.listenTo(this.articleCollection, 'add', this.addOneArticle);

@@ -43,15 +43,21 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         
   get("/", operation(getFeeds)) {    
     executeOrReturnError {
-      var offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-      
       db withSession {
         // TODO: stop using hardcoded admin user.
         FeedListApiResult(true, None, 
           (for { 
             uf <- UserFeeds if uf.userId === 1
             f <- NewsFeeds if f.id === uf.feedId
-            } yield f).drop(offset).take(Constants.ITEMS_PER_PAGE).list)
+            } yield f).list.map((x) => {
+              var feed_posts = for { 
+            	  (nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
+            	  	if nfa.feedId === x.id.get
+                  uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+              NewsFeedInfo(
+            		  x, 
+            		  (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length)
+            }));
       }
     }
   }
@@ -134,7 +140,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       
         params.get("unread_only") match {
           case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-            for { (p, q) <- feed_posts.list if q.getOrElse(true) == true } yield NewsFeedArticleInfo(p, true)
+            for { (p, q) <- feed_posts.list if q.getOrElse(false) == true } yield NewsFeedArticleInfo(p, true)
           }
           case _ => for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(true))
         }

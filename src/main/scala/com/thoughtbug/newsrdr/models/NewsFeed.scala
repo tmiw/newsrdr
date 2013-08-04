@@ -76,6 +76,11 @@ object NewsFeeds extends Table[NewsFeed]("NewsFeeds") {
 	  imageTitle ~ imageLink <> (NewsFeed, NewsFeed.unapply _)
 }
 
+case class NewsFeedInfo(
+    feed: NewsFeed,
+    numUnread: Integer
+)
+
 object NewsFeedCategories extends Table[(Int, Int, Int)]("NewsFeedCategories") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def feedId = column[Int]("feedId")

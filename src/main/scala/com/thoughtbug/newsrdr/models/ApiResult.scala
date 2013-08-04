@@ -6,5 +6,5 @@ object Constants {
 
 class ApiResult(success: Boolean, error_string: Option[String])
 
-case class FeedListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeed]) 
+case class FeedListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeedInfo]) 
 	extends ApiResult(success, error_string)
