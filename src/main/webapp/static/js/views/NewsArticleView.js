@@ -5,6 +5,10 @@ NewsArticleView = Backbone.View.extend({
 	
 	className: 'feedpost',
 	
+	events: {
+		"click .title": function() { this.model.set("unread", false); }
+	},
+	
 	template: Mustache.compile($('#news-article-template').html()),
 	
 	initialize: function() {
@@ -17,9 +21,13 @@ NewsArticleView = Backbone.View.extend({
   		{
   			var selfModel = this.model;
   			this.$el.addClass("unread");
-  			this.$el.waypoint(function() {
+  			/*this.$el.waypoint(function() {
   				selfModel.set("unread", false);
-  			});
+  			}, {
+  				offset: function() {
+    				return -$(this).height();
+  				}
+  			});*/
   		}
   		return this;
   	}
