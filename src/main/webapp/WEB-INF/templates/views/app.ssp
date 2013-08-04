@@ -11,7 +11,7 @@
 			<ul class="feedmenu">
 				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a href="#"><span id="showAllPosts">all</span></a>] posts</li>
 				<li class="feedmenuoption authonly feedonly allonly"><a href="#">mark all as read</a></li>
-				<li class="feedmenuoption authonly feedonly"><a href="#">remove current feed</a></li>
+				<li class="feedmenuoption authonly feedonly" id="removeFeedLink"><a href="#">remove current feed</a></li>
 				<li class="feedmenuoption authonly feedonly"><a href="#" id="feedsiteurl" target="_blank">visit feed's website</a></li>
 				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
 				<li class="feedmenuoption authonly"><a href="#" id="addNewFeedLink">add new feed</a></li>

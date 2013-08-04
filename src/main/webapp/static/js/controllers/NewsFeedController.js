@@ -8,7 +8,8 @@ NewsFeedController = Backbone.View.extend({
 		"click #homeEntry": "clearPosts",
 		"click #showAllPosts": "toggleAllPosts",
 		"click #showUnreadPosts": "toggleUnreadPosts",
-		"click #addNewFeedLink": "addNewFeed"
+		"click #addNewFeedLink": "addNewFeed",
+		"click #removeFeedLink": "removeFeed"
 	},
 	
 	initialize: function() {
@@ -90,6 +91,7 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	addAllFeeds: function() {
+		this.$("#allfeeds").clear();
 		NewsFeeds.each(this.addOneFeed, this);
 	},
 	
@@ -99,6 +101,7 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	addAllArticles: function() {
+		this.$("#postlist").clear();
 		NewsFeeds.each(this.addOneFeed, this);
 	},
 	
@@ -157,6 +160,18 @@ NewsFeedController = Backbone.View.extend({
 		
 		if (feedUrl) {
 			NewsFeeds.addFeed(feedUrl);
+		}
+	},
+	
+	removeFeed: function() {
+		// TODO: we probably want something a lot nicer than JS confirm()
+		var confirmed = confirm("Are you sure you want to unsubscribe from this feed?");
+		if (confirmed) {
+			var feed = this.selectedFeed;
+			this.selectedFeed = null;
+			this.clearPosts();
+			NewsFeeds.remove(feed.model);
+			feed.model.destroy();
 		}
 	}
 });
