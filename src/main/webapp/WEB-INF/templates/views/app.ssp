@@ -52,8 +52,8 @@
 				<li class="feedmenuoption"><a href="#">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="#">help</a></li>
 			</ul>
-			<ul class="feedpostlist">
-				<li class="feedpost unread">
+			<ul class="feedpostlist" id="postlist">
+<!--				<li class="feedpost unread">
 					<div class="pubdate">
 						3 August 2013 20:49
 					</div>
@@ -115,10 +115,28 @@
 				
 				<li class="nomoreposts">
 					no more posts.
-				</li>
+				</li>-->
 			</ul>
 		</div>
 		
 <script type="text/template" id="news-feed-row-template">
 <a class="feedlink">{{title}}</a>
+</script>
+
+<script type="text/template" id="news-article-template">
+	<div class="pubdate">
+		{{article.pubDate}}
+	</div>
+	<div class="title">
+		<a href="{{article.link}}" target="_blank" class="postlink">{{article.title}}</a>
+	</div>
+	<div class="author">
+		{{article.author}}
+	</div>
+	<div class="fromfeed">
+		from <a href="#" class="feedlink">engadget</a>
+	</div>
+	<div class="body">
+		{{{article.description}}}
+	</div>
 </script>

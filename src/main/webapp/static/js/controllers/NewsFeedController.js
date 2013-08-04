@@ -11,6 +11,25 @@ NewsFeedController = Backbone.View.extend({
 		NewsFeeds.fetch();
 	},
 	
+	selectFeed: function(feed) {
+		this.selectedFeed = feed;
+		
+		if (this.articleCollection) {
+			// clear event handlers
+			this.articleCollection.stopListening();
+		}
+		
+		this.articleCollection = new NewsArticleCollection([], {
+			url: '/feeds/' + feed.model.id + "/posts"
+		});
+		
+		this.listenTo(this.articleCollection, 'add', this.addOneArticle);
+		this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
+		this.listenTo(this.articleCollection, 'all', this.render);
+		
+		this.articleCollection.fetch();
+	},
+	
 	render: function() {
 		// TODO
 	},
@@ -21,6 +40,15 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	addAllFeeds: function() {
+		NewsFeeds.each(this.addOneFeed, this);
+	},
+	
+	addOneArticle: function(feed) {
+		var newView = new NewsArticleView({model: feed});
+		this.$("#postlist").append(newView.render().el);
+	},
+	
+	addAllArticles: function() {
 		NewsFeeds.each(this.addOneFeed, this);
 	}
 });

@@ -31,14 +31,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
 
 <script src="/static/js/models/NewsFeed.js"></script>
+<script src="/static/js/models/NewsArticle.js"></script>
 <script src="/static/js/collections/NewsFeedCollection.js"></script>
+<script src="/static/js/collections/NewsArticleCollection.js"></script>
 <script src="/static/js/views/NewsFeedView.js"></script>
+<script src="/static/js/views/NewsArticleView.js"></script>
 <script src="/static/js/controllers/NewsFeedController.js"></script>
 
 <!-- start app once everything's loaded -->
 <script language="javascript">
 $(function(){
-	var appController = new NewsFeedController();
+	AppController = new NewsFeedController();
 });
 </script>
 </body>
