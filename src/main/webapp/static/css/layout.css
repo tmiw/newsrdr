@@ -49,6 +49,8 @@
 	border: 1px dotted black;
 	list-style-type: none;
 	padding-left: 15px;
+	width: 200px;
+	max-width: 200px
 }
 
 .feedmenuoption a {
@@ -169,3 +171,10 @@ body {
 }
 
 .hide-element { display: none; }
+
+#loading { 
+	position: fixed;
+	top: 100px;
+	right: 200px;
+	visibility: hidden;
+}

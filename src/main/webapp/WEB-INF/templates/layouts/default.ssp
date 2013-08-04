@@ -40,6 +40,17 @@
 
 <!-- start app once everything's loaded -->
 <script language="javascript">
+$.ajaxSetup({
+	beforeSend:function(){
+        // show gif here
+        $("#loading").show();
+    },
+    complete:function(){
+        // hide gif here
+        $("#loading").hide();
+    }
+});
+
 $(function(){
 	AppController = new NewsFeedController();
 });

@@ -9,7 +9,7 @@
 		</div>
 		<div class="rightcol">
 			<ul class="feedmenu">
-				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread only</span>|<a href="#"><span id="showAllPosts">all posts</span></a>]</li>
+				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a href="#"><span id="showAllPosts">all</span></a>] posts</li>
 				<li class="feedmenuoption authonly feedonly allonly"><a href="#">mark all as read</a></li>
 				<li class="feedmenuoption authonly feedonly"><a href="#">remove current feed</a></li>
 				<li class="feedmenuoption authonly feedonly"><a href="#" id="feedsiteurl" target="_blank">visit feed's website</a></li>
@@ -20,6 +20,7 @@
 				<li class="feedmenuoption"><a href="#">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="#">help</a></li>
 			</ul>
+			<img src="/static/img/ajax-loader.gif" id="loading" />
 			<ul class="feedpostlist" id="postlist">
 				<!--<li class="nomoreposts">
 					no more posts.
