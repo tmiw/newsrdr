@@ -33,20 +33,26 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	updateFeeds: function() {
+		var self = this;
+		
 		NewsFeeds.fetch({
 			success: function(collection, response, options) {
-				// add up all of the unread posts and put under "All".
-				var total_unread = collection.reduce(function(memo, feed) { return memo + feed.get("numUnread"); }, 0);
-				$("#allCount").text(total_unread);
-				if (total_unread == 0) {
-					$("#allCount").addClass("hide-element");
-				} else {
-					$("#allCount").removeClass("hide-element");
-				}
+				self.updateFeedCounts();
 			}
 		});
 	},
-	
+
+	updateFeedCounts: function() {
+		// add up all of the unread posts and put under "All".
+		var total_unread = NewsFeeds.reduce(function(memo, feed) { return memo + feed.get("numUnread"); }, 0);
+		$("#allCount").text(total_unread);
+		if (total_unread == 0) {
+			$("#allCount").addClass("hide-element");
+		} else {
+			$("#allCount").removeClass("hide-element");
+		}
+	},
+		
 	selectFeed: function(feed) {
 		this.clearPosts();
 	
@@ -159,7 +165,10 @@ NewsFeedController = Backbone.View.extend({
 		var feedUrl = prompt("Enter the URL of the feed that you wish to subscribe to.");
 		
 		if (feedUrl) {
-			NewsFeeds.addFeed(feedUrl);
+			var self = this;
+			NewsFeeds.addFeed(feedUrl, function() {
+				self.updateFeedCounts();
+			});
 		}
 	},
 	
@@ -168,10 +177,10 @@ NewsFeedController = Backbone.View.extend({
 		var confirmed = confirm("Are you sure you want to unsubscribe from this feed?");
 		if (confirmed) {
 			var feed = this.selectedFeed;
-			this.selectedFeed = null;
-			this.clearPosts();
+			this.selectFeed(null);
 			NewsFeeds.remove(feed.model);
 			feed.model.destroy();
+			this.updateFeedCounts();
 		}
 	}
 });
