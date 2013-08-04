@@ -9,14 +9,14 @@
 		</div>
 		<div class="rightcol">
 			<ul class="feedmenu">
-				<li class="feedmenuoption">viewing unread only [<a href="#">all posts</a>]</li>
-				<li class="feedmenuoption"><a href="#">mark all as read</a></li>
-				<li class="feedmenuoption"><a href="#">remove current feed</a></li>
-				<li class="feedmenuoption"><a href="#">visit feed's website</a></li>
-				<li class="feedmenuseparator"><hr noshade/></li>
-				<li class="feedmenuoption"><a href="#">add new feed</a></li>
-				<li class="feedmenuoption"><a href="#">logout</a></li>
-				<li class="feedmenuseparator"><hr noshade/></li>
+				<li class="feedmenuoption authonly feedonly allonly">viewing unread only [<a href="#">all posts</a>]</li>
+				<li class="feedmenuoption authonly feedonly allonly"><a href="#">mark all as read</a></li>
+				<li class="feedmenuoption authonly feedonly"><a href="#">remove current feed</a></li>
+				<li class="feedmenuoption authonly feedonly"><a href="#">visit feed's website</a></li>
+				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
+				<li class="feedmenuoption authonly"><a href="#">add new feed</a></li>
+				<li class="feedmenuoption authonly"><a href="#">logout</a></li>
+				<li class="feedmenuseparator authonly"><hr noshade/></li>
 				<li class="feedmenuoption"><a href="#">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="#">help</a></li>
 			</ul>

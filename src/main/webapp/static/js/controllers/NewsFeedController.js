@@ -9,6 +9,9 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	initialize: function() {
+		this.clearPosts();
+		this.showHideMenuOptions();
+		
 		// TODO: we'll probably want to use local storage for persisting this
 		// at some point.
 		this.showOnlyUnread = true;
@@ -53,6 +56,8 @@ NewsFeedController = Backbone.View.extend({
 			this.$("#allFeedEntry").addClass("selectedfeed");
 		}
 		
+		this.showHideMenuOptions();
+		
 		this.listenTo(this.articleCollection, 'add', this.addOneArticle);
 		this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
 		this.listenTo(this.articleCollection, 'all', this.render);
@@ -90,10 +95,24 @@ NewsFeedController = Backbone.View.extend({
 			
 			// remove posts
 			this.$("#postlist").empty();
-			
-			// set selected to Home
-			$(".selectedfeed").removeClass("selectedfeed");
-			$("#homeEntry").addClass("selectedfeed");
+		}
+		
+		// set selected to Home
+		$(".selectedfeed").removeClass("selectedfeed");
+		$("#homeEntry").addClass("selectedfeed");
+	},
+	
+	showHideMenuOptions: function() {
+		//$(".authonly").addClass("hide-element");
+		$(".feedonly").addClass("hide-element");
+		$(".allonly").addClass("hide-element");
+		
+		if (this.selectedFeed) {
+			$(".feedonly").removeClass("hide-element");
+		} else {
+			if ($("#allFeedEntry").hasClass("selectedfeed")) {
+				$(".allonly").removeClass("hide-element");
+			}
 		}
 	}
 });
