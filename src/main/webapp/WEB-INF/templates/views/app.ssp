@@ -14,7 +14,7 @@
 				<li class="feedmenuoption authonly feedonly"><a href="#">remove current feed</a></li>
 				<li class="feedmenuoption authonly feedonly"><a href="#" id="feedsiteurl" target="_blank">visit feed's website</a></li>
 				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
-				<li class="feedmenuoption authonly"><a href="#">add new feed</a></li>
+				<li class="feedmenuoption authonly"><a href="#" id="addNewFeedLink">add new feed</a></li>
 				<li class="feedmenuoption authonly"><a href="#">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
 				<li class="feedmenuoption"><a href="#">about newsrdr</a></li>

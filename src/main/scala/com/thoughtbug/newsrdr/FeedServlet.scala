@@ -63,7 +63,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   }
   
   val postFeeds =
-    (apiOperation[NewsFeed]("postFeeds")
+    (apiOperation[NewsFeedInfo]("postFeeds")
         summary "Adds a new feed"
         notes "Subscribes the currently logged-in user to the given feed. It will perform the initial fetch of the feed if it doesn't already exist, so fetching the unread posts for this feed would be a good idea."
         parameter queryParam[String]("url").description("The URL to the given feed to add."))
@@ -93,12 +93,20 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       // TODO: stop using hardcoded admin user.
       var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === feed.id } yield uf
       userFeed.firstOption match {
-        case Some(uf) => feed
+        case Some(uf) => ()
         case None => {
           UserFeeds.insert(UserFeed(None, 1, feed.id.get))
-          feed
+          ()
         }
       }
+      
+      var feed_posts = for { 
+      	(nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
+        if nfa.feedId === feed.id.get
+        uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+      NewsFeedInfo(
+    		  feed, 
+    		  (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length)
     }
   }
   

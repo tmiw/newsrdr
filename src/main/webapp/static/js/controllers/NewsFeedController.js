@@ -7,7 +7,8 @@ NewsFeedController = Backbone.View.extend({
 		"click #allFeedEntry": function() { this.selectFeed(null); },
 		"click #homeEntry": "clearPosts",
 		"click #showAllPosts": "toggleAllPosts",
-		"click #showUnreadPosts": "toggleUnreadPosts"
+		"click #showUnreadPosts": "toggleUnreadPosts",
+		"click #addNewFeedLink": "addNewFeed"
 	},
 	
 	initialize: function() {
@@ -148,6 +149,15 @@ NewsFeedController = Backbone.View.extend({
 		
 		this.showOnlyUnread = true;
 		this.selectFeed(this.selectedFeed);
+	},
+	
+	addNewFeed: function() {
+		// TODO: we probably want something a lot nicer than JS prompt().
+		var feedUrl = prompt("Enter the URL of the feed that you wish to subscribe to.");
+		
+		if (feedUrl) {
+			NewsFeeds.addFeed(feedUrl);
+		}
 	}
 });
 
