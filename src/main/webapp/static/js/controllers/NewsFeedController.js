@@ -20,6 +20,14 @@ NewsFeedController = Backbone.View.extend({
 		this.listenTo(NewsFeeds, 'reset', this.addAllFeeds);
 		this.listenTo(NewsFeeds, 'all', this.render);
 		
+		// Perform initial fetch from server.
+		this.updateFeeds();
+		
+		// Update feed counts every five minutes.
+		setInterval(function() { this.updateFeeds(); }, 1000 * (60 * 5));
+	},
+	
+	updateFeeds: function() {
 		NewsFeeds.fetch({
 			success: function(collection, response, options) {
 				// add up all of the unread posts and put under "All".
