@@ -12,7 +12,18 @@ NewsFeedController = Backbone.View.extend({
 		this.listenTo(NewsFeeds, 'reset', this.addAllFeeds);
 		this.listenTo(NewsFeeds, 'all', this.render);
 		
-		NewsFeeds.fetch();
+		NewsFeeds.fetch({
+			success: function(collection, response, options) {
+				// add up all of the unread posts and put under "All".
+				var total_unread = collection.reduce(function(memo, feed) { return memo + feed.get("numUnread"); }, 0);
+				$("#allCount").text(total_unread);
+				if (total_unread == 0) {
+					$("#allCount").addClass("hide-element");
+				} else {
+					$("#allCount").removeClass("hide-element");
+				}
+			}
+		});
 	},
 	
 	selectFeed: function(feed) {

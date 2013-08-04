@@ -157,3 +157,5 @@ body {
 	right: 0px;
 	font-weight: normal;
 }
+
+.hide-element { display: none; }
