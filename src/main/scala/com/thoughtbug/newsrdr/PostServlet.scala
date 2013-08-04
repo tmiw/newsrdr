@@ -52,7 +52,7 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       
       params.get("unread_only") match {
         case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-          (for { (p, q) <- feed_posts.list if q.getOrElse(true) == true } yield NewsFeedArticleInfo(p, true)).drop(offset).take(Constants.ITEMS_PER_PAGE)
+          (for { (p, q) <- feed_posts.list if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(Constants.ITEMS_PER_PAGE)
         }
         case _ => (for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(true))).drop(offset).take(Constants.ITEMS_PER_PAGE)
       }

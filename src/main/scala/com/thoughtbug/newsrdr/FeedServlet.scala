@@ -140,7 +140,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       
         params.get("unread_only") match {
           case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-            for { (p, q) <- feed_posts.list if q.getOrElse(false) == true } yield NewsFeedArticleInfo(p, true)
+            for { (p, q) <- feed_posts.list if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)
           }
           case _ => for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(true))
         }
