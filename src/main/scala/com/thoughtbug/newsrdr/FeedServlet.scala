@@ -89,7 +89,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       userFeed.firstOption match {
         case Some(uf) => feed
         case None => {
-          UserFeeds.insert(UserFeed(None, feed.id.get, 1))
+          UserFeeds.insert(UserFeed(None, 1, feed.id.get))
           feed
         }
       }
