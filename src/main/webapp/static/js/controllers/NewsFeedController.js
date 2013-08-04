@@ -112,7 +112,11 @@ NewsFeedController = Backbone.View.extend({
 		
 		// set selected to Home
 		$(".selectedfeed").removeClass("selectedfeed");
+		$("#allFeedEntry").removeClass("selectedfeed");
 		$("#homeEntry").addClass("selectedfeed");
+		
+		this.selectedFeed = null;
+		this.showHideMenuOptions();
 	},
 	
 	showHideMenuOptions: function() {
