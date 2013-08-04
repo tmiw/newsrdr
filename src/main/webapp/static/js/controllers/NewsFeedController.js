@@ -26,7 +26,8 @@ NewsFeedController = Backbone.View.extend({
 		this.updateFeeds();
 		
 		// Update feed counts every five minutes.
-		setInterval(function() { this.updateFeeds(); }, 1000 * (60 * 5));
+		var self = this;
+		window.setInterval(function() { self.updateFeeds(); }, 1000 * (60 * 5));
 	},
 	
 	updateFeeds: function() {
