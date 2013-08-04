@@ -21,5 +21,25 @@
 		</div>
 	</div>
 </div>
+
+<!-- load scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.2/waypoints.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.paginator/0.8/backbone.paginator.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
+
+<script src="/static/js/models/NewsFeed.js"></script>
+<script src="/static/js/collections/NewsFeedCollection.js"></script>
+<script src="/static/js/views/NewsFeedView.js"></script>
+<script src="/static/js/controllers/NewsFeedController.js"></script>
+
+<!-- start app once everything's loaded -->
+<script language="javascript">
+$(function(){
+	var appController = new NewsFeedController();
+});
+</script>
 </body>
 </html>

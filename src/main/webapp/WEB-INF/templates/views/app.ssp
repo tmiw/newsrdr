@@ -2,8 +2,8 @@
 			<ul class="feedlist">
 				<li class="feedcategory">Home</li>
 				<li class="feedcategory selectedfeed">All <span class="unreadcount">50</span></li>
-				<ul class="feedlist">
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">2</span></li>
+				<ul class="feedlist" id="allfeeds">
+					<!--<li class="feed1"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">2</span></li>
 					<li class="feed2"><a href="#" class="feedlink">Engadget</a><span class="unreadcount">3</span></li>
 					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
 					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
@@ -35,7 +35,7 @@
 					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
 					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
 					<li class="feed2"><a href="#" class="feedlink">Engadget</a></li>
-					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>
+					<li class="feed1"><a href="#" class="feedlink">Engadget</a></li>-->
 				</ul>
 			</ul>
 		</div>
@@ -118,3 +118,7 @@
 				</li>
 			</ul>
 		</div>
+		
+<script type="text/template" id="news-feed-row-template">
+<a class="feedlink">{{title}}</a>
+</script>
