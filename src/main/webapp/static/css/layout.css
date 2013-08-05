@@ -53,12 +53,10 @@
 	max-width: 200px
 }
 
-.feedmenuoption a {
+.feedmenu a {
 	text-decoration: none;
-}
-
-.feedmenuoption a:hover {
-	text-decoration: underline;
+	cursor: pointer;
+	color: blue;
 }
 
 .bottom {

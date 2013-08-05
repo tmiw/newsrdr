@@ -9,13 +9,13 @@
 		</div>
 		<div class="rightcol">
 			<ul class="feedmenu">
-				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a href="#"><span id="showAllPosts">all</span></a>] posts</li>
-				<li class="feedmenuoption authonly feedonly allonly" id="markAllReadLink"><a href="#">mark all as read</a></li>
-				<li class="feedmenuoption authonly feedonly" id="removeFeedLink"><a href="#">remove current feed</a></li>
-				<li class="feedmenuoption authonly feedonly"><a href="#" id="feedsiteurl" target="_blank">visit feed's website</a></li>
+				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a><span id="showAllPosts">all</span></a>] posts</li>
+				<li class="feedmenuoption authonly feedonly allonly" id="markAllReadLink"><a>mark all as read</a></li>
+				<li class="feedmenuoption authonly feedonly" id="removeFeedLink"><a>remove current feed</a></li>
+				<li class="feedmenuoption authonly feedonly"><a id="feedsiteurl" target="_blank">visit feed's website</a></li>
 				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
-				<li class="feedmenuoption authonly"><a href="#" id="addNewFeedLink">add new feed</a></li>
-				<li class="feedmenuoption authonly"><a href="#">logout</a></li>
+				<li class="feedmenuoption authonly"><a id="addNewFeedLink">add new feed</a></li>
+				<li class="feedmenuoption authonly"><a>logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
 				<li class="feedmenuoption"><a href="#">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="#">help</a></li>

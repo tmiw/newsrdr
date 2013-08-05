@@ -155,7 +155,7 @@ NewsFeedController = Backbone.View.extend({
 	
 	toggleAllPosts: function() {
 		$("#showAllPosts").unwrap();
-		$("#showUnreadPosts").wrap("<a href=\"#\" />");
+		$("#showUnreadPosts").wrap("<a />");
 		
 		this.showOnlyUnread = false;
 		this.selectFeed(this.selectedFeed);
@@ -163,7 +163,7 @@ NewsFeedController = Backbone.View.extend({
 	
 	toggleUnreadPosts: function() {
 		$("#showUnreadPosts").unwrap();
-		$("#showAllPosts").wrap("<a href=\"#\" />");
+		$("#showAllPosts").wrap("<a />");
 		
 		this.showOnlyUnread = true;
 		this.selectFeed(this.selectedFeed);
