@@ -9,7 +9,8 @@ NewsFeedController = Backbone.View.extend({
 		"click #showAllPosts": "toggleAllPosts",
 		"click #showUnreadPosts": "toggleUnreadPosts",
 		"click #addNewFeedLink": "addNewFeed",
-		"click #removeFeedLink": "removeFeed"
+		"click #removeFeedLink": "removeFeed",
+		"click #markAllReadLink": "markAllRead"
 	},
 	
 	initialize: function() {
@@ -91,6 +92,14 @@ NewsFeedController = Backbone.View.extend({
 		// TODO
 	},
 	
+	markAllRead: function() {
+		this.articleCollection.each(function(article) { 
+			if (article.get("unread")) {
+				article.set("unread", false);
+			}
+		}, this);
+	},
+	
 	addOneFeed: function(feed) {
 		var newView = new NewsFeedView({model: feed});
 		this.$("#allfeeds").append(newView.render().el);
@@ -108,7 +117,7 @@ NewsFeedController = Backbone.View.extend({
 	
 	addAllArticles: function() {
 		this.$("#postlist").clear();
-		NewsFeeds.each(this.addOneFeed, this);
+		this.articleCollection.each(this.addOneArticle, this);
 	},
 	
 	clearPosts: function() {
