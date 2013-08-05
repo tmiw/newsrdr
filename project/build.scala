@@ -29,6 +29,7 @@ object NewsrdrBuild extends Build {
         "org.scalatra" %% "scalatra-json" % ScalatraVersion,
         "org.scalatra" %% "scalatra-swagger"  % ScalatraVersion,
         "org.json4s"   %% "json4s-native" % "3.2.4",
+        "com.github.nscala-time" %% "nscala-time" % "0.4.2",
         "ch.qos.logback" % "logback-classic" % "1.0.6" % "runtime",
         "com.typesafe.slick" %% "slick" % "1.0.0",
         "org.slf4j" % "slf4j-nop" % "1.6.4",

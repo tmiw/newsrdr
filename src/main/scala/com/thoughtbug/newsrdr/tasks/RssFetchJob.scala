@@ -14,8 +14,7 @@ class RssFetchJob extends Job {
   }
   
   def fetch(feedUrl: String): NewsFeed = {    
-    val feed = new RSSFeed
-    feed.load(feedUrl)
+    val feed = XmlFeedFactory.load(feedUrl)
     
     BackgroundJobManager.db withTransaction {
       // Update feed's contents with whatever we've fetched from the server.

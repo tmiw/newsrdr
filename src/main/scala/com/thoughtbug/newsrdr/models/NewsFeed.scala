@@ -1,16 +1,12 @@
 package com.thoughtbug.newsrdr.models
 
 import scala.xml._
-import java.sql.Timestamp;
+import java.sql.Timestamp
 import java.text.SimpleDateFormat
-
-// TODO: support drivers other than H2
-
-// Use H2Driver to connect to an H2 database
+import com.github.nscala_time.time.Imports._
 import scala.slick.driver.H2Driver.simple._
-
-// Use the implicit threadLocalSession
 import Database.threadLocalSession
+import org.joda.time.DateTime
 
 case class Category(
     id: Option[Int],
@@ -203,14 +199,63 @@ object UserFeeds extends Table[UserFeed]("UserFeeds") {
   def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
 }
 
-class RSSFeed {
+trait XmlFeedParser {
+  def fillFeedProperties(root: Elem, url: String)
+}
+
+object XmlFeedFactory {
+  def load(url: String) : XmlFeed = {
+    val xmlDoc = XML.load(url)
+    var feed : XmlFeed = null
+    
+    if ((xmlDoc \\ "entry").count((x) => true) > 0)
+    {
+      // Atom feed
+      feed = new AtomFeed
+    }
+    else
+    {
+      feed = new RSSFeed
+    }
+    
+    feed.fillFeedProperties(xmlDoc, url)
+    feed
+  }
+}
+
+abstract class XmlFeed extends XmlFeedParser {
     var feedProperties : NewsFeed = _
     var feedCategories : List[String] = _
     var entries : List[(NewsFeedArticle, List[String])] = _
     
-    def load(url: String) = {
-        val xmlDoc = XML.load(url)
-        val channel = (xmlDoc \\ "channel")
+    protected def generateOptionValue(x: String) : Option[String] = {
+        if (!x.isEmpty) { Some(x) }
+        else { None }
+    }
+    
+    protected def generateOptionValueTimestamp(x: String) : Option[Timestamp] = {
+        if (!x.isEmpty) { 
+          var destFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+          var date = DateTime.parse(x).toDate()
+          Some(Timestamp.valueOf(destFormat.format(date)))
+        }
+        else { None }
+    }
+    
+    protected def generateOptionValueInt(x: String) : Option[Int] = {
+        if (!x.isEmpty) { Some(x.toInt) }
+        else { None }
+    }
+    
+    protected def generateOptionValueBool(x: String) : Option[Boolean] = {
+        if (!x.isEmpty) { Some(x.toBoolean) }
+        else { None }
+    }
+}
+
+class RSSFeed extends XmlFeed {
+    def fillFeedProperties(root: Elem, url: String) = {
+        val channel = (root \\ "channel")
         
         feedProperties = NewsFeed(
             None,
@@ -234,7 +279,7 @@ class RSSFeed {
         
         feedCategories = (channel \ "category").map((x) => x.text).toList
         
-        entries = (xmlDoc \\ "item").map(createArticle).toList
+        entries = (root \\ "item").map(createArticle).toList
     }
     
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
@@ -259,29 +304,57 @@ class RSSFeed {
         
         (article, articleCategories)
     }
-    
-    private def generateOptionValue(x: String) : Option[String] = {
-        if (!x.isEmpty) { Some(x) }
-        else { None }
+}
+
+class AtomFeed extends XmlFeed {
+    def fillFeedProperties(root: Elem, url: String) = {
+        val channel = (root \\ "feed")
+        
+        feedProperties = NewsFeed(
+            None,
+            (channel \ "title").text,
+            (channel \ "link" \ "@href").text,
+            (channel \ "subtitle").text,
+            url,
+            None,
+            generateOptionValue((channel \ "rights").text),
+            generateOptionValue((channel \ "author" \ "name").text),
+            None,
+            generateOptionValueTimestamp((channel \ "published").text),
+            generateOptionValueTimestamp((channel \ "updated").text),
+            generateOptionValue((channel \ "generator").text),
+            None,
+            None,
+            None,
+            None,
+            None
+            )
+        
+        feedCategories = (channel \ "category").map((x) => x.text).toList
+        
+        entries = (root \\ "entry").map(createArticle).toList
     }
     
-    private def generateOptionValueTimestamp(x: String) : Option[Timestamp] = {
-        if (!x.isEmpty) { 
-          var sourceFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
-          var destFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-          var date = sourceFormat.parse(x)
-          Some(Timestamp.valueOf(destFormat.format(date)))
-        }
-        else { None }
-    }
-    
-    private def generateOptionValueInt(x: String) : Option[Int] = {
-        if (!x.isEmpty) { Some(x.toInt) }
-        else { None }
-    }
-    
-    private def generateOptionValueBool(x: String) : Option[Boolean] = {
-        if (!x.isEmpty) { Some(x.toBoolean) }
-        else { None }
+    private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
+        var article = NewsFeedArticle(
+            None,
+            0,
+            (x \\ "title").text,
+            (x \\ "link" \ "@href").take(1).text,
+            (x \\ "content").text,
+            generateOptionValue((x \\ "author" \ "name").text),
+            None,
+            None,
+            None,
+            None,
+            generateOptionValue((x \\ "id").text),
+            None,
+            generateOptionValueTimestamp((x \\ "published").text),
+            None
+        )
+        
+        var articleCategories = (x \\ "category").map((x) => x.text).toList
+        
+        (article, articleCategories)
     }
 }
