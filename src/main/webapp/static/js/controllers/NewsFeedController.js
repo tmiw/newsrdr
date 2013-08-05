@@ -177,6 +177,7 @@ NewsFeedController = Backbone.View.extend({
 		var confirmed = confirm("Are you sure you want to unsubscribe from this feed?");
 		if (confirmed) {
 			var feed = this.selectedFeed;
+			feed.$el.remove();
 			this.selectFeed(null);
 			NewsFeeds.remove(feed.model);
 			feed.model.destroy();
