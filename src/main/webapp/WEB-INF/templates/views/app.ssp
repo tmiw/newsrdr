@@ -43,7 +43,7 @@
 		{{article.author}}
 	</div>
 	<div class="fromfeed">
-		from <a href="#" class="feedlink">engadget</a>
+		from <a href="{{feed.link}}" target="_blank" class="feedlink">{{feed.title}}</a>
 	</div>
 	<div class="body">
 		{{{article.description}}}
