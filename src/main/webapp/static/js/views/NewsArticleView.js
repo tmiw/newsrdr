@@ -29,6 +29,10 @@ NewsArticleView = Backbone.View.extend({
   				}
   			});*/
   		}
+  		else
+  		{
+	  		this.$el.removeClass("unread");
+  		}
   		return this;
   	}
 });
