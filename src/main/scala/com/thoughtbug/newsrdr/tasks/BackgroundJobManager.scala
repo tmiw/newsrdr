@@ -8,7 +8,6 @@ import org.quartz.TriggerBuilder._
 import org.quartz.SimpleScheduleBuilder._
 import org.quartz.DateBuilder._
 import org.quartz._
-import java.util.DateTime
 
 object BackgroundJobManager {
   var db : Database = _
