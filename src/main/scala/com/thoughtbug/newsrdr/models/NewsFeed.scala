@@ -154,16 +154,30 @@ object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticle
 case class User(
     id: Option[Int],
     username: String,
-    password: String,
-    google_api_token: String)
+    password: String, // for future use
+    email: String // for future use
+    )
    
 object Users extends Table[User]("Users") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
   def username = column[String]("username")
   def password = column[String]("password")
-  def google_api_token = column[String]("google_api_token")
+  def email = column[String]("email")
   
-  def * = id.? ~ username ~ password ~ google_api_token <> (User, User.unapply _)
+  def * = id.? ~ username ~ password ~ email <> (User, User.unapply _)
+}
+
+case class UserSession(
+    userId: Int,
+    sessionId: String
+    )
+   
+object UserSessions extends Table[UserSession]("UserSessions") {
+  def userId = column[Int]("userId")
+  def sessionId = column[String]("sessionId")
+  def * = userId ~ sessionId <> (UserSession, UserSession.unapply _)
+  def bIdx1 = index("userSessionKey", userId ~ sessionId, unique = true)
+  def user = foreignKey("userSessionUserKey", userId, Users)(_.id)
 }
 
 case class UserArticle(
