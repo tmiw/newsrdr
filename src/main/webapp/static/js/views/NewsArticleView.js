@@ -17,8 +17,10 @@ NewsArticleView = Backbone.View.extend({
   	
   	render: function() {
   		var self = this;
+  		var feedObj = NewsFeeds.find(function(x) { return x.id == self.model.get("article").feedId; });
   		var newView = $.extend(true, this.model.attributes, {
-  			feed: NewsFeeds.find(function(x) { return x.id == self.model.get("article").feedId; }).get("feed")
+  			feed: feedObj.get("feed"),
+  			feedObj: feedObj
   		});
   		this.$el.html(this.template(newView));
   		if (this.model.get("unread") == true)

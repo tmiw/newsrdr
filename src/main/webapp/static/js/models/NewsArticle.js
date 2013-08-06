@@ -5,6 +5,7 @@ NewsArticleModel = Backbone.Model.extend({
 		// We cannot rely on normal Backbone.sync() to update unread status
 		// due to the unusual REST API calls needed. Perform the jQuery AJAX
 		// call by hand here.
+		var self = this;
 		var httpType = "PUT";
 		if (this.get("unread") == false)
 		{
@@ -14,6 +15,16 @@ NewsArticleModel = Backbone.Model.extend({
 			type: httpType,
 			error: function(xhr, status, errorThrown) {
 				// TODO
+				console.log(xhr, status, errorThrown);
+			}
+		}).done(function(data) {
+			if (httpType == "DELETE")
+			{
+				self.get("feedObj").subtractUnread();
+			}
+			else
+			{
+				self.get("feedObj").addUnread();
 			}
 		});
 	},

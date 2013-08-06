@@ -6,7 +6,18 @@ NewsFeedModel = Backbone.Model.extend({
 		return response;
 	},
 	
-	urlRoot: "/feeds"
+	urlRoot: "/feeds",
+	
+	subtractUnread: function() {
+		if (this.get("numUnread") > 0)
+		{
+			this.set("numUnread", this.get("numUnread") - 1);
+		}
+	},
+	
+	addUnread: function() {
+		this.set("numUnread", this.get("numUnread") + 1);
+	}
 });
 
 }).call(this);

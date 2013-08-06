@@ -39,6 +39,10 @@ NewsFeedController = Backbone.View.extend({
 		NewsFeeds.fetch({
 			success: function(collection, response, options) {
 				self.updateFeedCounts();
+				NewsFeeds.each(function(x) { 
+					self.stopListening(x, 'change:numUnread');
+					self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
+				});
 			}
 		});
 	},

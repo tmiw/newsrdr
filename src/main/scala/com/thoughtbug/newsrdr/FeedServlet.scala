@@ -127,6 +127,8 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
       var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === Integer.parseInt(id) } yield uf
       userFeed.delete
     }
+    
+    NoDataApiResult(true, None)
   }
   
   val getPostsForFeed =
@@ -183,6 +185,8 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         case _ => halt(404)
       }
     }
+    
+    NoDataApiResult(true, None)
   }
   
   val markUnreadCommand =
@@ -213,5 +217,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         case _ => halt(404)
       }
     }
+    
+    NoDataApiResult(true, None)
   }
 }
