@@ -18,6 +18,11 @@ class ScalatraBootstrap extends LifeCycle {
   
   override def init(context: ServletContext) {
     var environment = context.getInitParameter(org.scalatra.EnvironmentKey)
+    if (!environment.startsWith("dev")) {
+      // force envrionment to production mode
+      context.setInitParameter(org.scalatra.EnvironmentKey, "production")
+      environment = context.getInitParameter(org.scalatra.EnvironmentKey)
+    }
     var dao = environment match {
       case "production" => new DataTables(MySQLDriver)
       case _ => new DataTables(H2Driver)
@@ -39,7 +44,7 @@ class ScalatraBootstrap extends LifeCycle {
     // Start Quartz scheduler.
     BackgroundJobManager.dao = dao
     BackgroundJobManager.db = db
-    BackgroundJobManager.start
+    BackgroundJobManager.start(context)
   }
   
   private def closeDbConnection() {

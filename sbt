@@ -105,7 +105,7 @@ make_url () {
   echo "http://typesafe.artifactoryonline.com/typesafe/ivy-$category/$groupid/sbt-launch/$version/sbt-launch.jar"
 }
 
-declare -r default_jvm_opts="-Dfile.encoding=UTF8"
+declare -r default_jvm_opts="-Dfile.encoding=UTF8 -Dorg.scalatra.environment=development"
 declare -r default_sbt_opts="-XX:+CMSClassUnloadingEnabled"
 declare -r default_sbt_mem=1536
 declare -r noshare_opts="-Dsbt.global.base=project/.sbtboot -Dsbt.boot.directory=project/.boot -Dsbt.ivy.home=project/.ivy"
