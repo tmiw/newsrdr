@@ -41,7 +41,7 @@ class NewsReaderServlet(db: Database) extends NewsrdrStack with AuthOpenId {
           val authReq = 
             manager.authenticate(
                 discovered, 
-                "http://localhost:8080/auth/authenticated") //Constants.getAuthenticatedURL(request))
+                Constants.getAuthenticatedURL(request))
           val fetch = FetchRequest.createFetchRequest()
           fetch.addAttribute("email", "http://schema.openid.net/contact/email",true)
           fetch.addAttribute("firstname", "http://axschema.org/namePerson/first", true)
