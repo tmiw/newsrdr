@@ -4,7 +4,7 @@ import javax.servlet.ServletContext
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import org.slf4j.LoggerFactory
 
-import scala.slick.driver.{ExtendedProfile, H2Driver, SQLiteDriver}
+import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.session.{Database, Session}
 
 import com.thoughtbug.newsrdr.models._;
@@ -14,12 +14,18 @@ class ScalatraBootstrap extends LifeCycle {
   val logger = LoggerFactory.getLogger(getClass)
   implicit val swagger = new ApiSwagger
   
-  val cpds = new ComboPooledDataSource
-  logger.info("Created c3p0 connection pool")
-  
-  var dao = new DataTables(H2Driver)
+  var cpds : ComboPooledDataSource = null
   
   override def init(context: ServletContext) {
+    var environment = context.getInitParameter(org.scalatra.EnvironmentKey)
+    var dao = environment match {
+      case "production" => new DataTables(MySQLDriver)
+      case _ => new DataTables(H2Driver)
+    } 
+    
+    cpds = new ComboPooledDataSource(environment)
+    logger.info("Created c3p0 connection pool")
+  
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
     context.mount(new NewsReaderServlet(dao, db), "/*")
     context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")

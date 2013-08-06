@@ -1,0 +1,19 @@
+<c3p0-config>
+  <default-config>
+    <property name="driverClass">org.h2.Driver</property>
+    <property name="jdbcUrl">jdbc:h2:mem:test</property>
+    <property name="user">root</property>
+    <property name="password"></property>
+    <property name="minPoolSize">1</property>
+    <property name="acquireIncrement">1</property>
+    <property name="maxPoolSize">100</property>
+  </default-config>
+
+  <!-- Modify the below for your MySQL settings. -->
+  <named-config name="production"> 
+    <property name="driverClass">com.mysql.jdbc.Driver</property>
+    <property name="jdbcUrl">jdbc:mysql://localhost:3306/newsrdr</property>
+    <property name="user">newsrdr</property>
+    <property name="password"></property>
+  </named-config>
+</c3p0-config>
