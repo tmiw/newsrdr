@@ -7,6 +7,7 @@ import com.github.nscala_time.time.Imports._
 import scala.slick.driver.H2Driver.simple._
 import Database.threadLocalSession
 import org.joda.time.DateTime
+import org.joda.time.format._
 
 case class Category(
     id: Option[Int],
@@ -235,8 +236,15 @@ abstract class XmlFeed extends XmlFeedParser {
     
     protected def generateOptionValueTimestamp(x: String) : Option[Timestamp] = {
         if (!x.isEmpty) { 
+           var parsers = List(
+            org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss Z").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss Z '('z')'").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss z").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("dd MMM y HH:mm:ss Z").getParser(),
+            ISODateTimeFormat.dateTimeParser().getParser()
+          ).toArray
           var destFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-          var date = DateTime.parse(x).toDate()
+          var date = DateTime.parse(x, new DateTimeFormatterBuilder().append(null, parsers).toFormatter()).toDate()
           Some(Timestamp.valueOf(destFormat.format(date)))
         }
         else { None }
