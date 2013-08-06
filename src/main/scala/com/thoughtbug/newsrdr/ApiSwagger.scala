@@ -37,6 +37,16 @@ trait ApiExceptionWrapper {
 }
 
 trait AuthOpenId {
+  def getUserId(db: Database, sessionId: String) : Option[Int] = {
+    db withSession {
+      var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
+      q.firstOption match {
+        case Some(sess) => Some(sess.userId)
+        case None => None
+      }
+    }
+  }
+    
   def authenticationRequired(id: String, db: Database, f: => Any, g: => Any) = {
     db withSession {
       var q = (for { sess <- UserSessions if sess.sessionId === id } yield sess)
