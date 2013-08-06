@@ -56,6 +56,13 @@ NewsFeedController = Backbone.View.extend({
 		} else {
 			$("#allCount").removeClass("hide-element");
 		}
+		
+		// also update count in the title
+		document.title = document.title.replace(/^\(\d+\)\s*/, "");
+		if (total_unread > 0)
+		{
+			document.title = "(" + total_unread + ") " + document.title;
+		}
 	},
 		
 	selectFeed: function(feed) {
