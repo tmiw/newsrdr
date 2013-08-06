@@ -83,16 +83,13 @@ body {
 	padding-left: 15px;
 }
 
-.feed1 {
+.feed {
 	background-color: #fff;
-}
-
-.feed2 { 
-	background-color: #ddd;
 }
 
 .selectedfeed {
 	font-weight: bold;
+	background-color: #ddd;
 }
 
 .feedcategory {

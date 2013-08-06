@@ -3,13 +3,7 @@
 NewsFeedView = Backbone.View.extend({
 	tagName: 'li',
 	
-	className: function() {
-		if (this.model.id % 2 == 0) {
-			return "feed1";
-		} else {
-			return "feed2";
-		}
-	},
+	className: "feed",
 	
 	events: {
 		"click .feedlink": "onFeedSelected"
