@@ -5,12 +5,7 @@ import scalate.ScalateSupport
 import scala.slick.session.Database
 import com.thoughtbug.newsrdr.models._
 import com.thoughtbug.newsrdr.tasks._
-
-// Use H2Driver to connect to an H2 database
-import scala.slick.driver.H2Driver.simple._
-
-// Use the implicit threadLocalSession
-import Database.threadLocalSession
+import scala.slick.session.{Database, Session}
 
 // JSON-related libraries
 import org.json4s.{DefaultFormats, Formats}
@@ -21,7 +16,7 @@ import org.scalatra.json._
 // Swagger support
 import org.scalatra.swagger._
 
-class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrStack
+class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId {
 
   override protected val applicationName = Some("feeds")
@@ -42,24 +37,16 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
         
   get("/", operation(getFeeds)) {
-    authenticationRequired(session.getId, db, {
+    authenticationRequired(dao, session.getId, db, {
       executeOrReturnError {
-        var userId = getUserId(db, session.getId).get
+        var userId = getUserId(dao, db, session.getId).get
         
-        db withSession {
+        db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
-            (for { 
-              uf <- UserFeeds if uf.userId === userId
-              f <- NewsFeeds if f.id === uf.feedId
-              } yield f).list.map((x) => {
-                var feed_posts = for { 
-            	    (nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
-            	    	if nfa.feedId === x.id.get
-                    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
-                NewsFeedInfo(
+              dao.getSubscribedFeeds(session, userId).map((x) => NewsFeedInfo(
             		  x, 
-            		  (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length)
-              }));
+            		  dao.getUnreadCountForFeed(session, userId, x.id.get)
+              )))
         }
       }
     }, {
@@ -74,16 +61,15 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         parameter queryParam[String]("url").description("The URL to the given feed to add."))
    
   post("/", operation(postFeeds)) {
-    authenticationRequired(session.getId, db, {
+    authenticationRequired(dao, session.getId, db, {
 	    val url = params.getOrElse("url", halt(422))
-	    var userId = getUserId(db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId).get
 	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
-	    db withTransaction {
+	    db withTransaction { implicit session: Session =>
 	      // Grab feed from database, creating if it doesn't already exist.
-	      var feedQuery = for { f <- NewsFeeds if f.feedUrl === url } yield f
-	      var feed = feedQuery.firstOption match {
+	      var feed = dao.getFeedFromUrl(session, url) match {
 	        case Some(f) => f
 	        case None => {
 	          var fetchJob = new RssFetchJob
@@ -97,22 +83,11 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
 	      }
 	      
 	      // Add subscription at the user level.
-	      var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feed.id } yield uf
-	      userFeed.firstOption match {
-	        case Some(uf) => ()
-	        case None => {
-	          UserFeeds.insert(UserFeed(None, userId, feed.id.get))
-	          ()
-	        }
-	      }
+	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
-	      var feed_posts = for { 
-	      	(nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
-	        if nfa.feedId === feed.id.get
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
 	      NewsFeedInfo(
 	    		  feed, 
-	    		  (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length)
+	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get))
 	    }
     }, {
       halt(401)
@@ -126,16 +101,15 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from."))
         
   delete("/:id", operation(deleteFeeds)) {
-    authenticationRequired(session.getId, db, {
+    authenticationRequired(dao, session.getId, db, {
 	    val id = params.getOrElse("id", halt(422))
-	    var userId = getUserId(db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId).get
 	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
-	    db withTransaction {
+	    db withTransaction { implicit session: Session =>
 	      // Remove subscription at the user level.
-	      var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === Integer.parseInt(id) } yield uf
-	      userFeed.delete
+	      dao.unsubscribeFeed(session, userId, Integer.parseInt(id))
 	    }
 	    
 	    NoDataApiResult(true, None)
@@ -153,22 +127,16 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
         
   get("/:id/posts", operation(getPostsForFeed)) {
-      authenticationRequired(session.getId, db, {
-	      var id = params.getOrElse("id", halt(422))
+      authenticationRequired(dao, session.getId, db, {
+	      var id = Integer.parseInt(params.getOrElse("id", halt(422)))
 	      var offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	      var userId = getUserId(db, session.getId).get
+	      var userId = getUserId(dao, db, session.getId).get
 	      
-	      db withSession {
-	        var feed_posts = for { 
-	            (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
-	            	if nfa.feedId === Integer.parseInt(id)
-	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
-	      
+	      db withSession { implicit session: Session =>
 	        params.get("unread_only") match {
-	          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-	            (for { (p, q) <- feed_posts.list if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(Constants.ITEMS_PER_PAGE)
-	          }
-	          case _ => (for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(Constants.ITEMS_PER_PAGE)
+	          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
+	            dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE)
+	          case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE)
 	        }
 	      }
       }, {
@@ -184,24 +152,14 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         parameter pathParam[Int]("pid").description("The ID of the post."))
         
   delete("/:id/posts/:pid", operation(markReadCommand)) {
-    authenticationRequired(session.getId, db, {
-	    var id = params.getOrElse("id", halt(422))
-	    var pid = params.getOrElse("pid", halt(422))
-	    var userId = getUserId(db, session.getId).get
+    authenticationRequired(dao, session.getId, db, {
+	    var id = Integer.parseInt(params.getOrElse("id", halt(422)))
+	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+	    var userId = getUserId(dao, db, session.getId).get
 	    
-	    db withTransaction {
-	      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === userId } yield uf
-	      my_feed.firstOption match {
-	        case Some(_) => {
-	          var feed_posts = for {
-	            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
-	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield ua
-	          feed_posts.firstOption match {
-	              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, true))
-	              case None => UserArticles.insert(UserArticle(None, userId, Integer.parseInt(pid), true))
-	          }
-	        }
+	    db withTransaction { implicit session: Session =>
+	      dao.setPostStatus(session, userId, id, pid, false) match {
+	        case true => ()
 	        case _ => halt(404)
 	      }
 	    }
@@ -220,24 +178,14 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
         parameter pathParam[Int]("pid").description("The ID of the post."))
         
   put("/:id/posts/:pid", operation(markUnreadCommand)) {
-    authenticationRequired(session.getId, db, {
-	    var id = params.getOrElse("id", halt(422))
-	    var pid = params.getOrElse("pid", halt(422))
-	    var userId = getUserId(db, session.getId).get
-
-	    db withTransaction {
-	      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === userId } yield uf
-	      my_feed.firstOption match {
-	        case Some(_) => {
-	          var feed_posts = for {
-	            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
-	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield ua
-	          feed_posts.firstOption match {
-	              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, false))
-	              case None => UserArticles.insert(UserArticle(None, userId, Integer.parseInt(pid), false))
-	          }
-	        }
+    authenticationRequired(dao, session.getId, db, {
+	    var id = Integer.parseInt(params.getOrElse("id", halt(422)))
+	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+	    var userId = getUserId(dao, db, session.getId).get
+	    
+	    db withTransaction { implicit session: Session =>
+	      dao.setPostStatus(session, userId, id, pid, true) match {
+	        case true => ()
 	        case _ => halt(404)
 	      }
 	    }

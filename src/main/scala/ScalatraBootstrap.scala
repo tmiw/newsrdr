@@ -3,9 +3,10 @@ import org.scalatra._
 import javax.servlet.ServletContext
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import org.slf4j.LoggerFactory
-import scala.slick.driver.H2Driver.simple._
-import Database.threadLocalSession
-import scala.slick.session.Database
+
+import scala.slick.driver.{ExtendedProfile, H2Driver, SQLiteDriver}
+import scala.slick.session.{Database, Session}
+
 import com.thoughtbug.newsrdr.models._;
 import com.thoughtbug.newsrdr.tasks.BackgroundJobManager
 
@@ -16,20 +17,21 @@ class ScalatraBootstrap extends LifeCycle {
   val cpds = new ComboPooledDataSource
   logger.info("Created c3p0 connection pool")
   
+  var dao = new DataTables(H2Driver)
+  
   override def init(context: ServletContext) {
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
-    context.mount(new NewsReaderServlet(db), "/*")
-    context.mount(new FeedServlet(db, swagger), "/feeds/*")
-    context.mount(new PostServlet(db, swagger), "/posts/*")
+    context.mount(new NewsReaderServlet(dao, db), "/*")
+    context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")
+    context.mount(new PostServlet(dao, db, swagger), "/posts/*")
     context mount(new ResourcesApp, "/api-docs/*")
     
-    db withSession {
-      (Categories.ddl ++ NewsFeeds.ddl ++ NewsFeedCategories.ddl ++
-          NewsFeedArticles.ddl ++ NewsFeedArticleCategories.ddl ++
-          Users.ddl ++ UserArticles.ddl ++ UserFeeds.ddl ++ UserSessions.ddl).create
+    db withTransaction { implicit session: Session =>
+      dao.create
     }
     
     // Start Quartz scheduler.
+    BackgroundJobManager.dao = dao
     BackgroundJobManager.db = db
     BackgroundJobManager.start
   }

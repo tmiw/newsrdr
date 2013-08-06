@@ -4,8 +4,6 @@ import scala.xml._
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import com.github.nscala_time.time.Imports._
-import scala.slick.driver.H2Driver.simple._
-import Database.threadLocalSession
 import org.joda.time.DateTime
 import org.joda.time.format._
 
@@ -13,13 +11,6 @@ case class Category(
     id: Option[Int],
     name: String
     )
- 
-object Categories extends Table[Category]("Categories") {
-	def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-	def name = column[String]("name")
-	
-	def * = id.? ~ name <> (Category, Category.unapply _)
-}
 
 case class NewsFeed(
     id: Option[Int],
@@ -46,48 +37,11 @@ case class NewsFeed(
     //skipHours
     //skipDays
     )
-   
-object NewsFeeds extends Table[NewsFeed]("NewsFeeds") {
-	def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-	def title = column[String]("title")
-	def link = column[String]("link")
-	def description = column[String]("description")
-	def feedUrl = column[String]("feedUrl")
-	
-	def language = column[Option[String]]("language")
-	def copyright = column[Option[String]]("copyright")
-	def managingEditor = column[Option[String]]("managingEditor")
-	def webMaster = column[Option[String]]("webMaster")
-	def pubDate = column[Option[Timestamp]]("pubDate")
-	def lastBuildDate = column[Option[Timestamp]]("lastBuildDate")
-	def generator = column[Option[String]]("generator")
-	def docs = column[Option[String]]("docs")
-	def ttl = column[Option[Int]]("ttl")
-	def imageUrl = column[Option[String]]("imageUrl")
-	def imageTitle = column[Option[String]]("imageTitle")
-	def imageLink = column[Option[String]]("imageLink")
-	
-	def * = 
-	  id.? ~ title ~ link ~ description ~ feedUrl ~ language ~ copyright ~ managingEditor ~ 
-	  webMaster ~ pubDate ~ lastBuildDate ~ generator ~ docs ~ ttl ~ imageUrl ~ 
-	  imageTitle ~ imageLink <> (NewsFeed, NewsFeed.unapply _)
-}
 
 case class NewsFeedInfo(
     feed: NewsFeed,
     numUnread: Integer
 )
-
-object NewsFeedCategories extends Table[(Int, Int, Int)]("NewsFeedCategories") {
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def feedId = column[Int]("feedId")
-    def categoryId = column[Int]("categoryId")
-  
-    def * = id ~ feedId ~ categoryId
-  
-    def feed = foreignKey("feedIdentifierKey", feedId, NewsFeeds)(_.id)
-    def category = foreignKey("categoryIdKey", categoryId, Categories)(_.id)
-}
 
 case class NewsFeedArticle(
     id: Option[Int],
@@ -115,70 +69,17 @@ case class NewsFeedArticleInfo(
     unread: Boolean
 )
 
-object NewsFeedArticles extends Table[NewsFeedArticle]("NewsFeedArticles") {
-	def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-	def feedId = column[Int]("feedId")
-	def title = column[String]("title")
-	def link = column[String]("link")
-	def description = column[String]("description")
-	
-	def author = column[Option[String]]("author")
-	def comments = column[Option[String]]("comments")
-	def enclosureUrl = column[Option[String]]("enclosureUrl")
-	def enclosureLength = column[Option[Int]]("enclosureLength")
-	def enclosureType = column[Option[String]]("enclosureType")
-	def guid = column[Option[String]]("guid")
-	def isGuidPermalink = column[Option[Boolean]]("isGuidPermalink")
-	def pubDate = column[Option[Timestamp]]("pubDate")
-	def source = column[Option[String]]("source")
-	
-	def * = 
-	  id.? ~ feedId ~ title ~ link ~ description ~ author ~ comments ~
-	  enclosureUrl ~ enclosureLength ~ enclosureType ~ guid ~ isGuidPermalink ~
-	  pubDate ~ source <> (NewsFeedArticle, NewsFeedArticle.unapply _)
-	  
-	def feed = foreignKey("feedIdKey", feedId, NewsFeeds)(_.id)
-}
-
-object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticleCategories") {
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def articleId = column[Int]("articleIdentifier")
-    def categoryId = column[Int]("categoryId")
-  
-    def * = id ~ articleId ~ categoryId
-  
-    def article = foreignKey("articleIdentifierKey", articleId, NewsFeedArticles)(_.id)
-    def category = foreignKey("categoryFeedIdKey", categoryId, Categories)(_.id)
-}
-
 case class User(
     id: Option[Int],
     username: String,
     password: String, // for future use
     email: String // for future use
     )
-   
-object Users extends Table[User]("Users") {
-  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-  def username = column[String]("username")
-  def password = column[String]("password")
-  def email = column[String]("email")
-  
-  def * = id.? ~ username ~ password ~ email <> (User, User.unapply _)
-}
 
 case class UserSession(
     userId: Int,
     sessionId: String
     )
-   
-object UserSessions extends Table[UserSession]("UserSessions") {
-  def userId = column[Int]("userId")
-  def sessionId = column[String]("sessionId")
-  def * = userId ~ sessionId <> (UserSession, UserSession.unapply _)
-  def bIdx1 = index("userSessionKey", userId ~ sessionId, unique = true)
-  def user = foreignKey("userSessionUserKey", userId, Users)(_.id)
-}
 
 case class UserArticle(
     id: Option[Int],
@@ -186,33 +87,10 @@ case class UserArticle(
     articleId: Int,
     articleRead: Boolean)
 
-object UserArticles extends Table[UserArticle]("UserArticles") {
-  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-  def userId = column[Int]("userId")
-  def articleId = column[Int]("articleId")
-  def articleRead = column[Boolean]("articleRead")
-  
-  def * = id.? ~ userId ~ articleId ~ articleRead <> (UserArticle, UserArticle.unapply _)
-  
-  def article = foreignKey("userArticleIdKey", articleId, NewsFeedArticles)(_.id)
-  def user = foreignKey("userArticleUserIdKey", userId, Users)(_.id)
-}
-
 case class UserFeed(
     id: Option[Int],
     userId: Int,
     feedId: Int)
-
-object UserFeeds extends Table[UserFeed]("UserFeeds") {
-  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-  def userId = column[Int]("userId")
-  def feedId = column[Int]("feedId")
-  
-  def * = id.? ~ userId ~ feedId <> (UserFeed, UserFeed.unapply _)
-  
-  def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
-  def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
-}
 
 trait XmlFeedParser {
   def fillFeedProperties(root: Elem, url: String)

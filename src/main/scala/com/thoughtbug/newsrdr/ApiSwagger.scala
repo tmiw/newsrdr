@@ -6,13 +6,7 @@ import org.scalatra.ScalatraServlet
 import org.json4s.{DefaultFormats, Formats}
 import com.thoughtbug.newsrdr.models._
 
-import scala.slick.session.Database
-
-// Use H2Driver to connect to an H2 database
-import scala.slick.driver.H2Driver.simple._
-
-// Use the implicit threadLocalSession
-import Database.threadLocalSession
+import scala.slick.session.{Database, Session}
 
 import org.openid4java.consumer._
 import org.openid4java.discovery._
@@ -37,20 +31,18 @@ trait ApiExceptionWrapper {
 }
 
 trait AuthOpenId {
-  def getUserId(db: Database, sessionId: String) : Option[Int] = {
-    db withSession {
-      var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
-      q.firstOption match {
+  def getUserId(dao: DataTables, db: Database, sessionId: String) : Option[Int] = {
+    db withSession { implicit session: Session =>
+      dao.getUserSession(session, sessionId) match {
         case Some(sess) => Some(sess.userId)
         case None => None
       }
     }
   }
     
-  def authenticationRequired(id: String, db: Database, f: => Any, g: => Any) = {
-    db withSession {
-      var q = (for { sess <- UserSessions if sess.sessionId === id } yield sess)
-      q.firstOption match {
+  def authenticationRequired(dao: DataTables, id: String, db: Database, f: => Any, g: => Any) = {
+    db withSession { implicit session: Session =>
+      dao.getUserSession(session, id) match {
         case Some(sess) => f
         case None => g
       }

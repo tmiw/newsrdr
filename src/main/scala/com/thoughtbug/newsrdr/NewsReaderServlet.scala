@@ -2,22 +2,15 @@ package com.thoughtbug.newsrdr
 
 import org.scalatra._
 import scalate.ScalateSupport
-import scala.slick.session.Database
-
 import com.thoughtbug.newsrdr.models._
-
-// Use H2Driver to connect to an H2 database
-import scala.slick.driver.H2Driver.simple._
-
-// Use the implicit threadLocalSession
-import Database.threadLocalSession
+import scala.slick.session.{Database, Session}
 
 import org.openid4java.consumer._
 import org.openid4java.discovery._
 import org.openid4java.message.ax._
 import org.openid4java.message._
 
-class NewsReaderServlet(db: Database) extends NewsrdrStack with AuthOpenId {
+class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId {
   val manager = new ConsumerManager
   
   get("/") {        
@@ -30,14 +23,16 @@ class NewsReaderServlet(db: Database) extends NewsrdrStack with AuthOpenId {
   }
   
   get("/auth/login") {
-    db withSession {
-      var q = (for { sess <- UserSessions if sess.sessionId === session.getId } yield sess)
-      q.firstOption match {
+    var sId = session.getId()
+    var setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
+    
+    db withSession { implicit session: Session =>
+      dao.getUserSession(session, sId) match {
         case Some(sess) => redirect("/news/")
         case None => {
           val discoveries = manager.discover("https://www.google.com/accounts/o8/id")
           val discovered = manager.associate(discoveries)
-          session.setAttribute("discovered", discovered)
+          setAttribute(discovered)
           val authReq = 
             manager.authenticate(
                 discovered, 
@@ -55,12 +50,9 @@ class NewsReaderServlet(db: Database) extends NewsrdrStack with AuthOpenId {
   
   get("/auth/logout") {
     try {
-      db withTransaction {
-        var q = (for { sess <- UserSessions if sess.sessionId === session.getId } yield sess)
-        q.firstOption match {
-          case Some(s) => q.delete
-          case None => ()
-        }
+      var sId = session.getId()
+      db withTransaction { implicit session: Session =>
+        dao.invalidateSession(session, sId)
       }
     } catch {
       case _:Exception => () // ignore any exceptions here
@@ -90,15 +82,9 @@ class NewsReaderServlet(db: Database) extends NewsrdrStack with AuthOpenId {
         val lastName = fetchResp.getAttributeValue("lastname")
         
         // email is username for now
-        db withTransaction {
-          val q = for { u <- Users if u.username === email } yield u
-          var userId = q.firstOption match {
-            case Some(u) => u.id.get
-            case None => {
-              Users returning Users.id insert User(None, email, "", email)
-            }
-          }
-          UserSessions.insert(UserSession(userId, session.getId))
+        var sId = session.getId()
+        db withTransaction { implicit session: Session =>
+          dao.startUserSession(session, sId, email)
         }
         redirect("/auth/login")
       }
@@ -108,7 +94,7 @@ class NewsReaderServlet(db: Database) extends NewsrdrStack with AuthOpenId {
   
   get("""^/news/?$""".r) {
     contentType="text/html"
-    authenticationRequired(session.id, db, {
+    authenticationRequired(dao, session.id, db, {
       ssp("/app")
     }, {
       redirect(Constants.LOGIN_URI)

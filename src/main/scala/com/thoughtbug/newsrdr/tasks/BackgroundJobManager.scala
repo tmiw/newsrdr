@@ -1,5 +1,7 @@
 package com.thoughtbug.newsrdr.tasks
 
+import com.thoughtbug.newsrdr.models.DataTables
+
 import scala.slick.session.Database
 import org.quartz.impl.StdSchedulerFactory
 
@@ -11,6 +13,7 @@ import org.quartz._
 
 object BackgroundJobManager {
   var db : Database = _
+  var dao : DataTables = _
   val scheduler = StdSchedulerFactory.getDefaultScheduler()
   
   def start = {
