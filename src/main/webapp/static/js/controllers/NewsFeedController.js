@@ -17,6 +17,24 @@ NewsFeedController = Backbone.View.extend({
 		this.clearPosts();
 		this.showHideMenuOptions();
 		
+		// Set up infinite scrolling.
+		this.enableInfiniteScrolling = false;
+		var self = this;
+		$(window).scroll(function () {
+			if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+				if (self.enableInfiniteScrolling && self.articleCollection)
+				{
+					self.enableInfiniteScrolling = false;
+					self.articleCollection.currentPage += 1;
+					self.articleCollection.fetch({
+						success: function(collection, response, options) {
+							self.enableInfiniteScrolling = true;
+						}
+					});
+				}
+   			}
+		});
+		
 		// TODO: we'll probably want to use local storage for persisting this
 		// at some point.
 		this.showOnlyUnread = true;
@@ -75,18 +93,15 @@ NewsFeedController = Backbone.View.extend({
 		}
 		this.selectedFeed = feed;
 		
+		this.articleCollection = new NewsArticleCollection([]);
 		if (feed) {
-			this.articleCollection = new NewsArticleCollection([], {
-				url: '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread
-			});
+			this.articleCollection.urlBase = '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread;
 			feed.$el.addClass("selectedfeed");
 			
 			// set up correct website URL that the feed provided.
 			$("#feedsiteurl").attr("href", feed.model.get("feed").link);
 		} else {
-			this.articleCollection = new NewsArticleCollection([], {
-				url: '/posts/?unread_only=' + this.showOnlyUnread
-			});
+			this.articleCollection.urlBase = "/posts?unread_only=" + this.showOnlyUnread;
 			this.$("#allFeedEntry").addClass("selectedfeed");
 		}
 		
@@ -96,7 +111,12 @@ NewsFeedController = Backbone.View.extend({
 		this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
 		this.listenTo(this.articleCollection, 'all', this.render);
 		
-		this.articleCollection.fetch();
+		var self = this;
+		this.articleCollection.fetch({
+			success: function(collection, response, options) {
+				self.enableInfiniteScrolling = true;
+			}
+		});
 	},
 	
 	render: function() {
@@ -132,6 +152,8 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	clearPosts: function() {
+		this.enableInfiniteScrolling = false;
+		
 		if (this.articleCollection) {
 			// clear event handlers
 			this.articleCollection.stopListening();

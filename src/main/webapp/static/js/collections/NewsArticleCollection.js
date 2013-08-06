@@ -5,7 +5,13 @@ NewsArticleCollection = Backbone.Collection.extend({
 
 	parse: function(response) {
 		return response;
-	}
+	},
+	
+	url: function() {
+		return this.urlBase + "&page=" + this.currentPage;
+	},
+	
+	currentPage: 0
 });
 
 }).call(this);
