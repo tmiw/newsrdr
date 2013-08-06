@@ -20,6 +20,7 @@ NewsFeedController = Backbone.View.extend({
 		// Set up infinite scrolling.
 		this.enableInfiniteScrolling = false;
 		var self = this;
+		self.currentPostCount = 0;
 		$(window).scroll(function () {
 			if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
 				if (self.enableInfiniteScrolling && self.articleCollection)
@@ -28,7 +29,11 @@ NewsFeedController = Backbone.View.extend({
 					self.articleCollection.currentPage += 1;
 					self.articleCollection.fetch({
 						success: function(collection, response, options) {
-							self.enableInfiniteScrolling = true;
+							if (collection.length != self.currentPostCount)
+							{
+								self.enableInfiniteScrolling = true;
+								self.currentPostCount = collection.length;
+							}
 						}
 					});
 				}
@@ -115,6 +120,7 @@ NewsFeedController = Backbone.View.extend({
 		this.articleCollection.fetch({
 			success: function(collection, response, options) {
 				self.enableInfiniteScrolling = true;
+				self.currentPostCount = collection.length;
 			}
 		});
 	},
@@ -161,6 +167,7 @@ NewsFeedController = Backbone.View.extend({
 			
 			// remove posts
 			this.$("#postlist").empty();
+			self.currentPostCount = 0;
 		}
 		
 		// set selected to Home

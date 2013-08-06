@@ -114,6 +114,10 @@ body {
 	list-style-type: none;
 }
 
+.feedpostlistend {
+	list-style-type: none;
+}
+
 .feedpost {
 	max-width: 90%;
 	margin-top: 15px;
