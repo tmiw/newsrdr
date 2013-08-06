@@ -17,12 +17,16 @@ class ScalatraBootstrap extends LifeCycle {
   var cpds : ComboPooledDataSource = null
   
   override def init(context: ServletContext) {
-    var environment = context.getInitParameter(org.scalatra.EnvironmentKey)
-    if (!environment.startsWith("dev")) {
+    val envVar = System.getenv("IS_PRODUCTION")
+    
+    if (envVar != null && envVar == "true" ) {
       // force envrionment to production mode
       context.setInitParameter(org.scalatra.EnvironmentKey, "production")
-      environment = context.getInitParameter(org.scalatra.EnvironmentKey)
+    } else if (context.getInitParameter(org.scalatra.EnvironmentKey) == null) {
+      context.setInitParameter(org.scalatra.EnvironmentKey, "development")
     }
+    
+    val environment = context.getInitParameter(org.scalatra.EnvironmentKey)
     var dao = environment match {
       case "production" => new DataTables(MySQLDriver)
       case _ => new DataTables(H2Driver)
