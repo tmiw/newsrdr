@@ -27,10 +27,6 @@ class ScalatraBootstrap extends LifeCycle {
       (Categories.ddl ++ NewsFeeds.ddl ++ NewsFeedCategories.ddl ++
           NewsFeedArticles.ddl ++ NewsFeedArticleCategories.ddl ++
           Users.ddl ++ UserArticles.ddl ++ UserFeeds.ddl ++ UserSessions.ddl).create
-      
-      // HACK: create single user that all API code will assume until
-      // auth code is in place
-      Users.insert(User(None, "admin", "xyz", ""))
     }
     
     // Start Quartz scheduler.

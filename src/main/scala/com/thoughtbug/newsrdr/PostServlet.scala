@@ -45,11 +45,12 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   get("/", operation(getPosts)) {
     authenticationRequired(session.getId, db, {
 	    var offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
+	    var userId = getUserId(db, session.getId).get
 	    
 	    db withSession {
 	      var feed_posts = for { 
 	          (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	          uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+	          uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
 	      
 	      params.get("unread_only") match {
 	        case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
@@ -72,16 +73,16 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   delete("/:pid", operation(markReadCommand)) {
     authenticationRequired(session.getId, db, {
 	    var pid = params.getOrElse("pid", halt(422))
+	    var userId = getUserId(db, session.getId).get
 	    
-	    // TODO: stop using hardcoded admin user.
 	    db withTransaction {
 	      var feed_posts = for {
 	            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	if ua.articleId === Integer.parseInt(pid)
-	            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield ua
 	          feed_posts.firstOption match {
 	              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, true))
-	              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), true))
+	              case None => UserArticles.insert(UserArticle(None, userId, Integer.parseInt(pid), true))
 	      }
 	    }
     }, {
@@ -97,16 +98,16 @@ class PostServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   put("/:pid", operation(markUnreadCommand)) {
     authenticationRequired(session.getId, db, {
 	    var pid = params.getOrElse("pid", halt(422))
+	    var userId = getUserId(db, session.getId).get
 	    
-	    // TODO: stop using hardcoded admin user.
 	    db withTransaction {
 	      var feed_posts = for {
 	            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	if ua.articleId === Integer.parseInt(pid)
-	            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield ua
 	          feed_posts.firstOption match {
 	              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, false))
-	              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), false))
+	              case None => UserArticles.insert(UserArticle(None, userId, Integer.parseInt(pid), false))
 	      }
 	    }
     }, {

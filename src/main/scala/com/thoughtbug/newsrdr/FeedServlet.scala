@@ -44,17 +44,18 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   get("/", operation(getFeeds)) {
     authenticationRequired(session.getId, db, {
       executeOrReturnError {
+        var userId = getUserId(db, session.getId).get
+        
         db withSession {
-          // TODO: stop using hardcoded admin user.
           FeedListApiResult(true, None, 
             (for { 
-              uf <- UserFeeds if uf.userId === 1
+              uf <- UserFeeds if uf.userId === userId
               f <- NewsFeeds if f.id === uf.feedId
               } yield f).list.map((x) => {
                 var feed_posts = for { 
             	    (nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
             	    	if nfa.feedId === x.id.get
-                    uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+                    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
                 NewsFeedInfo(
             		  x, 
             		  (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length)
@@ -75,7 +76,8 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   post("/", operation(postFeeds)) {
     authenticationRequired(session.getId, db, {
 	    val url = params.getOrElse("url", halt(422))
-	
+	    var userId = getUserId(db, session.getId).get
+	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
 	    db withTransaction {
@@ -95,12 +97,11 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
 	      }
 	      
 	      // Add subscription at the user level.
-	      // TODO: stop using hardcoded admin user.
-	      var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === feed.id } yield uf
+	      var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feed.id } yield uf
 	      userFeed.firstOption match {
 	        case Some(uf) => ()
 	        case None => {
-	          UserFeeds.insert(UserFeed(None, 1, feed.id.get))
+	          UserFeeds.insert(UserFeed(None, userId, feed.id.get))
 	          ()
 	        }
 	      }
@@ -108,7 +109,7 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
 	      var feed_posts = for { 
 	      	(nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
 	        if nfa.feedId === feed.id.get
-	        uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
 	      NewsFeedInfo(
 	    		  feed, 
 	    		  (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length)
@@ -127,13 +128,13 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   delete("/:id", operation(deleteFeeds)) {
     authenticationRequired(session.getId, db, {
 	    val id = params.getOrElse("id", halt(422))
+	    var userId = getUserId(db, session.getId).get
 	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
 	    db withTransaction {
 	      // Remove subscription at the user level.
-	      // TODO: stop using hardcoded admin user.
-	      var userFeed = for { uf <- UserFeeds if uf.userId === 1 && uf.feedId === Integer.parseInt(id) } yield uf
+	      var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === Integer.parseInt(id) } yield uf
 	      userFeed.delete
 	    }
 	    
@@ -153,13 +154,13 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
   get("/:id/posts", operation(getPostsForFeed)) {
       authenticationRequired(session.getId, db, {
 	      var id = params.getOrElse("id", halt(422))
+	      var userId = getUserId(db, session.getId).get
 	      
-	      // TODO: stop using hardcoded admin user.
 	      db withSession {
 	        var feed_posts = for { 
 	            (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
 	            	if nfa.feedId === Integer.parseInt(id)
-	            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
+	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield (nfa, ua.articleRead.?)
 	      
 	        params.get("unread_only") match {
 	          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
@@ -184,19 +185,19 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     authenticationRequired(session.getId, db, {
 	    var id = params.getOrElse("id", halt(422))
 	    var pid = params.getOrElse("pid", halt(422))
+	    var userId = getUserId(db, session.getId).get
 	    
-	    // TODO: stop using hardcoded admin user.
 	    db withTransaction {
-	      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === 1 } yield uf
+	      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === userId } yield uf
 	      my_feed.firstOption match {
 	        case Some(_) => {
 	          var feed_posts = for {
 	            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
-	            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield ua
 	          feed_posts.firstOption match {
 	              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, true))
-	              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), true))
+	              case None => UserArticles.insert(UserArticle(None, userId, Integer.parseInt(pid), true))
 	          }
 	        }
 	        case _ => halt(404)
@@ -220,19 +221,19 @@ class FeedServlet(db: Database, implicit val swagger: Swagger) extends NewsrdrSt
     authenticationRequired(session.getId, db, {
 	    var id = params.getOrElse("id", halt(422))
 	    var pid = params.getOrElse("pid", halt(422))
-	    
-	    // TODO: stop using hardcoded admin user.
+	    var userId = getUserId(db, session.getId).get
+
 	    db withTransaction {
-	      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === 1 } yield uf
+	      var my_feed = for { uf <- UserFeeds if uf.feedId === Integer.parseInt(id) && uf.userId === userId } yield uf
 	      my_feed.firstOption match {
 	        case Some(_) => {
 	          var feed_posts = for {
 	            (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	if nfa.feedId === Integer.parseInt(id) && ua.articleId === Integer.parseInt(pid)
-	            uf <- UserFeeds if uf.userId === 1 && nfa.feedId === uf.feedId} yield ua
+	            uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId} yield ua
 	          feed_posts.firstOption match {
 	              case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, false))
-	              case None => UserArticles.insert(UserArticle(None, 1, Integer.parseInt(pid), false))
+	              case None => UserArticles.insert(UserArticle(None, userId, Integer.parseInt(pid), false))
 	          }
 	        }
 	        case _ => halt(404)
