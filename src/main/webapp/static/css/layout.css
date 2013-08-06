@@ -83,6 +83,12 @@ body {
 	padding-left: 15px;
 }
 
+.welcomeblock a {
+	text-decoration: none;
+	cursor: pointer;
+	color: blue;
+}
+
 .feed {
 	background-color: #fff;
 }
@@ -116,6 +122,11 @@ body {
 
 .feedpostlistend {
 	list-style-type: none;
+}
+
+.textblock {
+	position: absolute;
+	top: 35%;
 }
 
 .feedpost {

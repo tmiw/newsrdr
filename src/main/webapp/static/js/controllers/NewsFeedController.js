@@ -91,6 +91,7 @@ NewsFeedController = Backbone.View.extend({
 	selectFeed: function(feed) {
 		this.clearPosts();
 	
+		$(".welcomeblock").addClass("hide-element");
 		$("#homeEntry").removeClass("selectedfeed");
 		$("#allFeedEntry").removeClass("selectedfeed");
 		if (this.selectedFeed) {
@@ -174,6 +175,7 @@ NewsFeedController = Backbone.View.extend({
 		$(".selectedfeed").removeClass("selectedfeed");
 		$("#allFeedEntry").removeClass("selectedfeed");
 		$("#homeEntry").addClass("selectedfeed");
+		$(".welcomeblock").removeClass("hide-element");
 		
 		this.selectedFeed = null;
 		this.showHideMenuOptions();

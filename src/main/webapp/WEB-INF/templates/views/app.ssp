@@ -17,10 +17,16 @@
 				<li class="feedmenuoption authonly"><a id="addNewFeedLink">add new feed</a></li>
 				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
-				<li class="feedmenuoption"><a href="#">about newsrdr</a></li>
-				<li class="feedmenuoption"><a href="#">help</a></li>
+				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
+				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
 			</ul>
 			<img src="/static/img/ajax-loader.gif" id="loading" />
+			<div class="welcomeblock">
+				<h1>welcome</h1>
+				<p>
+					To get started, select a feed from the left. Or, if you don't have any feeds yet, <a id="addNewFeedLink">add one</a>.
+				</p>
+			</div>
 			<ul class="feedpostlist" id="postlist">
 			</ul>
 			<ul class="feedpostlistend authonly feedonly allonly">
@@ -50,4 +56,36 @@
 	<div class="body">
 		{{{article.description}}}
 	</div>
+</script>
+
+<!-- load scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
+
+<script src="/static/js/models/NewsFeed.js"></script>
+<script src="/static/js/models/NewsArticle.js"></script>
+<script src="/static/js/collections/NewsFeedCollection.js"></script>
+<script src="/static/js/collections/NewsArticleCollection.js"></script>
+<script src="/static/js/views/NewsFeedView.js"></script>
+<script src="/static/js/views/NewsArticleView.js"></script>
+<script src="/static/js/controllers/NewsFeedController.js"></script>
+
+<!-- start app once everything's loaded -->
+<script language="javascript">
+$.ajaxSetup({
+	beforeSend:function(){
+        // show gif here
+        $("#loading").show();
+    },
+    complete:function(){
+        // hide gif here
+        $("#loading").hide();
+    }
+});
+
+$(function(){
+	AppController = new NewsFeedController();
+});
 </script>

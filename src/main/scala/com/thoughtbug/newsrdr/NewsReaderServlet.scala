@@ -13,13 +13,9 @@ import org.openid4java.message._
 class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId {
   val manager = new ConsumerManager
   
-  get("/") {        
-    <html>
-      <body>
-        <h1>test server</h1>
-        Real website coming soon. For now, <a href="/news/">click here</a> to get to the main app.
-      </body>
-    </html>
+  get("/") {
+    contentType = "text/html"
+    ssp("/index")
   }
   
   get("/auth/login") {

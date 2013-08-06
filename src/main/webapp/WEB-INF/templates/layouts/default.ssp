@@ -1,7 +1,7 @@
 <%@ val body: String %>
 <html>
 <head>
-	<title>newsrdr</title>
+	<title>newsrdr beta</title>
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href='/static/css/layout.css' rel='stylesheet' type='text/css' />
 </head>
@@ -22,36 +22,5 @@
 	</div>
 </div>
 
-<!-- load scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
-
-<script src="/static/js/models/NewsFeed.js"></script>
-<script src="/static/js/models/NewsArticle.js"></script>
-<script src="/static/js/collections/NewsFeedCollection.js"></script>
-<script src="/static/js/collections/NewsArticleCollection.js"></script>
-<script src="/static/js/views/NewsFeedView.js"></script>
-<script src="/static/js/views/NewsArticleView.js"></script>
-<script src="/static/js/controllers/NewsFeedController.js"></script>
-
-<!-- start app once everything's loaded -->
-<script language="javascript">
-$.ajaxSetup({
-	beforeSend:function(){
-        // show gif here
-        $("#loading").show();
-    },
-    complete:function(){
-        // hide gif here
-        $("#loading").hide();
-    }
-});
-
-$(function(){
-	AppController = new NewsFeedController();
-});
-</script>
 </body>
 </html>

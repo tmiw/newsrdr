@@ -1,0 +1,21 @@
+<div class="rightcol">
+			<ul class="feedmenu">
+				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
+				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
+				<li class="feedmenuoption"><a href="/auth/login">login</a></li>
+			</ul>
+			<div class="textblock">
+				<h1>newsrdr is a news reader without the extra fluff.</h1>
+				<p>
+					There was once Google Reader, but it soon became no more. People started looking for alternatives.<br/>
+					newsrdr stepped up to the plate.
+				</p>
+				<p>
+					Created in the middle of 2013, newsrdr set out to be the clean, simple news reader we all desire.<br/>
+					We stay out of your way so you can read what's most important in the world.
+				</p>
+				<p>
+					Best of all, it's easy to get started. <a href="/auth/login">Log in</a> with your Google account today.
+				</p>
+			</div>
+		</div>
