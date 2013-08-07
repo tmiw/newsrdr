@@ -208,7 +208,10 @@ class DataTables(val driver: ExtendedProfile) {
 	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	      } yield ua
 	      feed_posts.firstOption match {
-	        case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, !unread))
+	        case Some(x) => {
+	          var single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
+	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread))
+	        }
 	        case None => UserArticles.insert(UserArticle(None, userId, postId, !unread))
 	      }
 	      true
@@ -230,7 +233,10 @@ class DataTables(val driver: ExtendedProfile) {
 	            	     if ua.articleId === postId
 	      } yield ua
 	      feed_posts.firstOption match {
-	        case Some(x) => feed_posts.update(UserArticle(x.id, x.userId, x.articleId, !unread))
+	        case Some(x) => {
+	          var single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
+	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread))
+	        }
 	        case None => UserArticles.insert(UserArticle(None, userId, postId, !unread))
 	      }
 	      true
