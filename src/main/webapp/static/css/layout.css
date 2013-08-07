@@ -54,9 +54,13 @@
 }
 
 .feedmenu a {
-	text-decoration: none;
 	cursor: pointer;
 	color: blue;
+	text-decoration: none;
+}
+
+.feedmenu a:hover {
+	text-decoration: underline;
 }
 
 .bottom {
@@ -164,6 +168,21 @@ body {
 
 .feedpost .body {
 	margin-left: 5px;
+}
+
+.feedpost .postoptions {
+	text-align: right;
+	margin-right: 5px;
+}
+
+.postoption {
+	display: inline;
+	list-style-type: none;
+	color: blue;
+}
+
+.postoption:hover {
+	text-decoration: underline;
 }
 
 .unread {

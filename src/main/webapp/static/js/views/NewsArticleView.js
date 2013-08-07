@@ -6,7 +6,9 @@ NewsArticleView = Backbone.View.extend({
 	className: 'feedpost',
 	
 	events: {
-		"click .title": function() { this.model.set("unread", false); }
+		"click .title": function() { this.model.set("unread", false); },
+		"click .markRead": function() { this.model.set("unread", false); },
+		"click .markUnread": function() { this.model.set("unread", true); },
 	},
 	
 	template: Mustache.compile($('#news-article-template').html()),
@@ -27,6 +29,8 @@ NewsArticleView = Backbone.View.extend({
   		{
   			var selfModel = this.model;
   			this.$el.addClass("unread");
+  			this.$(".markRead").removeClass("hide-element");
+  			this.$(".markUnread").addClass("hide-element");
   			/*this.$el.waypoint(function() {
   				selfModel.set("unread", false);
   			}, {
@@ -38,6 +42,8 @@ NewsArticleView = Backbone.View.extend({
   		else
   		{
 	  		this.$el.removeClass("unread");
+	  		this.$(".markRead").addClass("hide-element");
+  			this.$(".markUnread").removeClass("hide-element");
   		}
   		return this;
   	}

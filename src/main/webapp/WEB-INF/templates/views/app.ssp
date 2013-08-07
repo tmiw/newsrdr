@@ -56,6 +56,10 @@
 	<div class="body">
 		{{{article.description}}}
 	</div>
+	<ul class="postoptions">
+		<li class="postoption markRead">mark read</li>
+		<li class="postoption markUnread">mark unread</li>
+	</ul>
 </script>
 
 <!-- load scripts -->
