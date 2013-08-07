@@ -151,6 +151,11 @@ abstract class XmlFeed extends XmlFeedParser {
         if (!x.isEmpty) { Some(x.toBoolean) }
         else { None }
     }
+
+    protected def useEitherOrString(x: String, orY: String) : String = {
+        if (!x.isEmpty) x
+        else orY
+    }
 }
 
 class RSSFeed extends XmlFeed {
@@ -159,7 +164,7 @@ class RSSFeed extends XmlFeed {
         
         feedProperties = NewsFeed(
             None,
-            (channel \ "title").text,
+            useEitherOrString((channel \ "title").text, url),
             (channel \ "link").text,
             (channel \ "description").text,
             url,
@@ -212,7 +217,7 @@ class AtomFeed extends XmlFeed {
         
         feedProperties = NewsFeed(
             None,
-            (channel \ "title").text,
+            useEitherOrString((channel \ "title").text, url),
             (channel \ "link" \ "@href").text,
             (channel \ "subtitle").text,
             url,
