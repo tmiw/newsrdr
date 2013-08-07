@@ -61,7 +61,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   get("/auth/authenticated") {
     val openidResp = new ParameterList(request.getParameterMap())
     val discovered = session.getAttribute("discovered").asInstanceOf[DiscoveryInformation]
-    val receivingURL = request.getRequestURL()
+    val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request)) //request.getRequestURL()
     val queryString = request.getQueryString()
     if (queryString != null && queryString.length() > 0)
         receivingURL.append("?").append(request.getQueryString())
