@@ -20,7 +20,7 @@ object BackgroundJobManager {
     scheduler = context.getInitParameter(org.scalatra.EnvironmentKey) match {
       case "production" => {
         var temp = new StdSchedulerFactory()
-        temp.initialize(context.getResourceAsStream("quartz-production.properties"))
+        temp.initialize(context.getResourceAsStream("/WEB-INF/classes/quartz-production.properties"))
         temp.getScheduler()
       }
       case _ => StdSchedulerFactory.getDefaultScheduler()

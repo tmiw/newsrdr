@@ -36,7 +36,7 @@ object NewsrdrBuild extends Build {
         "com.typesafe.slick" %% "slick" % "1.0.0",
         "org.slf4j" % "slf4j-nop" % "1.6.4",
         "com.h2database" % "h2" % "1.3.166",
-        "mysql" % "mysql-connector-java" % "5.1.18",
+        "mysql" % "mysql-connector-java" % "5.1.26",
         "c3p0" % "c3p0" % "0.9.1.2",
         "org.quartz-scheduler" % "quartz" % "2.1.7",
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.8.v20121106" % "container",

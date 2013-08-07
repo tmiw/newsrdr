@@ -1,6 +1,7 @@
 package com.thoughtbug.newsrdr.models
 
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
+import scala.slick.jdbc.meta.{MTable}
 import java.sql.Timestamp
 
 class DataTables(val driver: ExtendedProfile) {
@@ -125,11 +126,17 @@ class DataTables(val driver: ExtendedProfile) {
 	  def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
 	  def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
 	}
-	
+
 	def create(implicit session: Session) = {
-	  (Categories.ddl ++ NewsFeeds.ddl ++ NewsFeedCategories.ddl ++
-          NewsFeedArticles.ddl ++ NewsFeedArticleCategories.ddl ++
-          Users.ddl ++ UserArticles.ddl ++ UserFeeds.ddl ++ UserSessions.ddl).create
+          if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == NewsFeeds.tableName)) NewsFeeds.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == NewsFeedCategories.tableName)) NewsFeedCategories.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == NewsFeedArticles.tableName)) NewsFeedArticles.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == NewsFeedArticleCategories.tableName)) NewsFeedArticleCategories.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == Users.tableName)) Users.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == UserArticles.tableName)) UserArticles.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == UserFeeds.tableName)) UserFeeds.ddl.create
+          if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
 	}
 	
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[NewsFeed] = {
