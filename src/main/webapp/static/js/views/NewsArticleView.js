@@ -6,9 +6,9 @@ NewsArticleView = Backbone.View.extend({
 	className: 'feedpost',
 	
 	events: {
-		"click .title": function() { this.model.set("unread", false); },
 		"click .markRead": function() { this.model.set("unread", false); },
 		"click .markUnread": function() { this.model.set("unread", true); },
+		"click a": function() { this.model.set("unread", false); },
 	},
 	
 	template: Mustache.compile($('#news-article-template').html()),
