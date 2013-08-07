@@ -1,6 +1,6 @@
 		<div class="leftcol">
 			<ul class="feedlist">
-				<li class="feedcategory selectedfeed" id="homeEntry">Home</li>
+				<li class="feedcategory selectedfeed" id="homeEntry">Home <img src="/static/img/ajax-loader.gif" id="loading" /></li>
 				<li class="feedcategory" id="allFeedEntry">All <span class="unreadcount hide-element" id="allCount">0</span></li>
 				<ul class="feedlist" id="allfeeds">
 					<!-- dynamically added by js -->
@@ -20,7 +20,6 @@
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
 			</ul>
-			<img src="/static/img/ajax-loader.gif" id="loading" />
 			<div class="welcomeblock">
 				<h1>welcome</h1>
 				<p>

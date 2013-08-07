@@ -202,8 +202,9 @@ body {
 .hide-element { display: none; }
 
 #loading { 
-	position: fixed;
-	top: 100px;
-	right: 200px;
+	position: absolute;
+	right: 0px;
+	padding-right: 3px;
+	padding-top: 2px;
 	visibility: hidden;
 }
