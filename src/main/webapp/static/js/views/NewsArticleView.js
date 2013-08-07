@@ -27,7 +27,7 @@ NewsArticleView = Backbone.View.extend({
   		
   		// Format date in a friendlier manner.
   		newView.article.pubDate = new Date(newView.article.pubDate).toLocaleString();
-  		this.$el.html(this.template(newView));
+  		this.$el.html($.parseHTML(this.template(newView)));
   		if (this.model.get("unread") == true)
   		{
   			var selfModel = this.model;
