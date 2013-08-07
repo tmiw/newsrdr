@@ -45,6 +45,14 @@ NewsArticleView = Backbone.View.extend({
 	  		this.$(".markRead").addClass("hide-element");
   			this.$(".markUnread").removeClass("hide-element");
   		}
+  		  		
+  		// Make all <a> links in feed open a new window.
+  		this.$("a").each(function(i) {
+  			if (this.href) {
+  				this.target = "_blank";
+  			}
+  		});
+  		
   		return this;
   	}
 });
