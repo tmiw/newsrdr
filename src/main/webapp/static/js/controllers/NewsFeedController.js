@@ -21,24 +21,29 @@ NewsFeedController = Backbone.View.extend({
 		this.enableInfiniteScrolling = false;
 		var self = this;
 		self.currentPostCount = 0;
-		$(window).scroll(function () {
-			if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+		var win = $(window);
+		var doc = $(document);
+		var throttledFn = _.throttle(function () {
+			if (win.scrollTop() >= doc.height() - win.height() - 10) {
 				if (self.enableInfiniteScrolling && self.articleCollection)
 				{
 					self.enableInfiniteScrolling = false;
 					self.articleCollection.currentPage += 1;
 					self.articleCollection.fetch({
 						success: function(collection, response, options) {
-							if (collection.length != self.currentPostCount)
+							if (self.articleCollection.length != self.currentPostCount)
 							{
 								self.enableInfiniteScrolling = true;
-								self.currentPostCount = collection.length;
+								self.currentPostCount = self.articleCollection.length;
 							}
-						}
+						},
+						reset: false,
+						remove: false
 					});
 				}
    			}
-		});
+		}, 1000);
+		$(window).scroll(throttledFn);
 		
 		// TODO: we'll probably want to use local storage for persisting this
 		// at some point.
