@@ -36,10 +36,12 @@
 }
 
 .leftcol .leftcolcontent {
-	overflow-x: scroll;
+	white-space: nowrap;
 	padding-right: 7px;
 	cursor: auto;
 	height: 100%;
+	overflow-x: scroll;
+	overflow-y: auto;
 }
 
 .rightcol {
@@ -97,6 +99,10 @@ body {
 	padding-left: 15px;
 }
 
+.feedlist li {
+	width: 100%;
+}
+
 .welcomeblock a {
 	text-decoration: none;
 	cursor: pointer;
@@ -109,11 +115,11 @@ body {
 
 .selectedfeed {
 	font-weight: bold;
-	background-color: #ddd;
+	text-decoration: underline;
+	display: block;
 }
 
 .feedcategory {
-	text-decoration: none;
 	cursor: pointer;
 }
 
@@ -215,8 +221,6 @@ body {
 	color: #fff;
 	border-radius: 3px;
 	border: 1px solid black;
-	position: absolute;
-	right: 7px;
 	font-weight: normal;
 }
 
