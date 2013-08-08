@@ -97,8 +97,44 @@ trait XmlFeedParser {
 }
 
 object XmlFeedFactory {
+  /**
+     * This method ensures that the output String has only
+     * valid XML unicode characters as specified by the
+     * XML 1.0 standard. For reference, please see
+     * <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">the
+     * standard</a>. This method will return an empty
+     * String if the input is null or empty.
+     *
+     * @param in The String whose non-valid characters we want to remove.
+     * @return The in String, stripped of non-valid characters.
+     */
+    private def stripNonValidXMLCharacters(in : String) : String = {
+      in.filter(c => {
+          c == 0x9 ||
+          c == 0xA || 
+          c == 0xD || 
+          (c >= 0x20 && c <= 0xD7FF) ||
+          (c >= 0xE000 && c <= 0xFFFD) ||
+          (c >= 0x10000 && c <= 0x10FFFF)
+      })
+    }    
+    
   def load(url: String) : XmlFeed = {
-    val xmlDoc = XML.load(url)
+    // We need to be really tolerant of bad Unicode, sadly.
+    var text = ""
+    try {
+      text = io.Source.fromURL(url)(io.Codec("UTF-8")).mkString
+    } catch {
+      case _:java.nio.charset.MalformedInputException => try {
+        text = io.Source.fromURL(url)(io.Codec("ISO-8859-1")).mkString
+      } catch {
+        case _:java.nio.charset.MalformedInputException => try {
+          text = io.Source.fromURL(url)(io.Codec("ASCII")).mkString
+        }
+      }
+    }
+    val src = stripNonValidXMLCharacters(text)
+    val xmlDoc = XML.loadString(src)
     var feed : XmlFeed = null
     
     if ((xmlDoc \\ "entry").count((x) => true) > 0)
@@ -175,8 +211,8 @@ class RSSFeed extends XmlFeed {
             generateOptionValue((channel \ "copyright").text),
             generateOptionValue((channel \ "managingEditor").text),
             generateOptionValue((channel \ "webMaster").text),
-            generateOptionValueTimestamp((channel \ "pubDate").text),
-            generateOptionValueTimestamp((channel \ "lastBuildDate").text),
+            generateOptionValueTimestamp((channel \ "pubDate").text.trim()),
+            generateOptionValueTimestamp((channel \ "lastBuildDate").text.trim()),
             generateOptionValue((channel \ "generator").text),
             generateOptionValue((channel \ "docs").text),
             generateOptionValueInt((channel \ "ttl").text),
@@ -205,7 +241,7 @@ class RSSFeed extends XmlFeed {
             generateOptionValue((x \\ "enclosure@type").text),
             generateOptionValue((x \\ "guid").text),
             generateOptionValueBool((x \\ "guid@isPermaLink").text),
-            generateOptionValueTimestamp((x \\ "pubDate").text),
+            generateOptionValueTimestamp((x \\ "pubDate").text.trim()),
             generateOptionValue((x \\ "source").text)
         )
         
@@ -229,8 +265,8 @@ class AtomFeed extends XmlFeed {
             generateOptionValue((channel \ "rights").text),
             generateOptionValue((channel \ "author" \ "name").text),
             None,
-            generateOptionValueTimestamp((channel \ "published").text),
-            generateOptionValueTimestamp((channel \ "updated").text),
+            generateOptionValueTimestamp((channel \ "published").text.trim()),
+            generateOptionValueTimestamp((channel \ "updated").text.trim()),
             generateOptionValue((channel \ "generator").text),
             None,
             None,
@@ -246,7 +282,7 @@ class AtomFeed extends XmlFeed {
     
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
         val content = useEitherOrString(getHtmlContent(x, "content"), getHtmlContent(x, "summary"))
-        val pubTime = useEitherOrString((x \\ "published").text, (x \\ "updated").text)
+        val pubTime = useEitherOrString((x \\ "published").text.trim(), (x \\ "updated").text.trim())
         val article = NewsFeedArticle(
             None,
             0,
