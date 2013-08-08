@@ -137,7 +137,7 @@ object XmlFeedFactory {
     val xmlDoc = XML.loadString(src)
     var feed : XmlFeed = null
     
-    if ((xmlDoc \\ "entry").count((x) => true) > 0)
+    if ((xmlDoc \\ "entry").count(x => true) > 0)
     {
       // Atom feed
       feed = new AtomFeed
@@ -234,7 +234,7 @@ class RSSFeed extends XmlFeed {
             generateOptionValue((channel \ "image" \ "link").text)
             )
         
-        feedCategories = (channel \ "category").map((x) => x.text).toList
+        feedCategories = (channel \ "category").map(_.text).toList
         
         entries = (root \\ "item").map(createArticle).toList
     }
@@ -258,7 +258,7 @@ class RSSFeed extends XmlFeed {
             generateOptionValue((x \\ "source").text)
         )
         
-        var articleCategories = (x \\ "category").map((x) => x.text).toList
+        var articleCategories = (x \\ "category").map(_.text).toList
         
         (article, articleCategories)
     }
@@ -288,7 +288,7 @@ class AtomFeed extends XmlFeed {
             None
             )
         
-        feedCategories = (channel \ "category").map((x) => x.text).toList
+        feedCategories = (channel \ "category").map(_.text).toList
         
         entries = (root \\ "entry").map(createArticle).toList
     }
@@ -313,7 +313,7 @@ class AtomFeed extends XmlFeed {
             None
         )
         
-        val articleCategories = (x \\ "category").map((x) => x.text).toList
+        val articleCategories = (x \\ "category").map(_.text).toList
         
         (article, articleCategories)
     }

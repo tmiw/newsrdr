@@ -100,7 +100,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         val userId = getUserId(dao, db, sid).get
         
         implicit val formats = Serialization.formats(NoTypeHints)
-        val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map((x) => NewsFeedInfo(
+        val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
             		  x, 
             		  dao.getUnreadCountForFeed(session, userId, x.id.get)
               )))

@@ -33,10 +33,7 @@ trait ApiExceptionWrapper {
 trait AuthOpenId {
   def getUserId(dao: DataTables, db: Database, sessionId: String) : Option[Int] = {
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sessionId) match {
-        case Some(sess) => Some(sess.userId)
-        case None => None
-      }
+      dao.getUserSession(session, sessionId).map(_.userId)
     }
   }
     

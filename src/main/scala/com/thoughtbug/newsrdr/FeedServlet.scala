@@ -43,7 +43,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
         db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
-              dao.getSubscribedFeeds(session, userId).map((x) => NewsFeedInfo(
+              dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
             		  x, 
             		  dao.getUnreadCountForFeed(session, userId, x.id.get)
               )))
@@ -69,9 +69,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    // We probably also want to return validation error info above.
 	    db withTransaction { implicit session: Session =>
 	      // Grab feed from database, creating if it doesn't already exist.
-	      var feed = dao.getFeedFromUrl(session, url) match {
-	        case Some(f) => f
-	        case None => {
+	      var feed = dao.getFeedFromUrl(session, url) getOrElse {
 	          var fetchJob = new RssFetchJob
 	          var f = fetchJob.fetch(url)
 	          
@@ -79,7 +77,6 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	          BackgroundJobManager.scheduleFeedJob(url)
 	          
 	          f
-	        }
 	      }
 	      
 	      // Add subscription at the user level.

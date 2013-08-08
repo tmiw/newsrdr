@@ -331,7 +331,7 @@ class DataTables(val driver: ExtendedProfile) {
             
       // Insert categories that don't exist, then refresh feed categories with the current
       // set.
-      val categoryIds = feed.feedCategories.map((c) => {
+      val categoryIds = feed.feedCategories.map(c => {
 	    val feedQuery = for { fc <- Categories if fc.name === c } yield fc
 	    feedQuery.firstOption match {
 	      case Some(cat) => (newsFeedId, cat.id.get)
@@ -409,7 +409,7 @@ class DataTables(val driver: ExtendedProfile) {
       }
       
       // Update feed categories.
-      val categoryIds = p._2.map((c) => {
+      val categoryIds = p._2.map(c => {
 	    val feedQuery = for { fc <- Categories if fc.name === c } yield fc
 	    feedQuery.firstOption match {
 	      case Some(cat) => (entryId, cat.id.get)
