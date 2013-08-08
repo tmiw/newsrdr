@@ -271,7 +271,7 @@ class AtomFeed extends XmlFeed {
     	val xhtmlSummary = node.filter(attributeEquals("type", "xhtml")).text
     	val htmlSummary = node.filter(attributeEquals("type", "html")).text
     	val textSummary = escapeText(node.filter(attributeEquals("type", "text")).text)
-    	val defaultSummary = escapeText(node.filter(attributeEquals("type", "")).text)
+    	val defaultSummary = escapeText(node.text)
     	
     	useEitherOrString(
     	    xhtmlSummary,
