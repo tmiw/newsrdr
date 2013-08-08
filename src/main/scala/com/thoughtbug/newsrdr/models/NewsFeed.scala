@@ -188,12 +188,13 @@ class RSSFeed extends XmlFeed {
     }
     
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
+    	var articleText = useEitherOrString((x \\ "encoded").filter(_.prefix == "content").text, (x \\ "description").text)
         var article = NewsFeedArticle(
             None,
             0,
             (x \\ "title").text,
             (x \\ "link").text,
-            (x \\ "description").text,
+            articleText,
             generateOptionValue((x \\ "author").text),
             generateOptionValue((x \\ "comments").text),
             generateOptionValue((x \\ "enclosure@url").text),
