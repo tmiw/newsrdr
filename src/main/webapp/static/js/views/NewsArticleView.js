@@ -9,6 +9,11 @@ NewsArticleView = Backbone.View.extend({
 		"click .markRead": function() { this.model.set("unread", false); },
 		"click .markUnread": function() { this.model.set("unread", true); },
 		"click a": function() { this.model.set("unread", false); },
+		"click .body": function() { this.model.set("unread", false); },
+		"contextmenu .markRead": function() { this.model.set("unread", false); },
+		"contextmenu .markUnread": function() { this.model.set("unread", true); },
+		"contextmenu a": function() { this.model.set("unread", false); },
+		"contextmenu .body": function() { this.model.set("unread", false); },
 	},
 	
 	template: Mustache.compile($('#news-article-template').html()),
