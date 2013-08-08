@@ -381,7 +381,7 @@ class DataTables(val driver: ExtendedProfile) {
             newPost.enclosureUrl,
             newPost.guid,
             newPost.isGuidPermalink,
-            newPost.pubDate,
+            ent._11,
             newPost.source)
           existingEntryId.first
         }

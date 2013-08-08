@@ -127,19 +127,22 @@ abstract class XmlFeed extends XmlFeedParser {
     }
     
     protected def generateOptionValueTimestamp(x: String) : Option[Timestamp] = {
+      val destFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
         if (!x.isEmpty) { 
-           var parsers = List(
+           val parsers = List(
             org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss Z").getParser(),
             org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss Z '('z')'").getParser(),
             org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss z").getParser(),
             org.joda.time.format.DateTimeFormat.forPattern("dd MMM y HH:mm:ss Z").getParser(),
             ISODateTimeFormat.dateTimeParser().getParser()
           ).toArray
-          var destFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-          var date = DateTime.parse(x, new DateTimeFormatterBuilder().append(null, parsers).toFormatter()).toDate()
+          
+          val date = DateTime.parse(x, new DateTimeFormatterBuilder().append(null, parsers).toFormatter()).toDate()
           Some(Timestamp.valueOf(destFormat.format(date)))
         }
-        else { None }
+        else { 
+          Some(Timestamp.valueOf(destFormat.format(new java.util.Date())))
+        }
     }
     
     protected def generateOptionValueInt(x: String) : Option[Int] = {
