@@ -1,3 +1,4 @@
+<%@ val bootstrappedFeeds : String %>
 		<div class="leftcol">
 			<ul class="feedlist">
 				<li class="feedcategory selectedfeed" id="homeEntry">Home <img src="/static/img/ajax-loader.gif" id="loading" /></li>
@@ -88,7 +89,10 @@ $.ajaxSetup({
     }
 });
 
+var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
+
 $(function(){
+	NewsFeeds.reset(bootstrappedFeeds);
 	AppController = new NewsFeedController();
 });
 </script>

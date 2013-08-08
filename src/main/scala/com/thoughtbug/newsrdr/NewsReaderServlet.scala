@@ -10,6 +10,10 @@ import org.openid4java.discovery._
 import org.openid4java.message.ax._
 import org.openid4java.message._
 
+import org.json4s._
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.{read, write}
+
 class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId {
   val manager = new ConsumerManager
   
@@ -91,7 +95,17 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   get("""^/news/?$""".r) {
     contentType="text/html"
     authenticationRequired(dao, session.id, db, {
-      ssp("/app")
+      val sid = session.getId
+      db withSession { implicit session: Session =>
+        val userId = getUserId(dao, db, sid).get
+        
+        implicit val formats = Serialization.formats(NoTypeHints)
+        val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map((x) => NewsFeedInfo(
+            		  x, 
+            		  dao.getUnreadCountForFeed(session, userId, x.id.get)
+              )))
+        ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds )
+      }
     }, {
       redirect(Constants.LOGIN_URI)
     })
