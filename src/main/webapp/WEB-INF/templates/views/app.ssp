@@ -1,12 +1,14 @@
 <%@ val bootstrappedFeeds : String %>
 		<div class="leftcol">
-			<ul class="feedlist">
-				<li class="feedcategory selectedfeed" id="homeEntry">Home <img src="/static/img/ajax-loader.gif" id="loading" /></li>
-				<li class="feedcategory" id="allFeedEntry">All <span class="unreadcount hide-element" id="allCount">0</span></li>
-				<ul class="feedlist" id="allfeeds">
-					<!-- dynamically added by js -->
+			<div class="leftcolcontent">
+				<ul class="feedlist">
+					<li class="feedcategory selectedfeed" id="homeEntry">Home <img src="/static/img/ajax-loader.gif" id="loading" /></li>
+					<li class="feedcategory" id="allFeedEntry">All <span class="unreadcount hide-element" id="allCount">0</span></li>
+					<ul class="feedlist" id="allfeeds">
+						<!-- dynamically added by js -->
+					</ul>
 				</ul>
-			</ul>
+			</div>
 		</div>
 		<div class="rightcol">
 			<ul class="feedmenu">

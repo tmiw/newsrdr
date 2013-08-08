@@ -59,6 +59,37 @@ NewsFeedController = Backbone.View.extend({
 		// Update feed counts every five minutes.
 		var self = this;
 		window.setInterval(function() { self.updateFeeds(); }, 1000 * (60 * 5));
+		
+		// make the feed list resizable.
+		this.makeDraggable();
+	},
+	
+	// We're not using JQuery's because of the weird way we've set up the CSS. 
+	makeDraggable: function() {
+		var self = this;
+		
+		var mouseMoveHandler = function(event) {
+			event.preventDefault();
+			var newWidth = self._startWidth + (event.pageX - self._startX);
+			$(".leftcol").width(newWidth);
+			$(".rightcol").css("margin-left", newWidth);
+		};
+		
+		var mouseUpHandler = function(event) {
+			$(document).unbind("mousemove", mouseMoveHandler);
+			$(document).unbind("mouseup", mouseUpHandler);
+		};
+		
+		var mouseDownHandler = function(event) {
+			event.preventDefault();
+			self._startX = event.pageX;
+			self._startWidth = $(".leftcol").width();
+			
+			$(document).mousemove(mouseMoveHandler);
+			$(document).mouseup(mouseUpHandler);
+		};
+		
+		$(".leftcol").mousedown(mouseDownHandler);
 	},
 	
 	updateFeeds: function() {

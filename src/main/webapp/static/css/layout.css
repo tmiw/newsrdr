@@ -1,5 +1,5 @@
-.container { 
-	max-width: 960px; 
+
+.container {  
 	max-height: 100%;
 	margin: 0 auto;
 }
@@ -31,11 +31,21 @@
 	top: 100px;
 	bottom: 25px;
 	width: 250px;
-	overflow: auto;
+	border-right: 5px ridge gray;
+	cursor: e-resize;
+}
+
+.leftcol .leftcolcontent {
+	overflow-x: scroll;
+	padding-right: 7px;
+	cursor: auto;
+	height: 100%;
 }
 
 .rightcol {
-	margin-left: 100px;
+	margin-right: 225px;
+	margin-left: 250px;
+	padding-left: 5px;
 	padding-top: 5px;
 	padding-bottom: 25px;
 	overflow: auto;
@@ -206,7 +216,7 @@ body {
 	border-radius: 3px;
 	border: 1px solid black;
 	position: absolute;
-	right: 0px;
+	right: 7px;
 	font-weight: normal;
 }
 
