@@ -242,12 +242,13 @@ class AtomFeed extends XmlFeed {
     }
     
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
-        var article = NewsFeedArticle(
+        val content = useEitherOrString(getHtmlContent(x, "content"), getHtmlContent(x, "summary"))
+        val article = NewsFeedArticle(
             None,
             0,
-            (x \\ "title").text,
+            getHtmlContent(x, "title"),
             (x \\ "link" \ "@href").take(1).text,
-            (x \\ "content").text,
+            content,
             generateOptionValue((x \\ "author" \ "name").text),
             None,
             None,
@@ -259,8 +260,30 @@ class AtomFeed extends XmlFeed {
             None
         )
         
-        var articleCategories = (x \\ "category").map((x) => x.text).toList
+        val articleCategories = (x \\ "category").map((x) => x.text).toList
         
         (article, articleCategories)
+    }
+    
+    private def getHtmlContent(x : Node, name : String) : String = {
+    	val node = x \\ name
+    	val xhtmlSummary = node.filter(attributeEquals("type", "xhtml")).text
+    	val htmlSummary = node.filter(attributeEquals("type", "html")).text
+    	val textSummary = escapeText(node.filter(attributeEquals("type", "text")).text)
+    	val defaultSummary = escapeText(node.filter(attributeEquals("type", "")).text)
+    	
+    	useEitherOrString(
+    	    xhtmlSummary,
+    	    useEitherOrString(
+    	        htmlSummary,
+    	        useEitherOrString(
+    	            textSummary,
+    	            defaultSummary)))
+    }
+    
+    private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
+
+    private def escapeText(x : String) : String = {
+    	x.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\\r|\\n|\\r\\n", "<br>\r\n")
     }
 }
