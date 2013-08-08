@@ -143,7 +143,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  (for { 
 		  uf <- UserFeeds if uf.userId === userId
           f <- NewsFeeds if f.id === uf.feedId
-       } yield f).list
+       } yield f).sortBy(_.title)list
 	}
 	
 	def getUnreadCountForFeed(implicit session: Session, userId: Int, feedId: Int) : Int = {
