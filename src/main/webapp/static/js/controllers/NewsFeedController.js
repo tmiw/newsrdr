@@ -51,7 +51,7 @@ NewsFeedController = Backbone.View.extend({
 		
 		this.listenTo(NewsFeeds, 'add', this.addOneFeed);
 		this.listenTo(NewsFeeds, 'reset', this.addAllFeeds);
-		this.listenTo(NewsFeeds, 'all', this.render);
+		this.listenTo(NewsFeeds, 'sort', this.addAllFeeds);
 		
 		// Perform initial fetch from server.
 		this.updateFeeds();
@@ -151,7 +151,6 @@ NewsFeedController = Backbone.View.extend({
 		
 		this.listenTo(this.articleCollection, 'add', this.addOneArticle);
 		this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
-		this.listenTo(this.articleCollection, 'all', this.render);
 		
 		var self = this;
 		this.articleCollection.fetch({
@@ -162,8 +161,8 @@ NewsFeedController = Backbone.View.extend({
 		});
 	},
 	
-	render: function() {
-		// TODO
+	sortFeeds: function() {
+		this.addAllFeeds();
 	},
 	
 	markAllRead: function() {
@@ -176,11 +175,17 @@ NewsFeedController = Backbone.View.extend({
 	
 	addOneFeed: function(feed) {
 		var newView = new NewsFeedView({model: feed});
-		this.$("#allfeeds").append(newView.render().el);
+		var renderedView = newView.render();
+		$("#allfeeds").append(renderedView.el);
+		if (this.selectedFeed && this.selectedFeed.model.id == feed.id)
+		{
+			renderedView.$el.addClass("selectedfeed");
+			this.selectedFeed = newView;
+		}
 	},
 	
 	addAllFeeds: function() {
-		this.$("#allfeeds").clear();
+		$("#allfeeds").children().remove();
 		NewsFeeds.each(this.addOneFeed, this);
 	},
 	

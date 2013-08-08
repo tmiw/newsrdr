@@ -12,11 +12,13 @@ NewsFeedModel = Backbone.Model.extend({
 		if (this.get("numUnread") > 0)
 		{
 			this.set("numUnread", this.get("numUnread") - 1);
+			NewsFeeds.sort();
 		}
 	},
 	
 	addUnread: function() {
 		this.set("numUnread", this.get("numUnread") + 1);
+		NewsFeeds.sort();
 	}
 });
 
