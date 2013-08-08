@@ -243,6 +243,7 @@ class AtomFeed extends XmlFeed {
     
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
         val content = useEitherOrString(getHtmlContent(x, "content"), getHtmlContent(x, "summary"))
+        val pubTime = useEitherOrString((x \\ "published").text, (x \\ "updated").text)
         val article = NewsFeedArticle(
             None,
             0,
@@ -256,7 +257,7 @@ class AtomFeed extends XmlFeed {
             None,
             generateOptionValue((x \\ "id").text),
             None,
-            generateOptionValueTimestamp((x \\ "published").text),
+            generateOptionValueTimestamp(pubTime),
             None
         )
         
