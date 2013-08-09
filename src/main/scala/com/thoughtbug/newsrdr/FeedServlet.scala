@@ -55,6 +55,51 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     })
   }
   
+  val getFeedsOpml = 
+    (apiOperation[String]("getFeedsOpml")
+        summary "Exports the list of subscribed feeds into OPML format."
+        notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
+  get("/export.opml", operation(getFeedsOpml)) {
+    // TODO: text/xml here causes the following exception:
+    // java.util.NoSuchElementException: key not found: text/xml
+    contentType = null
+    
+    authenticationRequired(dao, session.getId, db, {
+      executeOrReturnError {
+        var sId = session.getId
+        db withSession { implicit session: Session =>
+          val userId = getUserId(dao, db, sId).get
+          val userName = dao.getUserName(session, userId)
+      
+          val destFormat = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
+          val today = destFormat.format(new java.util.Date())
+          val feedList = dao.getSubscribedFeeds(session, userId).toList
+
+          // Force a download instead of displaying in the browser.
+          response.addHeader("Content-Disposition", "attachment; filename=subscriptions.opml")
+          
+          <opml version="1.1">
+            <head>
+              <title>newsrdr</title>
+              <dateCreated>{today}</dateCreated>
+              <dateModified>{today}</dateModified>
+              <ownerName>{userName}</ownerName>
+              <ownerEmail>{userName}</ownerEmail>
+            </head>
+            <body>
+              <outline type="Subscriptions" text="Subscriptions">
+                {for ( x <- feedList ) yield
+                  <outline type="rss" title={x.title} text={x.title} xmlUrl={x.feedUrl} htmlUrl={x.link} />}
+              </outline>
+            </body>
+          </opml>
+        }
+      }
+    }, {
+      redirect("/auth/login")
+    })
+  }
+  
   val postFeeds =
     (apiOperation[NewsFeedInfo]("postFeeds")
         summary "Adds a new feed"

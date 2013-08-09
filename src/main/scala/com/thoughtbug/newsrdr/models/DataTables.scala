@@ -149,7 +149,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  (for { 
 		  uf <- UserFeeds if uf.userId === userId
           f <- NewsFeeds if f.id === uf.feedId
-       } yield f).sortBy(_.title)list
+       } yield f).sortBy(_.title).list
 	}
 	
 	def getUnreadCountForFeed(implicit session: Session, userId: Int, feedId: Int) : Int = {
@@ -283,6 +283,11 @@ class DataTables(val driver: ExtendedProfile) {
 	def getUserSession(implicit session: Session, sessionId: String) : Option[UserSession] = {
 	  var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption
+	}
+	
+	def getUserName(implicit session: Session, userId: Int) : String = {
+	  var q = for { u <- Users if u.id === userId } yield u.username
+	  q.firstOption.getOrElse("")
 	}
 	
 	def invalidateSession(implicit session: Session, sessionId: String) {
