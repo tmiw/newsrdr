@@ -37,7 +37,7 @@ NewsFeedController = Backbone.View.extend({
 								self.currentPostCount = self.articleCollection.length;
 							}
 						},
-						error: self.collectionFetchErrorHandler,
+						error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); },
 						reset: false,
 						remove: false
 					});
@@ -142,7 +142,7 @@ NewsFeedController = Backbone.View.extend({
 					self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
 				});
 			},
-			error: self.collectionFetchErrorHandler
+			error: function(x,y,z) {  y.url = NewsFeeds.urlBase; self.collectionFetchErrorHandler(x,y,z); }
 		});
 	},
 
@@ -198,7 +198,7 @@ NewsFeedController = Backbone.View.extend({
 				self.enableInfiniteScrolling = true;
 				self.currentPostCount = collection.length;
 			},
-			error: self.collectionFetchErrorHandler
+			error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); }
 		});
 	},
 	
@@ -329,13 +329,45 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	globalAjaxErrorHandler: function(xhr, status, errorThrown) {
-		// TODO
-		alert(errorThrown);
+		this.showErrorBasedOnResponse(xhr);
 	},
 	
 	collectionFetchErrorHandler: function(collection, response, options) {
-		// TODO
-		alert(response);
+		// Always GET, but response object does not provide it.
+		response.type = "GET";
+		this.showErrorBasedOnResponse(response);
+	},
+	
+	showErrorBasedOnResponse: function(xhr) {
+		var errorText = "Communications error with the server. Please try again.";
+		var url = xhr.url;
+		var type = xhr.type.toUpperCase();
+		
+		// Custom errors depending on the situation.
+		if (xhr.status == 422) {
+			errorText = "Invalid input. Please verify and try again.";
+		} else if (xhr.status == 401) {
+			// Session expired, force a relogin.
+			window.refresh();
+		} else if (/\/feeds\/?/.test(url) && type == "POST") {
+			errorText = "Could not add feed. Please try again.";
+		} else if (/\/feeds\/\d+\/?/.test(url) && type == "DELETE") {
+			errorText = "Could not delete feed. Please try again.";
+		} else if (/\/feeds\/\d+\/posts\/?/.test(url) && type == "GET") {
+			errorText = "Could not retrieve posts. Please try again.";
+		} else if (/\/feeds\/\d+\/posts\/\d+\/?/.test(url) && type == "DELETE") {
+			errorText = "Could not mark post as read. Please try again.";
+		} else if (/\/feeds\/\d+\/posts\/\d+\/?/.test(url) && type == "PUT") {
+			errorText = "Could not mark post as read. Please try again.";
+		} else if (/\/posts\/?/.test(url) && type == "GET") {
+			errorText = "Could not retrieve posts. Please try again.";
+		} else if (/\/posts\/\d+\/?/.test(url) && type == "DELETE") {
+			errorText = "Could not mark post as read. Please try again.";
+		} else if (/\/posts\/\d+\/?/.test(url) && type == "PUT") {
+			errorText = "Could not mark post as read. Please try again.";
+		} 
+		
+		noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });
 	}
 });
 

@@ -35,7 +35,11 @@ var NewsFeedCollection = Backbone.Collection.extend({
 			{
 				onSuccessFn();
 			}
-		}).fail(AppController.globalAjaxErrorHandler);
+		}).fail(function(x, y, z) {
+			// We need the HTTP status code as well but this does not provide it.
+			this.status = x.status;
+			AppController.globalAjaxErrorHandler(this, y, z);
+		});
 	}
 });
 
