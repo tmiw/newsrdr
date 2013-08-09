@@ -91,7 +91,8 @@ case class UserArticle(
 case class UserFeed(
     id: Option[Int],
     userId: Int,
-    feedId: Int)
+    feedId: Int,
+    addedDate: Timestamp)
 
 trait XmlFeedParser {
   def fillFeedProperties(root: Elem, url: String)
@@ -191,7 +192,7 @@ abstract class XmlFeed extends XmlFeedParser {
           Some(Timestamp.valueOf(destFormat.format(date)))
         }
         else { 
-          Some(Timestamp.valueOf(destFormat.format(new java.util.Date())))
+          Some(new Timestamp(new java.util.Date().getTime()))
         }
     }
     

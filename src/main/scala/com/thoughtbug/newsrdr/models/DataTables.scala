@@ -7,6 +7,11 @@ import java.sql.Timestamp
 class DataTables(val driver: ExtendedProfile) {
 	import driver.simple._
 	
+	// The amount we need to subtract the add date by so we
+	// don't end up getting posts that are years old in the
+	// results.
+	val OLDEST_POST_DIFFERENCE_MS = 1000 * 60 * 60 * 24 * 14
+	
 	object Categories extends Table[Category]("Categories") {
 		def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 		def name = column[String]("name")
@@ -120,8 +125,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 	  def userId = column[Int]("userId")
 	  def feedId = column[Int]("feedId")
+	  def addedDate = column[Timestamp]("addedDate")
 	  
-	  def * = id.? ~ userId ~ feedId <> (UserFeed, UserFeed.unapply _)
+	  def * = id.? ~ userId ~ feedId ~ addedDate <> (UserFeed, UserFeed.unapply _)
 	  
 	  def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
 	  def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
@@ -147,12 +153,20 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getUnreadCountForFeed(implicit session: Session, userId: Int, feedId: Int) : Int = {
-	  var feed_posts = for { 
+	  val today = new Timestamp(new java.util.Date().getTime())
+	  
+	  val feed_posts = for { 
 		  (nfa, ua) <- Query(NewsFeedArticles) leftJoin UserArticles on (_.id === _.articleId)
             	       if nfa.feedId === feedId
           uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
-      } yield (nfa, ua.articleRead.?)
-      (for { (fp, fq) <- feed_posts.list if fq.getOrElse(false) == false } yield fp ).length
+      } yield (nfa, uf, ua.articleRead.?)
+      
+      val feed_posts2 = for {
+	    (nfa, uf, read) <- feed_posts.list 
+	    	if nfa.pubDate.getOrElse(today).compareTo(new Timestamp(uf.addedDate.getTime() - OLDEST_POST_DIFFERENCE_MS)) >= 0
+	  } yield (nfa, read)
+	  
+      (for { (fp, fq) <- feed_posts2 if fq.getOrElse(false) == false } yield fp ).length
 	}
 	
 	def getFeedFromUrl(implicit session: Session, url: String) : Option[NewsFeed] = {
@@ -160,12 +174,12 @@ class DataTables(val driver: ExtendedProfile) {
 	  feedQuery.firstOption
 	}
 	
-	def addSubscriptionIfNotExists(implicit session: Session, userId: Int, feedId: Int) {
+	def addSubscriptionIfNotExists(implicit session: Session, userId: Int, feedId: Int) {	  
 	  var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
 	  userFeed.firstOption match {
 	    case Some(uf) => ()
 	    case None => {
-	      UserFeeds.insert(UserFeed(None, userId, feedId))
+	      UserFeeds.insert(UserFeed(None, userId, feedId, new Timestamp(new java.util.Date().getTime())))
 	      ()
 	    }
 	  }
@@ -177,31 +191,45 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int) : List[NewsFeedArticleInfo] = {
-	  var feed_posts = for { 
+	  val today = new Timestamp(new java.util.Date().getTime())
+	  val feed_posts = for { 
 	    (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
 	                 if nfa.feedId === feedId
-	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
-	  } yield (nfa, ua.articleRead.?)
-	    
+	    uf <- UserFeeds if uf.userId === userId && 
+	                       nfa.feedId === uf.feedId
+	  } yield (nfa, uf, ua.articleRead.?)
+	  
+	  val feed_posts2 = for {
+	    (nfa, uf, read) <- feed_posts.list 
+	    	if nfa.pubDate.getOrElse(today).compareTo(new Timestamp(uf.addedDate.getTime() - OLDEST_POST_DIFFERENCE_MS)) >= 0
+	  } yield (nfa, read)
+	  
 	  unreadOnly match {
 	    case true => 
-	      (for { (p, q) <- feed_posts.list if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(maxEntries)
+	      (for { (p, q) <- feed_posts2 if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(maxEntries)
 	    case _ =>
-	      (for { (fp, fq) <- feed_posts.list } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(maxEntries)
+	      (for { (fp, fq) <- feed_posts2 } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(maxEntries)
 	  }
 	}
 	
 	def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int) : List[NewsFeedArticleInfo] = {
-	  var feed_posts = for { 
+	  val today = new Timestamp(new java.util.Date().getTime())
+	  
+	  val feed_posts = for { 
 	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
-	  } yield (nfa, ua.articleRead.?)
-	    
+	  } yield (nfa, uf, ua.articleRead.?)
+	  
+	  val feed_posts2 = for {
+	    (nfa, uf, read) <- feed_posts.sortBy(_._1.pubDate.desc).list 
+	    	if nfa.pubDate.getOrElse(today).compareTo(new Timestamp(uf.addedDate.getTime() - OLDEST_POST_DIFFERENCE_MS)) >= 0
+	  } yield (nfa, read)
+	  
 	  unreadOnly match {
 	    case true => 
-	      (for { (p, q) <- feed_posts.sortBy(_._1.pubDate.desc).list if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(maxEntries)
+	      (for { (p, q) <- feed_posts2 if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(maxEntries)
 	    case _ =>
-	      (for { (fp, fq) <- feed_posts.sortBy(_._1.pubDate.desc).list } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(maxEntries)
+	      (for { (fp, fq) <- feed_posts2 } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(maxEntries)
 	  }
 	}
 	
