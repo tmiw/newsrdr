@@ -60,9 +60,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         summary "Exports the list of subscribed feeds into OPML format."
         notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
   get("/export.opml", operation(getFeedsOpml)) {
-    // TODO: text/xml here causes the following exception:
-    // java.util.NoSuchElementException: key not found: text/xml
-    contentType = null
+    contentType = "application/xml"
     
     authenticationRequired(dao, session.getId, db, {
       executeOrReturnError {
