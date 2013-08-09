@@ -54,8 +54,13 @@ NewsFeedController = Backbone.View.extend({
 		this.listenTo(NewsFeeds, 'sort', this.addAllFeeds);
 		
 		// Perform initial fetch from server.
-		this.updateFeeds();
-		
+		NewsFeeds.reset(bootstrappedFeeds);
+		self.updateFeedCounts();
+		NewsFeeds.each(function(x) { 
+			self.stopListening(x, 'change:numUnread');
+			self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
+		});
+				
 		// Update feed counts every five minutes.
 		var self = this;
 		window.setInterval(function() { self.updateFeeds(); }, 1000 * (60 * 5));

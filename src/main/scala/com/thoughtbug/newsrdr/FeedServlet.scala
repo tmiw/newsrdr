@@ -45,6 +45,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           FeedListApiResult(true, None, 
               dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
             		  x, 
+            		  x.id.get,
             		  dao.getUnreadCountForFeed(session, userId, x.id.get)
               )))
         }
@@ -83,7 +84,8 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
 	      NewsFeedInfo(
-	    		  feed, 
+	    		  feed,
+	    		  feed.id.get,
 	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get))
 	    }
     }, {

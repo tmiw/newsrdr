@@ -94,7 +94,6 @@ $.ajaxSetup({
 var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 
 $(function(){
-	NewsFeeds.reset(bootstrappedFeeds);
 	AppController = new NewsFeedController();
 });
 </script>
