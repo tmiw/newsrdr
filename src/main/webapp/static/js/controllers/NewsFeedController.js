@@ -214,6 +214,7 @@ NewsFeedController = Backbone.View.extend({
 	addOneFeed: function(feed) {
 		var newView = new NewsFeedView({model: feed});
 		var renderedView = newView.render();
+		feed.view = newView;
 		$("#allfeeds").append(renderedView.el);
 		if (this.selectedFeed && this.selectedFeed.model.id == feed.id)
 		{
@@ -233,7 +234,7 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	addAllArticles: function() {
-		this.$("#postlist").clear();
+		this.$("#postlist").children().remove();
 		this.articleCollection.each(this.addOneArticle, this);
 	},
 	
@@ -243,6 +244,7 @@ NewsFeedController = Backbone.View.extend({
 		if (this.articleCollection) {
 			// clear event handlers
 			this.articleCollection.stopListening();
+			this.articleCollection.reset();
 			this.articleCollection = null;
 			
 			// remove posts

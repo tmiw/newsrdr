@@ -115,25 +115,24 @@ body {
 
 .selectedfeed {
 	font-weight: bold;
-	text-decoration: underline;
 	display: block;
 }
 
-.feedcategory {
+.feedlist {
 	cursor: pointer;
 }
 
-.feedcategory:hover {
-	text-decoration: underline;
-}
-
-.feedlink {
+.feedlist a {
 	text-decoration: none;
-	cursor: pointer;
+	color: black;
 }
 
-.feedlink:hover {
+.feedlist a:hover {
 	text-decoration: underline;
+}
+
+.feedlist a:visited {
+	color: black;
 }
 
 .feedpostlist {
