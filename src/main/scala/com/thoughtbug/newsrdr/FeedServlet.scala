@@ -75,7 +75,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	          var f = fetchJob.fetch(url)
 	          
 	          // Schedule periodic feed updates
-	          BackgroundJobManager.scheduleFeedJob(url)
+	          BackgroundJobManager.scheduleFeedJob(f.feedUrl)
 	          
 	          f
 	      }

@@ -305,7 +305,7 @@ NewsFeedController = Backbone.View.extend({
 	
 	addNewFeed: function() {
 		// TODO: we probably want something a lot nicer than JS prompt().
-		var feedUrl = prompt("Enter the URL of the feed that you wish to subscribe to.");
+		var feedUrl = prompt("Enter the URL of the feed or website that you wish to subscribe to.");
 		
 		if (feedUrl) {
 			var self = this;
@@ -317,7 +317,7 @@ NewsFeedController = Backbone.View.extend({
 	
 	removeFeed: function() {
 		// TODO: we probably want something a lot nicer than JS confirm()
-		var confirmed = confirm("Are you sure you want to unsubscribe from this feed?");
+		var confirmed = confirm("Are you sure you want to unsubscribe from this feed/website?");
 		if (confirmed) {
 			var feed = this.selectedFeed;
 			feed.$el.remove();

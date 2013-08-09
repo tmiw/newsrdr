@@ -124,6 +124,14 @@ object XmlFeedFactory {
   def load(url: String) : XmlFeed = {
     // We need to be really tolerant of bad Unicode, sadly.
     var text = ""
+    val urlObj = new java.net.URL(url)
+    val conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
+    conn.setRequestMethod("HEAD")
+    conn.connect()
+    
+    val contentType = conn.getContentType()
+    conn.disconnect()
+    
     try {
       text = io.Source.fromURL(url)(io.Codec("UTF-8")).mkString
     } catch {
@@ -135,8 +143,35 @@ object XmlFeedFactory {
         }
       }
     }
-    val src = stripNonValidXMLCharacters(text)
-    val xmlDoc = XML.loadString(src)
+    
+    var htmlTypeRe = "text/x?html".r
+    
+    var xmlDoc : scala.xml.Elem = null
+    xmlDoc = htmlTypeRe findFirstIn contentType match {
+      case Some(c) => {
+        // ew.
+        val feedLinkHtmlRegex = """<link\s+.*?type="application/(?:rss|atom)\+xml".*?/?>""".r
+        feedLinkHtmlRegex findFirstIn text match {
+          case Some(x) => {
+            val feedUrlRegex = "href=\"([^\"]+)\"".r
+            feedUrlRegex findFirstIn x match {
+              case Some(feedUrlRegex(newUrl)) => return load(newUrl)
+              case _ => throw new RuntimeException("no feed URLs found")
+            }
+          }
+          case None => throw new RuntimeException("no feed URLs found")
+        }
+      }
+      case _ => {
+        contentType match {
+          case _ if contentType.contains("xml") => {
+            val src = stripNonValidXMLCharacters(text)
+            XML.loadString(src)
+          }
+          case _ => throw new RuntimeException("not a valid XML file")
+        }
+      }
+    }
     var feed : XmlFeed = null
     
     if ((xmlDoc \\ "entry").count(x => true) > 0)
@@ -152,6 +187,8 @@ object XmlFeedFactory {
     feed.fillFeedProperties(xmlDoc, url)
     feed
   }
+  
+  private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
 }
 
 abstract class XmlFeed extends XmlFeedParser {
