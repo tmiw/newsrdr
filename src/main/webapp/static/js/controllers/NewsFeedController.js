@@ -45,9 +45,37 @@ NewsFeedController = Backbone.View.extend({
 		}, 1000);
 		$(window).scroll(throttledFn);
 		
-		// TODO: we'll probably want to use local storage for persisting this
-		// at some point.
-		this.showOnlyUnread = true;
+		// Get parameters from local storage, if available.
+		if (typeof(Storage) !== "undefined")
+		{
+			if (!localStorage.showOnlyUnread)
+			{
+				localStorage.showOnlyUnread = true;
+			}
+			this.showOnlyUnread = localStorage.showOnlyUnread;
+			
+			// Only update HTML if we're showing all, since the HTML is hardcoded as unread only.
+			// Note: why is it making things into strings? :(
+			if (this.showOnlyUnread == "false")
+			{
+				$("#showAllPosts").unwrap();
+				$("#showUnreadPosts").wrap("<a />");
+			}
+			
+			// Reset width of feed list from last session.
+			var listWidth = $(".leftcol").width;
+			if (localStorage.feedListWidth !== "undefined")
+			{
+				listWidth = 1 * localStorage.feedListWidth; // typecast to int
+			}
+			$(".leftcol").width(listWidth);
+			$(".rightcol").css("margin-left", listWidth);
+		}
+		else
+		{
+			// Browser doesn't support local storage, default to unread only.
+			this.showOnlyUnread = true;
+		}
 		
 		this.listenTo(NewsFeeds, 'add', this.addOneFeed);
 		this.listenTo(NewsFeeds, 'reset', this.addAllFeeds);
@@ -78,6 +106,11 @@ NewsFeedController = Backbone.View.extend({
 			var newWidth = self._startWidth + (event.pageX - self._startX);
 			$(".leftcol").width(newWidth);
 			$(".rightcol").css("margin-left", newWidth);
+			
+			if (typeof(Storage) !== "undefined")
+			{
+				localStorage.feedListWidth = newWidth;
+			}
 		};
 		
 		var mouseUpHandler = function(event) {
@@ -246,6 +279,10 @@ NewsFeedController = Backbone.View.extend({
 		$("#showUnreadPosts").wrap("<a />");
 		
 		this.showOnlyUnread = false;
+		if (typeof(Storage) !== "undefined")
+		{
+			localStorage.showOnlyUnread = this.showOnlyUnread;
+		}
 		this.selectFeed(this.selectedFeed);
 	},
 	
@@ -254,6 +291,10 @@ NewsFeedController = Backbone.View.extend({
 		$("#showAllPosts").wrap("<a />");
 		
 		this.showOnlyUnread = true;
+		if (typeof(Storage) !== "undefined")
+		{
+			localStorage.showOnlyUnread = this.showOnlyUnread;
+		}
 		this.selectFeed(this.selectedFeed);
 	},
 	
