@@ -39,13 +39,6 @@ NewsArticleView = Backbone.View.extend({
   			this.$el.addClass("unread");
   			this.$(".markRead").removeClass("hide-element");
   			this.$(".markUnread").addClass("hide-element");
-  			/*this.$el.waypoint(function() {
-  				selfModel.set("unread", false);
-  			}, {
-  				offset: function() {
-    				return -$(this).height();
-  				}
-  			});*/
   		}
   		else
   		{

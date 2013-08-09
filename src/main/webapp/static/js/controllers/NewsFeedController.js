@@ -37,6 +37,7 @@ NewsFeedController = Backbone.View.extend({
 								self.currentPostCount = self.articleCollection.length;
 							}
 						},
+						error: self.collectionFetchErrorHandler,
 						reset: false,
 						remove: false
 					});
@@ -140,7 +141,8 @@ NewsFeedController = Backbone.View.extend({
 					self.stopListening(x, 'change:numUnread');
 					self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
 				});
-			}
+			},
+			error: self.collectionFetchErrorHandler
 		});
 	},
 
@@ -195,7 +197,8 @@ NewsFeedController = Backbone.View.extend({
 			success: function(collection, response, options) {
 				self.enableInfiniteScrolling = true;
 				self.currentPostCount = collection.length;
-			}
+			},
+			error: self.collectionFetchErrorHandler
 		});
 	},
 	
@@ -323,6 +326,16 @@ NewsFeedController = Backbone.View.extend({
 			feed.model.destroy();
 			this.updateFeedCounts();
 		}
+	},
+	
+	globalAjaxErrorHandler: function(xhr, status, errorThrown) {
+		// TODO
+		alert(errorThrown);
+	},
+	
+	collectionFetchErrorHandler: function(collection, response, options) {
+		// TODO
+		alert(response);
 	}
 });
 

@@ -13,10 +13,7 @@ NewsArticleModel = Backbone.Model.extend({
 		}
 		$.ajax("/feeds/" + this.get("article").feedId + "/posts/" + this.get("article").id, {
 			type: httpType,
-			error: function(xhr, status, errorThrown) {
-				// TODO
-				console.log(xhr, status, errorThrown);
-			}
+			error: AppController.globalAjaxErrorHandler
 		}).done(function(data) {
 			if (httpType == "DELETE")
 			{

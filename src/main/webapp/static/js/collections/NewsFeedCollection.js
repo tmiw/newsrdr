@@ -35,10 +35,7 @@ var NewsFeedCollection = Backbone.Collection.extend({
 			{
 				onSuccessFn();
 			}
-		}).fail(function() {
-			// TODO: make errors show up in a friendlier manner.
-			alert("could not add feed.");
-		});
+		}).fail(AppController.globalAjaxErrorHandler);
 	}
 });
 
