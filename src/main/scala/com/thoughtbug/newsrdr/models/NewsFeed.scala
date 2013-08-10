@@ -156,10 +156,16 @@ object XmlFeedFactory {
             val feedUrlRegex = "href=\"([^\"]+)\"".r
             feedUrlRegex findFirstIn x match {
               case Some(feedUrlRegex(newUrl)) => return load(newUrl)
-              case _ => throw new RuntimeException("no feed URLs found")
+              case _ => {
+                val src = stripNonValidXMLCharacters(text)
+                XML.loadString(src)
+              }
             }
           }
-          case None => throw new RuntimeException("no feed URLs found")
+          case None => {
+            val src = stripNonValidXMLCharacters(text)
+            XML.loadString(src)
+          }
         }
       }
       case _ => {
