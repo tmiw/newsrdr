@@ -2,6 +2,7 @@ package com.thoughtbug.newsrdr
 
 import org.scalatra._
 import scalate.ScalateSupport
+import servlet.{MultipartConfig, SizeConstraintExceededException, FileUploadSupport}
 import scala.slick.session.Database
 import com.thoughtbug.newsrdr.models._
 import com.thoughtbug.newsrdr.tasks._
@@ -9,6 +10,8 @@ import scala.slick.session.{Database, Session}
 
 // JSON-related libraries
 import org.json4s.{DefaultFormats, Formats}
+import org.json4s._
+import org.json4s.JsonDSL._
 
 // JSON handling support from Scalatra
 import org.scalatra.json._
@@ -16,9 +19,23 @@ import org.scalatra.json._
 // Swagger support
 import org.scalatra.swagger._
 
-class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
-  with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId {
+// XML support
+import scala.xml._
 
+class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
+  with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport {
+
+  configureMultipartHandling(MultipartConfig(maxFileSize = Some(3*1024*1024)))
+  
+  error {
+  	case e: SizeConstraintExceededException => {
+  	  contentType = "text/html"
+  	  <script language="javascript">
+        window.top.window.AppController.UploadForm.done({{success: "false", reason: "too_big"}});
+      </script>
+    }
+  }
+  
   override protected val applicationName = Some("feeds")
   protected val applicationDescription = "The feeds API. This exposes operations for manipulating the feed list."
     
@@ -95,6 +112,44 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       }
     }, {
       redirect("/auth/login")
+    })
+  }
+  
+  val postFeedsOpml =
+    (apiOperation[String]("postFeedsOpml")
+        summary "Processes an OPML file and returns a list of feeds."
+        notes "Takes a XML file and returns a list of feed URLs.")
+  
+  private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
+  
+  post("/import.opml", operation(postFeedsOpml)) {
+    authenticationRequired(dao, session.getId, db, {
+	    db withSession { implicit session: Session =>
+	      // AJAX doesn't support file upload, so we have to do it the old-fashioned way.
+          contentType = "text/html"
+          val jsonResult = fileParams.get("feedFile") match {
+            case Some(f) => {
+              try {
+                val xmlDom = xml.XML.load(f.getInputStream)
+                compact(render(("success" -> true) ~ ("feeds" ->
+                  (xmlDom \\ "outline").filter(attributeEquals("type", "rss"))
+                                       .filter(_.attribute("xmlUrl").isDefined)
+                                       .map(_.attribute("xmlUrl").get)
+                                       .map(_.text))))
+              } catch {
+                case _:Exception => compact(render(("success" -> false) ~ ("reason" -> "cant_parse")))
+              }
+            } 
+            case None => compact(render(("success" -> false) ~ ("reason" -> "forgot_file")))
+          }
+          <script language="javascript">
+            window.top.window.AppController.UploadForm.done({xml.Unparsed(jsonResult)});
+          </script>
+	    }
+    }, {
+      <script language="javascript">
+        window.top.window.AppController.UploadForm.done({{success: "false", reason: "not_authorized"}});
+      </script>
     })
   }
   

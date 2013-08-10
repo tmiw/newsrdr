@@ -1,4 +1,5 @@
 <%@ val bootstrappedFeeds : String %>
+		<div id="uploadForm" class="hide-element"></div>
 		<div class="leftcol">
 			<div class="leftcolcontent">
 				<ul class="feedlist">
@@ -18,6 +19,9 @@
 				<li class="feedmenuoption authonly feedonly"><a id="feedsiteurl" target="_blank">visit feed's website</a></li>
 				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
 				<li class="feedmenuoption authonly"><a id="addNewFeedLink">add new feed</a></li>
+				<li class="feedmenuoption authonly">
+					<a id="importFeedsLink">import feeds</a>
+					<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported</div></li>
 				<li class="feedmenuoption authonly"><a href="/feeds/export.opml">export all feeds</a></li>
 				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
@@ -41,6 +45,15 @@
 
 <script type="text/template" id="news-feed-row-template">
 {{#numUnread}}<span class="unreadcount">{{numUnread}}</span>{{/numUnread}} <a href="#/feeds/{{feed.id}}">{{feed.title}}</a>
+</script>
+
+<script type="text/template" id="import-feeds-template">
+<div class="closeButton">X</div>
+<form method="POST" action="/feeds/import.opml" enctype="multipart/form-data" target="upload_target" onsubmit="AppController.UploadForm.submit();">
+File to upload (in OPML format): <input name="feedFile" type="file" />
+<input type="submit" name="submitBtn" value="Upload" /> <img src="/static/img/ajax-loader.gif" id="uploading" class="hide-element" />
+</form>
+<iframe id="upload_target" name="upload_target" src="#" style="width:0;height:0;border:0px solid #fff;"></iframe>
 </script>
 
 <script type="text/template" id="news-article-template">
@@ -81,6 +94,7 @@
 <script src="/static/js/collections/NewsArticleCollection.js"></script>
 <script src="/static/js/views/NewsFeedView.js"></script>
 <script src="/static/js/views/NewsArticleView.js"></script>
+<script src="/static/js/views/FileUploadForm.js"></script>
 <script src="/static/js/controllers/NewsFeedController.js"></script>
 <script src="/static/js/controllers/NewsFeedRouter.js"></script>
 

@@ -10,7 +10,8 @@ NewsFeedController = Backbone.View.extend({
 		"click #showUnreadPosts": "toggleUnreadPosts",
 		"click #addNewFeedLink": "addNewFeed",
 		"click #removeFeedLink": "removeFeed",
-		"click #markAllReadLink": "markAllRead"
+		"click #markAllReadLink": "markAllRead",
+		"click #importFeedsLink": "showImportWindow",
 	},
 	
 	initialize: function() {
@@ -96,6 +97,11 @@ NewsFeedController = Backbone.View.extend({
 		
 		// make the feed list resizable.
 		this.makeDraggable();
+	},
+	
+	showImportWindow: function() {
+		this.UploadForm = new FileUploadForm();
+		this.UploadForm.show();
 	},
 	
 	// We're not using JQuery's because of the weird way we've set up the CSS. 
@@ -312,6 +318,36 @@ NewsFeedController = Backbone.View.extend({
 			NewsFeeds.addFeed(feedUrl, function() {
 				self.updateFeedCounts();
 			});
+		}
+	},
+	
+	addBulkFeeds: function(feeds) {
+	    var index = 0;
+		var feedFn = function() {
+			if (index < feeds.length)
+			{
+				$("#currentImportingFeed").text(index);
+				
+				var url = feeds[index];
+				var nextFn = function() { index++; feedFn(); };
+				NewsFeeds.addFeed(url, nextFn, nextFn);
+			}
+			else
+			{
+				$("#currentImportingFeed").text(index + 1);
+				$("#importFeedsLink").show();
+				$("#importProgress").addClass("hide-element");
+				
+				noty({ text: "Import complete.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "success" });
+			}
+		};
+		
+		if (feeds.length > 0)
+		{
+			$("#totalImportCount").text(feeds.length);
+			$("#importFeedsLink").hide();
+			$("#importProgress").removeClass("hide-element");
+			feedFn();
 		}
 	},
 	

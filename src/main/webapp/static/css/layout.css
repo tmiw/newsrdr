@@ -232,3 +232,23 @@ body {
 	padding-top: 2px;
 	visibility: hidden;
 }
+
+#uploadForm {
+	z-index: 90;
+	position: fixed;
+	right: 250px;
+	top: 140px;
+	border: 1px solid black;
+	height: 50px;
+	background-color: #fff;
+	padding: 5px;
+}
+
+#uploadForm .closeButton {
+    text-align: right;
+    text-decoration: none;
+    margin-right: -5px;
+    margin-top: -5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
