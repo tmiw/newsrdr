@@ -169,13 +169,8 @@ object XmlFeedFactory {
         }
       }
       case _ => {
-        contentType match {
-          case _ if contentType.contains("xml") => {
-            val src = stripNonValidXMLCharacters(text)
-            XML.loadString(src)
-          }
-          case _ => throw new RuntimeException("not a valid XML file")
-        }
+        val src = stripNonValidXMLCharacters(text)
+        XML.loadString(src)
       }
     }
     var feed : XmlFeed = null
