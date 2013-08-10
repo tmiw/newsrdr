@@ -151,11 +151,20 @@ object XmlFeedFactory {
       case Some(c) => {
         // ew.
         val feedLinkHtmlRegex = """<link\s+.*?type="application/(?:rss|atom)\+xml".*?/?>""".r
+        val feedRelAlternateRegex = """rel=\"alternate\"""".r
         feedLinkHtmlRegex findFirstIn text match {
           case Some(x) => {
             val feedUrlRegex = "href=\"([^\"]+)\"".r
             feedUrlRegex findFirstIn x match {
-              case Some(feedUrlRegex(newUrl)) => return load(newUrl)
+              case Some(feedUrlRegex(newUrl)) => {
+                feedRelAlternateRegex findFirstIn text match {
+                  case Some(_) => {
+                    val src = stripNonValidXMLCharacters(text)
+                    XML.loadString(src)
+                  }
+                  case _ => return load(newUrl)
+                }
+              }
               case _ => {
                 val src = stripNonValidXMLCharacters(text)
                 XML.loadString(src)
