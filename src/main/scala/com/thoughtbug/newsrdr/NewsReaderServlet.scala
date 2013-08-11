@@ -101,9 +101,9 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         
         implicit val formats = Serialization.formats(NoTypeHints)
         val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
-            		  x, 
-            		  x.id.get,
-            		  dao.getUnreadCountForFeed(session, userId, x.id.get)
+            		  x._1, 
+            		  x._1.id.get,
+            		  x._2
               )))
         ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds )
       }

@@ -1,7 +1,7 @@
 <c3p0-config>
   <default-config>
     <property name="driverClass">org.h2.Driver</property>
-    <property name="jdbcUrl">jdbc:h2:mem:test</property>
+    <property name="jdbcUrl">jdbc:h2:newsrdr</property>
     <property name="user">root</property>
     <property name="password"></property>
     <property name="minPoolSize">1</property>

@@ -2,6 +2,7 @@ package com.thoughtbug.newsrdr.models
 
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.jdbc.meta.{MTable}
+import scala.slick.jdbc.{StaticQuery => Q}
 import java.sql.Timestamp
 
 class DataTables(val driver: ExtendedProfile) {
@@ -11,6 +12,10 @@ class DataTables(val driver: ExtendedProfile) {
 	// don't end up getting posts that are years old in the
 	// results.
 	val OLDEST_POST_DIFFERENCE_MS = 1000 * 60 * 60 * 24 * 14
+	val OLDEST_POST_DIFFERENCE_SEC = OLDEST_POST_DIFFERENCE_MS / 1000
+	
+	// UNIX_TIMESTAMP support
+	val unixTimestampFn = SimpleFunction.unary[Timestamp, Int]("UNIX_TIMESTAMP")
 	
 	object Categories extends Table[Category]("Categories") {
 		def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
@@ -134,22 +139,68 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 
 	def create(implicit session: Session) = {
-          if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == NewsFeeds.tableName)) NewsFeeds.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == NewsFeedCategories.tableName)) NewsFeedCategories.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == NewsFeedArticles.tableName)) NewsFeedArticles.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == NewsFeedArticleCategories.tableName)) NewsFeedArticleCategories.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == Users.tableName)) Users.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == UserArticles.tableName)) UserArticles.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == UserFeeds.tableName)) UserFeeds.ddl.create
-          if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == NewsFeeds.tableName)) NewsFeeds.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == NewsFeedCategories.tableName)) NewsFeedCategories.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == NewsFeedArticles.tableName)) NewsFeedArticles.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == NewsFeedArticleCategories.tableName)) NewsFeedArticleCategories.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == Users.tableName)) Users.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == UserArticles.tableName)) UserArticles.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == UserFeeds.tableName)) UserFeeds.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
+          
+      /*if (driver.isInstanceOf[H2Driver]) {
+        // Add functions that are missing from H2 but exist in MySQL.
+        Q.updateNA("""CREATE ALIAS UNIX_TIMESTAMP AS $$
+            long getSeconds(java.sql.Timestamp ts) {
+        		return ts.getTime() / 1000;
+        	} $$ """)
+      } */
 	}
-	
-	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[NewsFeed] = {
-	  (for { 
-		  uf <- UserFeeds if uf.userId === userId
-          f <- NewsFeeds if f.id === uf.feedId
-       } yield f).sortBy(_.title).list
+
+	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
+	  val queryString = if (driver.isInstanceOf[H2Driver]) {
+	    """
+	      select "uf"."id", count(*) as unread 
+	      from "UserFeeds" "uf"
+	          inner join "NewsFeedArticles" "nfa" on "nfa"."feedId" = "uf"."feedId" 
+	          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id"
+	      where "uf"."userId" = ? and 
+	            ("ua"."articleRead" is NULL or "ua"."articleRead" = 0) and
+	            UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14))
+	      group by "uf"."id" order by unread desc
+	    """
+	  } else {
+	    """
+	      select uf.id, count(*) as unread 
+	      from UserFeeds uf
+	          inner join NewsFeedArticles nfa on nfa.feedId = uf.feedId 
+	          left join UserArticles ua on ua.articleId = nfa.id
+	      where uf.userId = ? and 
+	            (ua.articleRead is NULL or ua.articleRead = 0) and
+	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14))
+	      group by uf.id order by unread desc
+	    """
+	  }
+	  val unreadCountQuery = Q.query[Int, (Int, Int)](queryString)
+	  val q = unreadCountQuery.list(userId)
+	  
+	    /*val q = (for {
+	    uf <- UserFeeds if uf.userId === userId
+	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	                 if nfa.feedId === uf.feedId &&
+	                 	unixTimestampFn(nfa.pubDate.getOrElse(new java.sql.Timestamp(0))) >= 
+	                 	  (unixTimestampFn(uf.addedDate) - OLDEST_POST_DIFFERENCE_SEC)
+	  } yield (uf, ua)).groupBy(_._1.feedId).map( {
+	    case (a,b) => (a, b.length)
+	  } ).list*/
+	  
+	  val feedMap = Map() ++ q.map(x => Pair(x._1, x._2))
+	  val feedIds = q.map(_._1)
+	  
+	  (for {
+	    f <- NewsFeeds if f.id inSet feedIds
+	  } yield f).sortBy(_.title).list.map(x => (x, feedMap.getOrElse(x.id.get, 0)))
 	}
 	
 	def getUnreadCountForFeed(implicit session: Session, userId: Int, feedId: Int) : Int = {

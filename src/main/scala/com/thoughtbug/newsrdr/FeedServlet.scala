@@ -62,9 +62,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
               dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
-            		  x, 
-            		  x.id.get,
-            		  dao.getUnreadCountForFeed(session, userId, x.id.get)
+            		  x._1, 
+            		  x._1.id.get,
+            		  x._2
               )))
         }
       }
@@ -105,7 +105,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             <body>
               <outline type="Subscriptions" text="Subscriptions">
                 {for ( x <- feedList ) yield
-                  <outline type="rss" title={x.title} text={x.title} xmlUrl={x.feedUrl} htmlUrl={x.link} />}
+                  <outline type="rss" title={x._1.title} text={x._1.title} xmlUrl={x._1.feedUrl} htmlUrl={x._1.link} />}
               </outline>
             </body>
           </opml>
