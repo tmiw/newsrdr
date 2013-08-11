@@ -21,10 +21,24 @@ NewsFeedController = Backbone.View.extend({
 	
 	manualNavigate: function(evt) {
 		evt.preventDefault();
+		
+		if(typeof window.orientation !== 'undefined')
+		{
+			// hide all menus on mobile device.
+			hideAllMenus();
+		}
 		AppRouter.navigate(evt.target.hash, {trigger: true});
 	},
 	
 	initialize: function() {
+		if(typeof window.orientation !== 'undefined')
+		{
+			// enable hiding of all menus on mobile device.
+			$(".feedmenu").click(function() {
+				hideAllMenus();
+			});
+		}
+		
 		this.clearPosts();
 		this.showHideMenuOptions();
 		

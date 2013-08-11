@@ -251,3 +251,11 @@ body {
     padding-bottom: 5px;
     cursor: pointer;
 }
+
+.main-menu-mobile {
+	display: none;
+}
+
+.feed-menu-mobile {
+	display: none;
+}

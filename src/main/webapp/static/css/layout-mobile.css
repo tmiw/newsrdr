@@ -1,0 +1,313 @@
+body { 
+	font-family: 'Roboto', Verdana, Arial, Helvetica, sans-serif;
+}
+
+.container {
+	max-width: 1000px;
+}
+
+.top {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	height: 50px;
+	width: 100%;
+	
+	background-color: #ccc;
+}
+
+.top .header {
+	text-align: right;
+	font-size: 2em;
+}
+
+.middle {
+	margin-top: 50px;
+}
+
+/* feed menu */
+
+.leftcol {
+	position: fixed;
+	left: 0px;
+	top: 50px;
+	max-height: 100%;
+	max-width: 100%;
+	z-index: 90;
+	background-color: #ccc;
+	margin-top: 0px;
+	padding: 0px;
+	list-style-type: none;
+	border-top: 1px solid black;
+	font-size: 2em;
+	overflow-y: auto;
+	
+	/* we'll have special code to unhide this menu. */
+	display: none;
+}
+
+.leftcol .leftcolcontent {
+	white-space: nowrap;
+	cursor: auto;
+	max-height: 100%;
+	overflow-x: hidden;
+}
+
+/* feed menu items */
+
+.feedlist {
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+}
+
+.feedlist li {
+	width: 100%;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-bottom: 1px solid black;
+}
+
+.feedlist {
+	cursor: pointer;
+}
+
+.feedlist a {
+	text-decoration: none;
+	color: black;
+}
+
+.feedlist a:hover {
+	text-decoration: underline;
+}
+
+.feedlist a:visited {
+	color: black;
+}
+
+.feed {
+	margin-left: 20px;
+}
+
+.selectedfeed {
+	font-weight: bold;
+	display: block;
+}
+
+.unreadcount {
+	background-color: #000;
+	color: #fff;
+	border-radius: 3px;
+	border: 1px solid black;
+	font-weight: normal;
+}
+
+/* main feed display */
+
+.rightcol {
+	position: fixed;
+	left: 0px;
+	top: 50px;
+	bottom: 25px;
+	max-height: 100%;
+	width: 100%;
+	overflow: auto;
+}
+
+.feedpostlist {
+	list-style-type: none;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.feedpostlistend {
+	list-style-type: none;
+}
+
+.textblock {
+	top: 35%;
+}
+
+.feedpost {
+	max-width: 100%;
+	margin-top: 15px;
+	border: 2px solid black;
+	border-radius: 3px;
+}
+
+.nomoreposts {
+	max-width: 90%;
+	margin-top: 15px;
+	background-color: #ccc;
+	text-align: center;
+}
+
+.feedpost .title {
+	font-weight: bold;
+	margin-left: 5px;
+}
+
+.feedpost .author {
+	font-style: italic;
+	margin-left: 5px;
+}
+
+.feedpost .pubdate {
+	float: right;
+	padding-right: 5px;
+}
+
+.feedpost .fromfeed {
+	margin-left: 5px;
+}
+
+.feedpost .body {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.feedpost .body img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.feedpost .body object {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.feedpost .postoptions {
+	text-align: right;
+	margin-right: 5px;
+}
+
+.postoption {
+	display: inline;
+	list-style-type: none;
+	color: blue;
+}
+
+.postoption:hover {
+	text-decoration: underline;
+}
+
+.unread {
+	border: 2px solid red;
+}
+
+/* main menu */
+
+.feedmenu {
+	position: fixed;
+	left: 0px;
+	top: 50px;
+	max-height: 100%;
+	width: 100%;
+	z-index: 90;
+	background-color: #ccc;
+	margin-top: 0px;
+	padding: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+	list-style-type: none;
+	border-top: 1px solid black;
+	overflow-y: auto;
+
+	/* we'll have special code to unhide this menu. */
+	display: none;
+}
+
+.feedmenuseparator {
+	display: none;
+}
+
+.feedmenu > li {
+	font-size: 2em;
+	border-bottom: 1px solid black;
+}
+
+.feedmenu a {
+	cursor: pointer;
+	color: blue;
+	text-decoration: none;
+}
+
+.feedmenu a:hover {
+	text-decoration: underline;
+}
+
+/* bottom */
+
+.bottom {
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	height: 25px;
+	
+	width: 100%;
+	background-color: #ccc;
+}
+
+.bottom .copyright {
+	padding-left: 5px;
+	padding-top: 5px;
+}
+
+/* home page */
+
+.welcomeblock a {
+	text-decoration: none;
+	cursor: pointer;
+	color: blue;
+}
+
+/* misc items */
+
+.hide-element { display: none; }
+
+.notformobile { display: none; }
+
+#loading { 
+	position: fixed;
+	left: 0px;
+	top: 50px;
+	padding-left: 3px;
+	padding-top: 2px;
+}
+
+.main-menu-mobile {
+	float: left;
+	padding-top: 5px;
+	padding-left: 5px;
+}
+
+.feed-menu-mobile {
+	float: left;
+	padding-top: 5px;
+	padding-left: 5px;
+	display: none;
+	width: 42px;
+	height: 36px;
+}
+
+/* upload form (NOT USED FOR MOBILE DEVICES) */
+
+#uploadForm {
+	z-index: 90;
+	position: fixed;
+	right: 250px;
+	top: 140px;
+	border: 1px solid black;
+	height: 50px;
+	background-color: #fff;
+	padding: 5px;
+}
+
+#uploadForm .closeButton {
+    text-align: right;
+    text-decoration: none;
+    margin-right: -5px;
+    margin-top: -5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}

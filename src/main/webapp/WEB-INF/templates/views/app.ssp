@@ -19,10 +19,10 @@
 				<li class="feedmenuoption authonly feedonly"><a id="feedsiteurl" target="_blank">visit feed's website</a></li>
 				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
 				<li class="feedmenuoption authonly"><a id="addNewFeedLink">add new feed</a></li>
-				<li class="feedmenuoption authonly">
+				<li class="feedmenuoption authonly notformobile">
 					<a id="importFeedsLink">import feeds</a>
 					<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported</div></li>
-				<li class="feedmenuoption authonly"><a href="/feeds/export.opml">export all feeds</a></li>
+				<li class="feedmenuoption authonly notformobile"><a href="/feeds/export.opml">export all feeds</a></li>
 				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
@@ -79,7 +79,6 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 </script>
 
 <!-- load scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
@@ -114,6 +113,11 @@ $.ajaxSetup({
 var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 
 $(function(){
+	// only show feed menu button if mobile device
+	if(typeof window.orientation !== 'undefined') {
+		$(".feed-menu-mobile").css("display", "block");
+	}
+	
 	AppController = new NewsFeedController();
 	AppRouter = new NewsFeedRouter();
 	Backbone.history.start({pushState: "pushState" in window.history, root: "/news/"});
