@@ -182,7 +182,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      group by uf.id
 	    """
 	  }
-	  val unreadCountQuery = Q.query[(Int, Int), (Int, Int)](queryString)
+	  val unreadCountQuery = Q.query[Int, (Int, Int)](queryString)
 	  val q = unreadCountQuery.list(userId)
 	  
 	    /*val q = (for {
