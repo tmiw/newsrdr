@@ -12,6 +12,16 @@ NewsFeedController = Backbone.View.extend({
 		"click #removeFeedLink": "removeFeed",
 		"click #markAllReadLink": "markAllRead",
 		"click #importFeedsLink": "showImportWindow",
+		
+		// Prevents full page refresh when using pushState.
+		// Oddly, Chrome does this but Safari doesn't (!), even though both support pushState.
+		"click .feedcategory a": "manualNavigate",
+		"click .feed a": "manualNavigate",
+	},
+	
+	manualNavigate: function(evt) {
+		evt.preventDefault();
+		AppRouter.navigate(evt.target.hash, {trigger: true});
 	},
 	
 	initialize: function() {
