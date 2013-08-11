@@ -2,9 +2,9 @@ $(function(){
 
 NewsFeedRouter = Backbone.Router.extend({
 	routes: {
-		"/":			"goHome",
+		"":			"goHome",
 		"feeds/:fid":	"navigateToFeed",
-		"feeds/":		"getAllPosts",
+		"feeds":		"getAllPosts",
 	},
 	
 	navigateToFeed: function(fid) {

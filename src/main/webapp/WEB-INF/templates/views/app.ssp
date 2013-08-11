@@ -3,8 +3,8 @@
 		<div class="leftcol">
 			<div class="leftcolcontent">
 				<ul class="feedlist">
-					<li class="feedcategory selectedfeed" id="homeEntry"><a href="/news/">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
-					<li class="feedcategory" id="allFeedEntry"><span class="unreadcount hide-element" id="allCount">0</span> <a href="/news/feeds/">All</a></li>
+					<li class="feedcategory selectedfeed" id="homeEntry"><a href="/news">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
+					<li class="feedcategory" id="allFeedEntry"><span class="unreadcount hide-element" id="allCount">0</span> <a href="/news/feeds">All</a></li>
 					<ul class="feedlist" id="allfeeds">
 						<!-- dynamically added by js -->
 					</ul>
@@ -81,7 +81,7 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 <!-- load scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js"></script>
