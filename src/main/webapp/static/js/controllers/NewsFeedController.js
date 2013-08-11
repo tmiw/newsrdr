@@ -323,13 +323,14 @@ NewsFeedController = Backbone.View.extend({
 	
 	addBulkFeeds: function(feeds) {
 	    var index = 0;
+	    var self = this;
 		var feedFn = function() {
 			if (index < feeds.length)
 			{
 				$("#currentImportingFeed").text(index);
 				
 				var url = feeds[index];
-				var nextFn = function() { index++; feedFn(); };
+				var nextFn = function() { index++;  self.updateFeedCounts(); feedFn(); };
 				NewsFeeds.addFeed(url, nextFn, nextFn);
 			}
 			else
