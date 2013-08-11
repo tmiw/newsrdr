@@ -8,11 +8,15 @@ NewsArticleCollection = Backbone.Collection.extend({
 	},
 	
 	url: function() {
-		var latest_post = "";
-		if (this.length > 0)
+		if (this.length == 0)
 		{
-			latest_post = "&latest_post_date=" + this.at(0).get("article").pubDate;
+			var today = new Date();
+			// format: yyyy-MM-dd'T'HH:mm:ss'Z'
+			this.latest_post_date =
+				today.getUTCFullYear() + "-" + (today.getUTCMonth() + 1) + "-" + today.getUTCDate() + "T" +
+				today.getUTCHours() + ":" + today.getUTCMinutes() + ":" + today.getUTCSeconds() + "Z";
 		}
+		var latest_post = "&latest_post_date=" + this.latest_post_date;
 		return this.urlBase + "&page=" + this.currentPage + latest_post;
 	},
 	

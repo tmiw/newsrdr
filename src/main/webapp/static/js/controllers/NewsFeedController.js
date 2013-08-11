@@ -39,11 +39,11 @@ NewsFeedController = Backbone.View.extend({
 			});
 		}
 		
+		this.enableInfiniteScrolling = false;
 		this.clearPosts();
 		this.showHideMenuOptions();
 		
 		// Set up infinite scrolling.
-		this.enableInfiniteScrolling = false;
 		var self = this;
 		self.currentPostCount = 0;
 		var win = $(window);
@@ -195,6 +195,7 @@ NewsFeedController = Backbone.View.extend({
 	},
 		
 	selectFeed: function(feed) {
+		this.enableInfiniteScrolling = false;
 		this.clearPosts();
 	
 		$(".welcomeblock").addClass("hide-element");
