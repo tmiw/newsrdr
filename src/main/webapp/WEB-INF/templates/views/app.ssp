@@ -3,7 +3,7 @@
 		<div class="leftcol">
 			<div class="leftcolcontent">
 				<ul class="feedlist">
-					<li class="feedcategory selectedfeed" id="homeEntry"><a href="/news/home/">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
+					<li class="feedcategory selectedfeed" id="homeEntry"><a href="/news/">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
 					<li class="feedcategory" id="allFeedEntry"><span class="unreadcount hide-element" id="allCount">0</span> <a href="/news/feeds/">All</a></li>
 					<ul class="feedlist" id="allfeeds">
 						<!-- dynamically added by js -->
@@ -116,6 +116,6 @@ var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 $(function(){
 	AppController = new NewsFeedController();
 	var AppRouter = new NewsFeedRouter();
-	Backbone.history.start({pushState: true, root: "/news/"});
+	Backbone.history.start({pushState: "pushState" in window.history, root: "/news/"});
 });
 </script>
