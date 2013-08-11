@@ -19,20 +19,10 @@ NewsArticleView = Backbone.View.extend({
 	template: Mustache.compile($('#news-article-template').html()),
 	
 	initialize: function() {
-    	this.listenTo(this.model, "change", this.render);
+    	this.listenTo(this.model, "change", this.updateArticle);
   	},
   	
-  	render: function() {
-  		var self = this;
-  		var feedObj = NewsFeeds.find(function(x) { return x.id == self.model.get("article").feedId; });
-  		var newView = $.extend(true, this.model.attributes, {
-  			feed: feedObj.get("feed"),
-  			feedObj: feedObj
-  		});
-  		
-  		// Format date in a friendlier manner.
-  		newView.article.friendlyPubDate = new Date(newView.article.pubDate).toLocaleString();
-  		this.$el.html($.parseHTML(this.template(newView)));
+  	updateArticle: function() {
   		if (this.model.get("unread") == true)
   		{
   			var selfModel = this.model;
@@ -46,6 +36,20 @@ NewsArticleView = Backbone.View.extend({
 	  		this.$(".markRead").addClass("hide-element");
   			this.$(".markUnread").removeClass("hide-element");
   		}
+  	},
+  	
+  	render: function() {
+  		var self = this;
+  		var feedObj = NewsFeeds.find(function(x) { return x.id == self.model.get("article").feedId; });
+  		var newView = $.extend(true, this.model.attributes, {
+  			feed: feedObj.get("feed"),
+  			feedObj: feedObj
+  		});
+  		
+  		// Format date in a friendlier manner.
+  		newView.article.friendlyPubDate = new Date(newView.article.pubDate).toLocaleString();
+  		this.$el.html($.parseHTML(this.template(newView)));
+  		this.updateArticle();
   		  		
   		// Make all <a> links in feed open a new window.
   		this.$("a").each(function(i) {
