@@ -92,7 +92,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       "not verified"        
   }
   
-  get("""^/news/?$""".r) {
+  get("/news*") {
     contentType="text/html"
     authenticationRequired(dao, session.id, db, {
       val sid = session.getId
