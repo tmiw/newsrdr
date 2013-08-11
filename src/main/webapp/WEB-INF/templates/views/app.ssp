@@ -3,7 +3,7 @@
 		<div class="leftcol">
 			<div class="leftcolcontent">
 				<ul class="feedlist">
-					<li class="feedcategory selectedfeed" id="homeEntry"><a href="#/home/">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" /></li>
+					<li class="feedcategory selectedfeed" id="homeEntry"><a href="#/home/">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
 					<li class="feedcategory" id="allFeedEntry"><span class="unreadcount hide-element" id="allCount">0</span> <a href="#/feeds/">All</a></li>
 					<ul class="feedlist" id="allfeeds">
 						<!-- dynamically added by js -->
@@ -103,11 +103,11 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 $.ajaxSetup({
 	beforeSend:function(){
         // show gif here
-        $("#loading").show();
+        $("#loading").removeClass("hide-element");
     },
     complete:function(){
         // hide gif here
-        $("#loading").hide();
+        $("#loading").addClass("hide-element");
     }
 });
 
