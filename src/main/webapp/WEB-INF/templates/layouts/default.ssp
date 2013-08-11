@@ -10,8 +10,8 @@
 <body>
 <div class="container">
 	<div class="top">
-		<img src="/static/img/menu-icon-large.png" class="main-menu-mobile" />
-		<img src="/static/img/feed-icon-large.png" class="feed-menu-mobile" />
+		<img src="/static/img/menu-icon-large.png" class="main-menu-mobile" width="42" height="36" />
+		<img src="/static/img/feed-icon-large.png" class="feed-menu-mobile" width="42" height="36" />
 		<div class="header">
 			newsrdr
 		</div>

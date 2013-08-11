@@ -7,7 +7,7 @@ import org.fusesource.scalate.layout.DefaultLayoutStrategy
 import javax.servlet.http.HttpServletRequest
 import collection.mutable
 
-trait NewsrdrStack extends ScalatraServlet with ScalateSupport {
+trait NewsrdrStack extends ScalatraServlet with GZipSupport with ScalateSupport {
 
   /* wire up the precompiled templates */
   override protected def defaultTemplatePath: List[String] = List("/WEB-INF/templates/views")
@@ -23,7 +23,7 @@ trait NewsrdrStack extends ScalatraServlet with ScalateSupport {
   override protected def templateAttributes(implicit request: HttpServletRequest): mutable.Map[String, Any] = {
     super.templateAttributes ++ mutable.Map.empty // Add extra attributes here, they need bindings in the build file
   }
-
+  
   notFound {
     // remove content type in case it was set through an action
     contentType = null
