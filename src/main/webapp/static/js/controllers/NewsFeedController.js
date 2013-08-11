@@ -384,7 +384,7 @@ NewsFeedController = Backbone.View.extend({
 			errorText = "Invalid input. Please verify and try again.";
 		} else if (xhr.status == 401) {
 			// Session expired, force a relogin.
-			window.refresh();
+			location.refresh();
 		} else if (/\/feeds\/?/.test(url) && type == "POST") {
 			errorText = "Could not add feed. Please try again.";
 		} else if (/\/feeds\/\d+\/?/.test(url) && type == "DELETE") {
