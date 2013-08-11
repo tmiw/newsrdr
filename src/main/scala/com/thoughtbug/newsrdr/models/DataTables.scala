@@ -200,7 +200,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  
 	  (for {
 	    f <- NewsFeeds
-	    uf <- UserFeeds if f.id === uf.feedId
+	    uf <- UserFeeds if f.id === uf.feedId && uf.userId === userId
 	  } yield f).sortBy(_.title).list.map(x => (x, feedMap.getOrElse(x.id.get, 0)))
 	}
 	
