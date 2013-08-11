@@ -183,7 +183,7 @@ class DataTables(val driver: ExtendedProfile) {
 	    """
 	  }
 	  val unreadCountQuery = Q.query[(Int, Int), (Int, Int)](queryString)
-	  val q = unreadCountQuery.list(userId, userId)
+	  val q = unreadCountQuery.list(userId)
 	  
 	    /*val q = (for {
 	    uf <- UserFeeds if uf.userId === userId
