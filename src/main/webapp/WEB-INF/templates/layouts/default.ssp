@@ -5,7 +5,7 @@
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href='/static/css/layout.css' rel='stylesheet' media='only screen and (min-width: 961px)' type='text/css' media="screen" />
-	<link rel='stylesheet' media='screen and (max-device-width : 960px)' href='/static/css/layout-mobile.css' />
+	<link rel='stylesheet' media='screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 	<script language="javascript">
 	$(function() {
