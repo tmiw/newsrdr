@@ -23,7 +23,8 @@ import org.scalatra.swagger._
 import scala.xml._
 
 class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
-  with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport {
+  with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport
+  with GZipSupport {
 
   configureMultipartHandling(MultipartConfig(maxFileSize = Some(3*1024*1024)))
   

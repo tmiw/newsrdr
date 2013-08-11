@@ -21,7 +21,7 @@ import org.scalatra.json._
 import org.scalatra.swagger._
 
 class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
-  with NativeJsonSupport with SwaggerSupport with AuthOpenId {
+  with NativeJsonSupport with SwaggerSupport with AuthOpenId with GZipSupport {
 
   override protected val applicationName = Some("posts")
   protected val applicationDescription = "The posts API. This exposes operations for manipulating individual posts."

@@ -23,7 +23,6 @@ trait NewsrdrStack extends ScalatraServlet with ScalateSupport {
   override protected def templateAttributes(implicit request: HttpServletRequest): mutable.Map[String, Any] = {
     super.templateAttributes ++ mutable.Map.empty // Add extra attributes here, they need bindings in the build file
   }
-  
 
   notFound {
     // remove content type in case it was set through an action

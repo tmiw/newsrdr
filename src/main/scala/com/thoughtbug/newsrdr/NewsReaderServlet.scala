@@ -14,7 +14,7 @@ import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read, write}
 
-class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId {
+class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
   
   get("/") {

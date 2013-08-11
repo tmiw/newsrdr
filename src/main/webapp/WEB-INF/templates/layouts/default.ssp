@@ -2,11 +2,22 @@
 <html>
 <head>
 	<title>newsrdr beta</title>
-	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href='/static/css/layout.css' rel='stylesheet' media='only screen and (min-width: 961px)' type='text/css' media="screen" />
 	<link rel='stylesheet' media='screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+	<div class="top">
+		<img src="/static/img/menu-icon-large.png" class="main-menu-mobile" />
+		<img src="/static/img/feed-icon-large.png" class="feed-menu-mobile" />
+		<div class="header">
+			newsrdr
+		</div>
+	</div>
+	<div class="middle">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 	<script language="javascript">
 	$(function() {
 		var correctButtonFile = function(toHide) {
@@ -61,17 +72,6 @@
 		$(".main-menu-mobile").click(function() { menuHideShow(this, ".feedmenu", ".feed-menu-mobile", ".leftcol"); });
 	});
 	</script>
-</head>
-<body>
-<div class="container">
-	<div class="top">
-		<img src="/static/img/menu-icon-large.png" class="main-menu-mobile" />
-		<img src="/static/img/feed-icon-large.png" class="feed-menu-mobile" />
-		<div class="header">
-			newsrdr
-		</div>
-	</div>
-	<div class="middle">
 		<%= unescape(body) %>
 	</div>
 	<div class="bottom">
