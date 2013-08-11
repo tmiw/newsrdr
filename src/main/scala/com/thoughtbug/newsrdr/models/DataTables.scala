@@ -161,47 +161,25 @@ class DataTables(val driver: ExtendedProfile) {
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
 	  val queryString = if (driver.isInstanceOf[H2Driver]) {
 	    """
-	      (select "uf"."id", count(*) as unread 
+	      select "uf"."id", count(*) as unread 
 	      from "UserFeeds" "uf"
 	          inner join "NewsFeedArticles" "nfa" on "nfa"."feedId" = "uf"."feedId" 
 	          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id"
 	      where "uf"."userId" = ? and
                 ("ua"."articleRead" is null or "ua"."articleRead" = false) and
 	            UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14))
-	      group by "uf"."id")
-
-          union
-
-          (select "uf"."id", 0 as unread 
-	      from "UserFeeds" "uf"
-	          inner join "NewsFeedArticles" "nfa" on "nfa"."feedId" = "uf"."feedId" 
-	          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id"
-	      where "uf"."userId" = ? and
-                "ua"."articleRead" = true and
-	            UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14))
-	      group by "uf"."id")
+	      group by "uf"."id"
 	    """
 	  } else {
 	    """
-	      (select uf.id, count(*) as unread 
+	      select uf.id, count(*) as unread 
 	      from UserFeeds uf
 	          inner join NewsFeedArticles nfa on nfa.feedId = uf.feedId 
 	          left join UserArticles ua on ua.articleId = nfa.id
 	      where uf.userId = ? and
                 (ua.articleRead is null or ua.articleRead = false) and
 	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14))
-	      group by uf.id)
-
-          union
-
-          (select uf.id, 0 as unread 
-	      from UserFeeds uf
-	          inner join NewsFeedArticles nfa on nfa.feedId = uf.feedId 
-	          left join UserArticles ua on ua.articleId = nfa.id
-	      where uf.userId = ? and
-                ua.articleRead = true and
-	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14))
-	      group by uf.id)
+	      group by uf.id
 	    """
 	  }
 	  val unreadCountQuery = Q.query[(Int, Int), (Int, Int)](queryString)
@@ -221,7 +199,8 @@ class DataTables(val driver: ExtendedProfile) {
 	  val feedIds = q.map(_._1)
 	  
 	  (for {
-	    f <- NewsFeeds if f.id inSet feedIds
+	    f <- NewsFeeds
+	    uf <- UserFeeds if f.id === uf.feedId
 	  } yield f).sortBy(_.title).list.map(x => (x, feedMap.getOrElse(x.id.get, 0)))
 	}
 	
