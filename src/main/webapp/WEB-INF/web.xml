@@ -12,4 +12,9 @@
   <listener>
     <listener-class>org.scalatra.servlet.ScalatraListener</listener-class>
   </listener>
+  
+  <session-config>
+    <!-- 24 hour session inactivity timeout -->
+    <session-timeout>1440</session-timeout>
+  </session-config>
 </web-app>
