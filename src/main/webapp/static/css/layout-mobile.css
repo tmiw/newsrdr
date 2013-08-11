@@ -255,6 +255,11 @@ body {
 
 /* home page */
 
+.welcomeblock {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
 .welcomeblock a {
 	text-decoration: none;
 	cursor: pointer;
