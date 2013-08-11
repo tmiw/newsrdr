@@ -58,7 +58,7 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 
 <script type="text/template" id="news-article-template">
 	<div class="pubdate">
-		{{article.pubDate}}
+		{{article.friendlyPubDate}}
 	</div>
 	<div class="title">
 		<a href="{{article.link}}" target="_blank" class="postlink">{{article.title}}</a>

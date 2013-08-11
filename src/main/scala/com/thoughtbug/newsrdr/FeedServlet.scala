@@ -221,19 +221,26 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         notes "Retrieves posts for the given feed ID."
         parameter pathParam[Int]("id").description("The ID of the feed to operate upon.")
         parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts.")
-        parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
+        parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve.")
+        parameter queryParam[Option[java.sql.Timestamp]]("latest_post_date").description("The date/time of the latest post."))
         
   get("/:id/posts", operation(getPostsForFeed)) {
       authenticationRequired(dao, session.getId, db, {
-	      var id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	      var offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	      var userId = getUserId(dao, db, session.getId).get
+	      val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+	      val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
+	      val userId = getUserId(dao, db, session.getId).get
+	      
+	      val dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+	      val latestPostDate = new java.sql.Timestamp(params.get("latest_post_date") match {
+	        case Some(x) if !x.isEmpty() => dateFormat.parse(x).getTime()
+	        case _ => new java.util.Date().getTime()
+	      })
 	      
 	      db withSession { implicit session: Session =>
 	        params.get("unread_only") match {
 	          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
-	            dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE)
-	          case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE)
+	            dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
+	          case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
 	        }
 	      }
       }, {

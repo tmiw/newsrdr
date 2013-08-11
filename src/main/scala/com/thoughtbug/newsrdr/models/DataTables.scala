@@ -190,11 +190,12 @@ class DataTables(val driver: ExtendedProfile) {
 	  userFeed.delete
 	}
 	
-	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int) : List[NewsFeedArticleInfo] = {
+	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
 	  val today = new Timestamp(new java.util.Date().getTime())
+	  
 	  val feed_posts = for { 
 	    (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
-	                 if nfa.feedId === feedId
+	                 if nfa.feedId === feedId && nfa.pubDate <= latestPostDate
 	    uf <- UserFeeds if uf.userId === userId && 
 	                       nfa.feedId === uf.feedId
 	  } yield (nfa, uf, ua.articleRead.?)
@@ -212,12 +213,12 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	}
 	
-	def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int) : List[NewsFeedArticleInfo] = {
+	def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
 	  val today = new Timestamp(new java.util.Date().getTime())
 	  
 	  val feed_posts = for { 
 	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
+	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && nfa.pubDate <= latestPostDate
 	  } yield (nfa, uf, ua.articleRead.?)
 	  
 	  val feed_posts2 = for {
