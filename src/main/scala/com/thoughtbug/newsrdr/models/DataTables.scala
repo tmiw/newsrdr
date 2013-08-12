@@ -180,7 +180,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      where uf.userId = ? and
                 (ua.articleRead is null or ua.articleRead = false) and
 	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14)) and
-	            UNIX_TIMESTAMP(nfa.pubDate) < UTC_TIMESTAMP()
+	            UNIX_TIMESTAMP(nfa.pubDate) < UNIX_TIMESTAMP(UTC_TIMESTAMP())
 	      group by uf.id
 	    """
 	  }
