@@ -167,7 +167,8 @@ class DataTables(val driver: ExtendedProfile) {
 	          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id"
 	      where "uf"."userId" = ? and
                 ("ua"."articleRead" is null or "ua"."articleRead" = false) and
-	            UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14))
+	            UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14)) and
+		        UNIX_TIMESTAMP("nfa"."pubDate") < UNIX_TIMESTAMP(CURRENT_TIMESTAMP())
 	      group by "uf"."id"
 	    """
 	  } else {
@@ -178,22 +179,13 @@ class DataTables(val driver: ExtendedProfile) {
 	          left join UserArticles ua on ua.articleId = nfa.id
 	      where uf.userId = ? and
                 (ua.articleRead is null or ua.articleRead = false) and
-	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14))
+	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14)) and
+	            UNIX_TIMESTAMP(nfa.pubDate) < UTC_TIMESTAMP()
 	      group by uf.id
 	    """
 	  }
 	  val unreadCountQuery = Q.query[Int, (Int, Int)](queryString)
 	  val q = unreadCountQuery.list(userId)
-	  
-	    /*val q = (for {
-	    uf <- UserFeeds if uf.userId === userId
-	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	                 if nfa.feedId === uf.feedId &&
-	                 	unixTimestampFn(nfa.pubDate.getOrElse(new java.sql.Timestamp(0))) >= 
-	                 	  (unixTimestampFn(uf.addedDate) - OLDEST_POST_DIFFERENCE_SEC)
-	  } yield (uf, ua)).groupBy(_._1.feedId).map( {
-	    case (a,b) => (a, b.length)
-	  } ).list*/
 	  
 	  val feedMap = Map() ++ q.map(x => Pair(x._1, x._2))
 	  val feedIds = q.map(_._1)
@@ -243,7 +235,7 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
-	  	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
+	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
 	  val feed_posts = if (driver.isInstanceOf[H2Driver]) {
 	    if (unreadOnly) {
