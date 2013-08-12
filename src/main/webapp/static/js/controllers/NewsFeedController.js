@@ -4,8 +4,6 @@ NewsFeedController = Backbone.View.extend({
 	el: $("div .middle"),
 	
 	events: {
-		"click #allFeedEntry": function() { this.selectFeed(null); },
-		"click #homeEntry": "clearPosts",
 		"click #showAllPosts": "toggleAllPosts",
 		"click #showUnreadPosts": "toggleUnreadPosts",
 		"click #addNewFeedLink": "addNewFeed",
