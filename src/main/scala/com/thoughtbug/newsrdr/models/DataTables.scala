@@ -243,47 +243,53 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
-	  val today = new Timestamp(new java.util.Date().getTime())
-	  
-	  val feed_posts = for { 
-	    (nfa, ua) <- Query(NewsFeedArticles).sortBy(_.pubDate.desc) leftJoin UserArticles on (_.id === _.articleId)
-	                 if nfa.feedId === feedId && nfa.pubDate <= latestPostDate
-	    uf <- UserFeeds if uf.userId === userId && 
-	                       nfa.feedId === uf.feedId
-	  } yield (nfa, uf, ua.articleRead.?)
-	  
-	  val feed_posts2 = for {
-	    (nfa, uf, read) <- feed_posts.list 
-	    	if nfa.pubDate.getOrElse(today).compareTo(new Timestamp(uf.addedDate.getTime() - OLDEST_POST_DIFFERENCE_MS)) >= 0
-	  } yield (nfa, read)
-	  
-	  unreadOnly match {
-	    case true => 
-	      (for { (p, q) <- feed_posts2 if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(maxEntries)
-	    case _ =>
-	      (for { (fp, fq) <- feed_posts2 } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(maxEntries)
+	  val feed_posts = unreadOnly match {
+	    case true => for {
+	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	                   if nfa.feedId === feedId && 
+	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate) &&
+	                      (!ua.exists || ua.articleRead === false)
+	      uf        <- UserFeeds 	                     
+	                   if uf.feedId === nfa.feedId &&
+	                      uf.userId === userId &&
+	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
+	    } yield (nfa, ua.articleRead.?)
+	    case _ => for {
+	      	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	                   if nfa.feedId === feedId && 
+	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate)
+	      uf        <- UserFeeds 	                     
+	                   if uf.feedId === nfa.feedId &&
+	                      uf.userId === userId &&
+	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
+	    } yield (nfa, ua.articleRead.?)
 	  }
+	  
+	  feed_posts.drop(offset).take(maxEntries).list.map(x => NewsFeedArticleInfo(x._1, x._2.getOrElse(false) == false))
 	}
 	
 	def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
-	  val today = new Timestamp(new java.util.Date().getTime())
-	  
-	  val feed_posts = for { 
-	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && nfa.pubDate <= latestPostDate
-	  } yield (nfa, uf, ua.articleRead.?)
-	  
-	  val feed_posts2 = for {
-	    (nfa, uf, read) <- feed_posts.sortBy(_._1.pubDate.desc).list 
-	    	if nfa.pubDate.getOrElse(today).compareTo(new Timestamp(uf.addedDate.getTime() - OLDEST_POST_DIFFERENCE_MS)) >= 0
-	  } yield (nfa, read)
-	  
-	  unreadOnly match {
-	    case true => 
-	      (for { (p, q) <- feed_posts2 if q.getOrElse(false) == false } yield NewsFeedArticleInfo(p, true)).drop(offset).take(maxEntries)
-	    case _ =>
-	      (for { (fp, fq) <- feed_posts2 } yield NewsFeedArticleInfo(fp, fq.getOrElse(false) == false)).drop(offset).take(maxEntries)
+      val feed_posts = unreadOnly match {
+	    case true => for {
+	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	                   if unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate) &&
+	                      (!ua.exists || ua.articleRead === false)
+	      uf        <- UserFeeds 	                     
+	                   if uf.feedId === nfa.feedId &&
+	                      uf.userId === userId &&
+	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
+	    } yield (nfa, ua.articleRead.?)
+	    case _ => for {
+	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	                   if unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate)
+	      uf        <- UserFeeds 	                     
+	                   if uf.feedId === nfa.feedId &&
+	                      uf.userId === userId &&
+	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
+	    } yield (nfa, ua.articleRead.?)
 	  }
+	  
+	  feed_posts.drop(offset).take(maxEntries).list.map(x => NewsFeedArticleInfo(x._1, x._2.getOrElse(false) == false))
 	}
 	
 	def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
