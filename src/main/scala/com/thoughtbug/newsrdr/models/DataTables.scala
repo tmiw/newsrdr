@@ -2,7 +2,7 @@ package com.thoughtbug.newsrdr.models
 
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.jdbc.meta.{MTable}
-import scala.slick.jdbc.{StaticQuery => Q}
+import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 import java.sql.Timestamp
 
 class DataTables(val driver: ExtendedProfile) {
@@ -243,53 +243,127 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
-	  val feed_posts = unreadOnly match {
-	    case true => for {
-	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	                   if nfa.feedId === feedId && 
-	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate) &&
-	                      (!ua.exists || ua.articleRead === false)
-	      uf        <- UserFeeds 	                     
-	                   if uf.feedId === nfa.feedId &&
-	                      uf.userId === userId &&
-	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
-	    } yield (nfa, ua.articleRead.?)
-	    case _ => for {
-	      	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	                   if nfa.feedId === feedId && 
-	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate)
-	      uf        <- UserFeeds 	                     
-	                   if uf.feedId === nfa.feedId &&
-	                      uf.userId === userId &&
-	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
-	    } yield (nfa, ua.articleRead.?)
+	  	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
+
+	  val feed_posts = if (driver.isInstanceOf[H2Driver]) {
+	    if (unreadOnly) {
+	      Q.query[(Int, Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	        from "NewsFeedArticles" "nfa"
+	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+                where "uf"."userId" = ? and 
+	                  "uf"."feedId" = ? and
+	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                      unix_timestamp("nfa"."pubDate") <= unix_timestamp(?) and
+	              ("ua"."articleRead" is null or "ua"."articleRead" = 0)
+	        order by "nfa"."pubDate" desc
+	        limit ? offset ?""")
+	    } else {
+	      Q.query[(Int, Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	        from "NewsFeedArticles" "nfa"
+	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+                where "uf"."userId" = ? and 
+	                  "uf"."feedId" = ? and
+	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                      unix_timestamp("nfa"."pubDate") <= unix_timestamp(?)
+	        order by "nfa"."pubDate" desc
+	        limit ? offset ?""")
+	    }
+	  } else {
+	    if (unreadOnly) {
+	      Q.query[(Int, Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	        from NewsFeedArticles nfa
+	        inner join UserFeeds uf on uf.feedId = nfa.feedId
+	        left join UserArticles ua on ua.articleId = nfa.id 
+                where uf.userId = ? and 
+	                  uf.feedId = ? and
+	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                      unix_timestamp(nfa.pubDate) <= unix_timestamp(?) and
+	                  (ua.articleRead is null or ua.articleRead = 0)
+	        order by nfa.pubDate desc
+	        limit ? offset ?""")
+	    } else {
+	      Q.query[(Int, Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	        from NewsFeedArticles nfa
+	        inner join UserFeeds uf on uf.feedId = nfa.feedId
+	        left join UserArticles ua on ua.articleId = nfa.id 
+                where uf.userId = ? and
+	                  uf.feedId = ? and
+	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                      unix_timestamp(nfa.pubDate) <= unix_timestamp(?)
+	        order by nfa.pubDate desc
+	        limit ? offset ?""")
+	    }
 	  }
 	  
-	  feed_posts.drop(offset).take(maxEntries).list.map(x => NewsFeedArticleInfo(x._1, x._2.getOrElse(false) == false))
+	  feed_posts.list((userId, feedId, latestPostDate, maxEntries, offset)).map(x => {
+	    NewsFeedArticleInfo(x._1, x._2 == false)
+	  })
 	}
 	
 	def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: java.sql.Timestamp) : List[NewsFeedArticleInfo] = {
-      val feed_posts = unreadOnly match {
-	    case true => for {
-	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	                   if unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate) &&
-	                      (!ua.exists || ua.articleRead === false)
-	      uf        <- UserFeeds 	                     
-	                   if uf.feedId === nfa.feedId &&
-	                      uf.userId === userId &&
-	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
-	    } yield (nfa, ua.articleRead.?)
-	    case _ => for {
-	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	                   if unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) <= unixTimestampFn(latestPostDate)
-	      uf        <- UserFeeds 	                     
-	                   if uf.feedId === nfa.feedId &&
-	                      uf.userId === userId &&
-	                      unixTimestampFn(nfa.pubDate.getOrElse(latestPostDate)) > (unixTimestampFn(uf.addedDate) - (60*60*24*14))
-	    } yield (nfa, ua.articleRead.?)
+	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
+
+	  val feed_posts = if (driver.isInstanceOf[H2Driver]) {
+	    if (unreadOnly) {
+	      Q.query[(Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	        from "NewsFeedArticles" "nfa"
+	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+                where "uf"."userId" = ? and 
+	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                      unix_timestamp("nfa"."pubDate") <= unix_timestamp(?) and
+	                  ("ua"."articleRead" is null or "ua"."articleRead" = 0)
+	        order by "nfa"."pubDate" desc
+	        limit ? offset ?""")
+	    } else {
+	      Q.query[(Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	        from "NewsFeedArticles" "nfa"
+	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+                where "uf"."userId" = ? and 
+	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                      unix_timestamp("nfa"."pubDate") <= unix_timestamp(?)
+	        order by "nfa"."pubDate" desc
+	        limit ? offset ?""")
+	    }
+	  } else {
+	    if (unreadOnly) {
+	      Q.query[(Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	        from NewsFeedArticles nfa
+	        inner join UserFeeds uf on uf.feedId = nfa.feedId
+	        left join UserArticles ua on ua.articleId = nfa.id 
+                where uf.userId = ? and 
+	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                      unix_timestamp(nfa.pubDate) <= unix_timestamp(?) and
+	              (ua.articleRead is null or ua.articleRead = 0)
+	        order by nfa.pubDate desc
+	        limit ? offset ?""")
+	    } else {
+	      Q.query[(Int, java.sql.Timestamp, Int, Int), (NewsFeedArticle, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	        from NewsFeedArticles nfa
+	        inner join UserFeeds uf on uf.feedId = nfa.feedId
+	        left join UserArticles ua on ua.articleId = nfa.id 
+                where uf.userId = ? and 
+	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                      unix_timestamp(nfa.pubDate) <= unix_timestamp(?)
+	        order by nfa.pubDate desc
+	        limit ? offset ?""")
+	    }
 	  }
 	  
-	  feed_posts.drop(offset).take(maxEntries).list.map(x => NewsFeedArticleInfo(x._1, x._2.getOrElse(false) == false))
+	  feed_posts.list((userId, latestPostDate, maxEntries, offset)).map(x => {
+	    NewsFeedArticleInfo(x._1, x._2 == false)
+	  })
 	}
 	
 	def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
