@@ -13,6 +13,7 @@ body {
 	height: 50px;
 	width: 100%;
 	background-color: #ccc;
+	z-index: 90;
 }
 
 .top .header {
