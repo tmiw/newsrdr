@@ -33,7 +33,7 @@ var NewsFeedCollection = Backbone.Collection.extend({
 			
 			if (onSuccessFn)
 			{
-				onSuccessFn();
+				onSuccessFn(feed);
 			}
 		}).fail(function(x, y, z) {
 			// We need the HTTP status code as well but this does not provide it.

@@ -351,8 +351,11 @@ NewsFeedController = Backbone.View.extend({
 		
 		if (feedUrl) {
 			var self = this;
-			NewsFeeds.addFeed(feedUrl, function() {
+			NewsFeeds.addFeed(feedUrl, function(feed) {
 				self.updateFeedCounts();
+				
+				// Navigate directly to the new feed.
+				AppRouter.navigate("feeds/" + feed.id, {trigger: true});
 			});
 		}
 	},
