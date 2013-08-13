@@ -37,7 +37,7 @@ NewsFeedController = Backbone.View.extend({
 		// HACK: trick the router into thinking something's changed.
 		// Otherwise, clicking on a link we're already on won't
 		// reload the page.
-		Backbone.history.fragment = "";
+		Backbone.history.fragment = "dfldjsfkj";
 		AppRouter.navigate(hash, {trigger: true});
 	},
 	
