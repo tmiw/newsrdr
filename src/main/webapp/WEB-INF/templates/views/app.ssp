@@ -4,7 +4,7 @@
 			<div class="leftcolcontent">
 				<ul class="feedlist">
 					<li class="feedcategory selectedfeed" id="homeEntry"><a href="#">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
-					<li class="feedcategory" id="allFeedEntry"><span class="unreadcount hide-element" id="allCount">0</span> <a href="#feeds">All</a></li>
+					<li class="feedcategory" id="allFeedEntry"><a href="#feeds"><span class="unreadcount hide-element" id="allCount">0</span> All</a></li>
 					<ul class="feedlist" id="allfeeds">
 						<!-- dynamically added by js -->
 					</ul>
@@ -44,7 +44,7 @@
 		</div>
 
 <script type="text/template" id="news-feed-row-template">
-{{#numUnread}}<span class="unreadcount">{{numUnread}}</span>{{/numUnread}} <a href="#feeds/{{feed.id}}">{{feed.title}}</a>
+<a href="#feeds/{{feed.id}}">{{#numUnread}}<span class="unreadcount">{{numUnread}}</span>{{/numUnread}} {{feed.title}}</a>
 </script>
 
 <script type="text/template" id="import-feeds-template">

@@ -25,7 +25,15 @@ NewsFeedController = Backbone.View.extend({
 			// hide all menus on mobile device.
 			hideAllMenus();
 		}
-		AppRouter.navigate(evt.target.hash, {trigger: true});
+		
+		var hash = evt.target.hash;
+		if (hash == undefined)
+		{
+			// we clicked on the unread counter
+			var href = $(evt.target).parent().attr("href");
+			hash = href.substring(href.indexOf("#"));
+		}
+		AppRouter.navigate(hash, {trigger: true});
 	},
 	
 	initialize: function() {
