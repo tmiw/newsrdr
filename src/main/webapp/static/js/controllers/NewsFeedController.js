@@ -33,6 +33,11 @@ NewsFeedController = Backbone.View.extend({
 			var href = $(evt.target).parent().attr("href");
 			hash = href.substring(href.indexOf("#"));
 		}
+		
+		// HACK: trick the router into thinking something's changed.
+		// Otherwise, clicking on a link we're already on won't
+		// reload the page.
+		Backbone.history.fragment = "";
 		AppRouter.navigate(hash, {trigger: true});
 	},
 	
