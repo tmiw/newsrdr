@@ -1,6 +1,6 @@
 <%@ val bootstrappedFeeds : String %>
 		<div id="uploadForm" class="hide-element"></div>
-		<div class="leftcol">
+		<div class="leftcol overthrow">
 			<div class="leftcolcontent">
 				<ul class="feedlist">
 					<li class="feedcategory selectedfeed" id="homeEntry"><a href="#">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
@@ -11,7 +11,7 @@
 				</ul>
 			</div>
 		</div>
-		<div class="rightcol">
+		<div class="rightcol overthrow">
 			<ul class="feedmenu">
 				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a><span id="showAllPosts">all</span></a>] posts</li>
 				<li class="feedmenuoption authonly feedonly allonly" id="markAllReadLink"><a>mark all as read</a></li>

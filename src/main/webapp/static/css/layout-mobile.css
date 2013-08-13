@@ -12,7 +12,6 @@ body {
 	top: 0px;
 	height: 50px;
 	width: 100%;
-	
 	background-color: #ccc;
 }
 
@@ -27,12 +26,21 @@ body {
 
 /* feed menu */
 
+.overthrow-enabled .overthrow {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.overthrow-enabled .leftcol {
+	max-height: 100%;
+}
+
 .leftcol {
 	position: fixed;
 	left: 0px;
 	top: 50px;
-	max-height: 100%;
-	max-width: 100%;
+	width: 100%;
 	z-index: 90;
 	background-color: #ccc;
 	margin-top: 0px;
@@ -40,8 +48,6 @@ body {
 	list-style-type: none;
 	border-top: 1px solid black;
 	font-size: 2em;
-	overflow-y: scroll;
-	-webkit-overflow-scrolling: touch;
 	
 	/* we'll have special code to unhide this menu. */
 	display: none;
@@ -51,7 +57,6 @@ body {
 	white-space: nowrap;
 	cursor: auto;
 	max-height: 100%;
-	overflow-x: hidden;
 }
 
 /* feed menu items */
@@ -105,14 +110,18 @@ body {
 
 /* main feed display */
 
+.overflow-enabled .rightcol {
+	overflow: auto;
+	max-height: 100%;
+	width: 100%;
+	overflow: auto;
+}
+
 .rightcol {
 	position: fixed;
 	left: 0px;
 	top: 50px;
 	bottom: 25px;
-	max-height: 100%;
-	width: 100%;
-	overflow: auto;
 }
 
 .feedpostlist {
