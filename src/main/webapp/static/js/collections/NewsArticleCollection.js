@@ -8,13 +8,14 @@ NewsArticleCollection = Backbone.Collection.extend({
 	},
 	
 	url: function() {
-		var latest_post = ""
+		var latest_post = "";
 		if (this.length > 0)
 		{
-			this.latest_post_id = this.at(0).id
-			var latest_post = "&latest_post_id=" + this.latest_post_id;
+			// Excludes the current oldest post.
+			var lastDate = (Date.parse(this.models[this.length - 1].attributes.article.pubDate) / 1000) - 1;
+			latest_post = "&latest_post_date=" + lastDate;
 		}
-		return this.urlBase + "&page=" + this.currentPage + latest_post;
+		return this.urlBase + latest_post;
 	},
 	
 	currentPage: 0
