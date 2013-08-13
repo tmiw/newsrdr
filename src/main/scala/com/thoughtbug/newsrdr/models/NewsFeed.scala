@@ -345,11 +345,13 @@ class AtomFeed extends XmlFeed {
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
         val content = useEitherOrString(getHtmlContent(x, "content"), getHtmlContent(x, "summary"))
         val pubTime = useEitherOrString((x \\ "published").text.trim(), (x \\ "updated").text.trim())
+        val link = useEitherOrString(getHtmlLink(x, "link"), (x \\ "id").text)
+        
         val article = NewsFeedArticle(
             None,
             0,
             getHtmlContent(x, "title"),
-            (x \\ "link" \ "@href").take(1).text,
+            link,
             content,
             generateOptionValue((x \\ "author" \ "name").text),
             None,
@@ -365,6 +367,21 @@ class AtomFeed extends XmlFeed {
         val articleCategories = (x \\ "category").map(_.text).toList
         
         (article, articleCategories)
+    }
+    
+    private def getHtmlLink(x : Node, name : String) : String = {
+    	val node = x \\ name
+    	val xhtmlSummary = node.filter(attributeEquals("type", "text/xhtml")).text
+    	val htmlSummary = node.filter(attributeEquals("type", "text/html")).text
+    	val textSummary = escapeText(node.filter(attributeEquals("type", "text/plain")).text)
+    	
+    	useEitherOrString(
+    	    xhtmlSummary,
+    	    useEitherOrString(
+    	        htmlSummary,
+    	        useEitherOrString(
+    	            textSummary,
+    	            "")))
     }
     
     private def getHtmlContent(x : Node, name : String) : String = {
