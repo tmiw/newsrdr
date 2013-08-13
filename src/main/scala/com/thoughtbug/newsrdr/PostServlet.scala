@@ -40,7 +40,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         notes "Retrieves posts for all feeds, sorted by post date."
         parameter queryParam[Option[Boolean]]("unread_only").description("Whether to only retrieve unread posts.")
         parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve.")
-        parameter queryParam[Option[java.sql.Timestamp]]("latest_post_date").description("The date/time of the latest post."))
+        parameter queryParam[Option[Integer]]("latest_post_id").description("The ID of the latest post."))
         
   get("/", operation(getPosts)) {
     authenticationRequired(dao, session.getId, db, {
@@ -48,17 +48,17 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    val userId = getUserId(dao, db, session.getId).get
 	    
 	    val dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-	      val latestPostDate = new java.sql.Timestamp(params.get("latest_post_date") match {
-	        case Some(x) if !x.isEmpty() => dateFormat.parse(x).getTime()
-	        case _ => new java.util.Date().getTime()
-	      })
+	    val latestPostId = params.get("latest_post_id") match {
+	        case Some(x) if !x.isEmpty() => Integer.parseInt(x)
+	        case _ => Integer.MAX_VALUE 
+	      }
 	    
 	    db withSession { implicit session: Session =>
 	      params.get("unread_only") match {
 	        case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-	          dao.getPostsForAllFeeds(session, userId, true, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
+	          dao.getPostsForAllFeeds(session, userId, true, offset, Constants.ITEMS_PER_PAGE, latestPostId)
 	        }
-	        case _ => dao.getPostsForAllFeeds(session, userId, false, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
+	        case _ => dao.getPostsForAllFeeds(session, userId, false, offset, Constants.ITEMS_PER_PAGE, latestPostId)
 	      }
 	    }
     }, {
