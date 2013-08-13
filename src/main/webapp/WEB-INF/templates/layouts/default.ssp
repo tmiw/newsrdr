@@ -11,7 +11,7 @@
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href='/static/css/layout.css' rel='stylesheet' media='only screen and (min-width: 961px)' type='text/css' media="screen" />
 	<link rel='stylesheet' media='only screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
-	<script src="/src/js/overthrow.js"></script>
+	<script src="/static/js/overthrow.js"></script>
 </head>
 <body>
 <div class="container">
