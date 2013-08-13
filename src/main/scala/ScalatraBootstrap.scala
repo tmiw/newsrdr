@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.session.{Database, Session}
+import scala.slick.jdbc.{StaticQuery => Q}
 
 import com.thoughtbug.newsrdr.models._;
 import com.thoughtbug.newsrdr.tasks.BackgroundJobManager
@@ -40,6 +41,17 @@ class ScalatraBootstrap extends LifeCycle {
     context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")
     context.mount(new PostServlet(dao, db, swagger), "/posts/*")
     context mount(new ResourcesApp, "/api-docs/*")
+    
+    if (dao.driver.isInstanceOf[H2Driver]) {
+      // Add functions that are missing from H2 but exist in MySQL.
+      var conn = cpds.getConnection()
+      var stmt = conn.createStatement()
+      stmt.execute("""CREATE ALIAS IF NOT EXISTS UNIX_TIMESTAMP AS $$
+            long getSeconds(java.sql.Timestamp ts) {
+        		return ts.getTime() / 1000;
+        	} $$ """)
+      conn.close()  
+    }
     
     db withTransaction { implicit session: Session =>
       dao.create

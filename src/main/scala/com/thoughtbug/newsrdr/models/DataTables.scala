@@ -148,14 +148,6 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == UserArticles.tableName)) UserArticles.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == UserFeeds.tableName)) UserFeeds.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
-          
-      /*if (driver.isInstanceOf[H2Driver]) {
-        // Add functions that are missing from H2 but exist in MySQL.
-        Q.updateNA("""CREATE ALIAS UNIX_TIMESTAMP AS $$
-            long getSeconds(java.sql.Timestamp ts) {
-        		return ts.getTime() / 1000;
-        	} $$ """)
-      } */
 	}
 
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
