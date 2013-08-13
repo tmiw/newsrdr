@@ -2,16 +2,21 @@
 <html>
 <head>
 	<title>newsrdr beta</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width,
+          height=device-height,
+          initial-scale=1.0,
+          maximum-scale=1.0,
+          minimum-scale=1.0,
+          user-scalable=0">
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href='/static/css/layout.css' rel='stylesheet' media='only screen and (min-width: 961px)' type='text/css' media="screen" />
-	<link rel='stylesheet' media='screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
+	<link rel='stylesheet' media='only screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
 </head>
 <body>
 <div class="container">
 	<div class="top">
-		<img src="/static/img/menu-icon-large.png" class="main-menu-mobile" width="42" height="36" />
-		<img src="/static/img/feed-icon-large.png" class="feed-menu-mobile" width="42" height="36" />
+		<img src="/static/img/menu-icon-large.gif" class="main-menu-mobile" width="42" height="36" />
+		<img src="/static/img/feed-icon-large.gif" class="feed-menu-mobile" width="42" height="36" />
 		<div class="header">
 			newsrdr
 		</div>
@@ -23,18 +28,18 @@
 		var correctButtonFile = function(toHide) {
 			if (toHide == ".leftcol")
 			{
-				return "/static/img/feed-icon-large.png";
+				return "/static/img/feed-icon-large.gif";
 			}
 			else
 			{
-				return "/static/img/menu-icon-large.png";
+				return "/static/img/menu-icon-large.gif";
 			}
 		};
 		
 		var menuHideShow = function(img, toHide, otherImg, otherToHide) {
 			if ($(toHide).css("display") == "none") {
 				$(toHide).css("display", "block");
-				img.src = "/static/img/close-icon-large.png";
+				img.src = "/static/img/close-icon-large.gif";
 				
 				if ($(otherToHide).css("display") != "none")
 				{
@@ -70,6 +75,10 @@
 		
 		$(".feed-menu-mobile").click(function() { menuHideShow(this, ".leftcol", ".main-menu-mobile", ".feedmenu"); });
 		$(".main-menu-mobile").click(function() { menuHideShow(this, ".feedmenu", ".feed-menu-mobile", ".leftcol"); });
+		
+		if(typeof window.orientation !== 'undefined') {
+			window.hideAllMenus();
+		}
 	});
 	</script>
 		<%= unescape(body) %>

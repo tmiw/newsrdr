@@ -53,6 +53,10 @@
 	overflow: auto;
 }
 
+.rightcol .textblock {
+	width: 55%;
+}
+
 .feedmenu {
 	position: fixed;
 	right: 5px;

@@ -40,7 +40,8 @@ body {
 	list-style-type: none;
 	border-top: 1px solid black;
 	font-size: 2em;
-	overflow-y: auto;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
 	
 	/* we'll have special code to unhide this menu. */
 	display: none;
