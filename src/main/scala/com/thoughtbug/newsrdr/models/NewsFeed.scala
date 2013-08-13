@@ -119,6 +119,11 @@ object XmlFeedFactory {
           (c >= 0xE000 && c <= 0xFFFD) ||
           (c >= 0x10000 && c <= 0x10FFFF)
       })
+      
+      // fix for isolated unescaped ampersands
+      val regex = "&(\\s+)"
+      val replacement = "&amp;$1"
+      in.replaceAll(regex, replacement)
     }    
     
   def load(url: String) : XmlFeed = {
