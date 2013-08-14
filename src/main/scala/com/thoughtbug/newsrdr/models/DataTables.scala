@@ -1,5 +1,6 @@
 package com.thoughtbug.newsrdr.models
 
+import com.thoughtbug.newsrdr.tasks._
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.jdbc.meta.{MTable}
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
@@ -222,8 +223,15 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def unsubscribeFeed(implicit session: Session, userId: Int, feedId: Int) {
-	  var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
+	  val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
 	  userFeed.delete
+	  
+	  val numSubscribed = for { uf <- UserFeeds if uf.feedId === feedId } yield uf.count
+	  if (numSubscribed.first == 0)
+	  {
+	    val feed = for { f <- NewsFeeds if f.id === feedId } yield f.feedUrl
+	    BackgroundJobManager.unscheduleFeedJob(feed.list.head)
+	  }
 	}
 	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {

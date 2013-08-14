@@ -32,6 +32,13 @@ object BackgroundJobManager {
     scheduler.shutdown()
   }
   
+  def unscheduleFeedJob(url: String) {
+    val key = new JobKey(url)
+    if (scheduler.checkExists(key)) {
+      scheduler.deleteJob(key)
+    }
+  }
+  
   def scheduleFeedJob(url: String) {
     if (!scheduler.checkExists(new JobKey(url))) {
       val trigger = newTrigger()
