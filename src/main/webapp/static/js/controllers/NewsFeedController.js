@@ -393,14 +393,16 @@ NewsFeedController = Backbone.View.extend({
 	
 	removeFeed: function() {
 		// TODO: we probably want something a lot nicer than JS confirm()
+		var self = this;
 		var confirmed = confirm("Are you sure you want to unsubscribe from this feed/website?");
 		if (confirmed) {
 			var feed = this.selectedFeed;
-			feed.$el.remove();
-			this.selectFeed(null);
-			NewsFeeds.remove(feed.model);
-			feed.model.destroy();
-			this.updateFeedCounts();
+			feed.model.destroy({success: function() {
+				NewsFeeds.remove(feed.model);
+				feed.$el.remove();
+				self.updateFeedCounts();
+				AppRouter.navigate("", {trigger: true});
+			}});
 		}
 	},
 	
