@@ -112,14 +112,30 @@ $.ajaxSetup({
 
 var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 
-$(function(){
-	// only show feed menu button if mobile device
-	if(typeof window.orientation !== 'undefined') {
-		$(".feed-menu-mobile").css("display", "block");
-	}
-	
+$(function(){	
 	AppController = new NewsFeedController();
 	AppRouter = new NewsFeedRouter();
 	Backbone.history.start({pushState: "pushState" in window.history, root: "/news/"});
+	
+	// only show feed menu button if mobile device
+	var mql = window.matchMedia("(min-width: 961px)");
+	if (!mql.matches) {
+		$(".feed-menu-mobile").css("display", "block");
+		AppController.useMobileUi();
+	} else {
+		AppController.restoreFullUi();
+	}
+		
+	mql.addListener(function(m) {
+		if(!m.matches) {
+			$(".feed-menu-mobile").css("display", "block");
+			$(".main-menu-mobile").css("display", "block");
+			AppController.useMobileUi();
+		} else {
+			$(".feed-menu-mobile").css("display", "none");
+			$(".main-menu-mobile").css("display", "none");
+			AppController.restoreFullUi();
+		}
+	});
 });
 </script>

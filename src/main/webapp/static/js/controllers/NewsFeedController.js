@@ -20,10 +20,10 @@ NewsFeedController = Backbone.View.extend({
 	manualNavigate: function(evt) {
 		evt.preventDefault();
 		
-		if(typeof window.orientation !== 'undefined')
-		{
+		var mql = window.matchMedia("(min-width: 961px)");
+		if (!mql.matches) {
 			// hide all menus on mobile device.
-			hideAllMenus();
+			window.hideAllMenus();
 		}
 		
 		var hash = evt.target.hash;
@@ -41,15 +41,18 @@ NewsFeedController = Backbone.View.extend({
 		AppRouter.navigate(hash, {trigger: true});
 	},
 	
+	restoreFullUi: function() {
+		$(".rightcol").css("margin-left", this.listWidth);
+		this.showHideMenuOptions();
+	},
+	
+	useMobileUi: function() {
+		$(".rightcol").css("margin-left", 0);
+		this.showHideMenuOptions();
+	},
+	
 	initialize: function() {
-		if(typeof window.orientation !== 'undefined')
-		{
-			// enable hiding of all menus on mobile device.
-			$(".feedmenu").click(function() {
-				hideAllMenus();
-			});
-		}
-		
+			
 		this.enableInfiniteScrolling = false;
 		this.clearPosts();
 		this.showHideMenuOptions();
@@ -105,14 +108,32 @@ NewsFeedController = Backbone.View.extend({
 			{
 				listWidth = 1 * localStorage.feedListWidth; // typecast to int
 			}
+			if (isNaN(listWidth))
+			{
+				listWidth = 250;
+			}
+			this.listWidth = listWidth;
 			$(".leftcol").width(listWidth);
 			$(".rightcol").css("margin-left", listWidth);
 		}
 		else
 		{
 			// Browser doesn't support local storage, default to unread only.
+			this.listWidth = $(".leftcol").width;
+			if (isNaN(this.listWidth))
+			{
+				this.listWidth = 250;
+			}
 			this.showOnlyUnread = true;
 		}
+		
+		// enable hiding of all menus on mobile device.
+		$(".feedmenu").click(function() {
+			var mql = window.matchMedia("(min-width: 961px)");
+			if (!mql.matches) {
+				window.hideAllMenus();
+			}
+		});
 		
 		this.listenTo(NewsFeeds, 'add', this.addOneFeed);
 		this.listenTo(NewsFeeds, 'reset', this.addAllFeeds);
