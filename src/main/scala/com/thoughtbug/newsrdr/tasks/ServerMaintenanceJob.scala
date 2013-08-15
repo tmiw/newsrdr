@@ -17,7 +17,8 @@ class ServerMaintenanceJob extends Job {
 	def execute(ctxt: JobExecutionContext) {
 	  // rebalance jobs due to low resources on AWS VM.
 	  val scheduler = BackgroundJobManager.scheduler
-	  var startSeconds = 10
+	  var divisor = 10
+	  var startSeconds = divisor
 	  
 	  scheduler.getTriggerGroupNames().foreach(g => {
 	    scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(t => {
@@ -32,7 +33,19 @@ class ServerMaintenanceJob extends Job {
     		                               .build()
 
 	        scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger)
-	        startSeconds += 10;
+	        startSeconds += divisor;
+	        
+	        // The goal is to get all the jobs to run within an hour. 
+	        // If we run out of slots, divide the divisor and restart from the top
+	        // of the hour.
+	        if (startSeconds >= (60*60))
+	        {
+	          if (divisor > 1)
+	          {
+	            divisor = divisor / 2
+	          }
+	          startSeconds = divisor
+	        }
 	      }
 	    })
 	  })
