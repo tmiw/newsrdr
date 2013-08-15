@@ -89,6 +89,30 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     })
   }
   
+  val markAllReadCommand =
+    (apiOperation[Unit]("markAllRead")
+        summary "Marks all posts as read."
+        notes "Marks all posts as read."
+        parameter queryParam[Int]("upTo").description("The oldest date/time which to mark as read."))
+        
+  delete("/", operation(markAllReadCommand)) {
+    authenticationRequired(dao, session.getId, db, {
+	    val userId = getUserId(dao, db, session.getId).get
+	    val upTo = Integer.parseInt(params.getOrElse("upTo", halt(422)))
+	    
+	    db withTransaction { implicit session: Session =>
+	      dao.setPostStatusForAllPosts(session, userId, upTo, false) match {
+	        case true => ()
+	        case _ => halt(404)
+	      }
+	    }
+	    
+	    NoDataApiResult(true, None)
+    }, {
+      halt(401)
+    })
+  }
+  
   val markUnreadCommand =
     (apiOperation[Unit]("markUnread")
         summary "Marks the given post as unread."

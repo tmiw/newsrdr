@@ -270,11 +270,28 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	markAllRead: function() {
-		this.articleCollection.each(function(article) { 
-			if (article.get("unread")) {
-				article.set("unread", false);
-			}
-		}, this);
+		if (this.articleCollection && this.articleCollection.length > 0)
+		{
+			var lastPost = this.articleCollection.at(this.articleCollection.length - 1);
+			var lastPostDate = new Date(lastPost.get("article").pubDate).getTime() / 1000;
+			var url = this.selectedFeed ? "/feeds/" + this.selectedFeed.model.id + "/posts" : "/posts/";
+			var self = this;
+		
+			url = url + "?upTo=" + lastPostDate;
+			$.ajax({
+				url: url,
+				type: "DELETE",
+				success: function(result) {
+					self.updateFeeds();
+					self.selectFeed(self.selectedFeed);
+				}
+			});
+		} 
+		else
+		{
+			this.updateFeeds();
+			this.selectFeed(self.selectedFeed);
+		}
 	},
 	
 	addOneFeed: function(feed) {
@@ -454,12 +471,16 @@ NewsFeedController = Backbone.View.extend({
 			errorText = "Could not delete feed. Please try again.";
 		} else if (/\/feeds\/\d+\/posts\/?/.test(url) && type == "GET") {
 			errorText = "Could not retrieve posts. Please try again.";
+		} else if (/\/feeds\/\d+\/posts\/?/.test(url) && type == "DELETE") {
+			errorText = "Could not mark posts as read. Please try again.";
 		} else if (/\/feeds\/\d+\/posts\/\d+\/?/.test(url) && type == "DELETE") {
 			errorText = "Could not mark post as read. Please try again.";
 		} else if (/\/feeds\/\d+\/posts\/\d+\/?/.test(url) && type == "PUT") {
 			errorText = "Could not mark post as read. Please try again.";
 		} else if (/\/posts\/?/.test(url) && type == "GET") {
 			errorText = "Could not retrieve posts. Please try again.";
+		} else if (/\/posts\/?/.test(url) && type == "DELETE") {
+			errorText = "Could not mark posts as read. Please try again.";
 		} else if (/\/posts\/\d+\/?/.test(url) && type == "DELETE") {
 			errorText = "Could not mark post as read. Please try again.";
 		} else if (/\/posts\/\d+\/?/.test(url) && type == "PUT") {
