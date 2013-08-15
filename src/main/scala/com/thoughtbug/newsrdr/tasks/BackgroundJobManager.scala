@@ -12,6 +12,8 @@ import org.quartz._
 import org.scalatra._
 
 object BackgroundJobManager {
+  val CLEANUP_JOB_NAME = "newsrdr_cleanup"
+  
   var db : Database = _
   var dao : DataTables = _
   var scheduler : Scheduler = null
@@ -25,6 +27,22 @@ object BackgroundJobManager {
       }
       case _ => StdSchedulerFactory.getDefaultScheduler()
     }
+    
+    if (scheduler.getJobDetail(new JobKey(CLEANUP_JOB_NAME)) == null)
+    {
+      // schedule cleanup job since it hasn't been done yet.
+      val trigger = newTrigger()
+    		.withIdentity(CLEANUP_JOB_NAME)
+    		.startNow()
+    		.withSchedule(simpleSchedule().withIntervalInHours(24).repeatForever())
+    		.build()
+      val job = newJob(classOf[ServerMaintenanceJob])
+    		.withIdentity(CLEANUP_JOB_NAME)
+    		.build()
+    
+      scheduler.scheduleJob(job, trigger)
+    }
+    
     scheduler.start()
   }
   
@@ -44,7 +62,6 @@ object BackgroundJobManager {
       val trigger = newTrigger()
     		.withIdentity(url)
     		.startAt(futureDate(60, IntervalUnit.MINUTE))
-    		.startNow()
     		.withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
     		.build()
       val job = newJob(classOf[RssFetchJob])
