@@ -200,7 +200,10 @@ object XmlFeedFactory {
         // Atom feed
         feed = new AtomFeed
       }
-      else if ((xmlDoc \\ "rss").count(x => true) > 0)
+      else if (
+          (xmlDoc \\ "rss").count(x => true) > 0 ||
+          (xmlDoc \\ "rdf").count(x => true) > 0 ||
+          (xmlDoc \\ "RDF").count(x => true) > 0)
       {
         feed = new RSSFeed
       }
