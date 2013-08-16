@@ -139,6 +139,7 @@ object XmlFeedFactory {
       val urlObj = new java.net.URL(currentUrl)
       conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
       conn.setInstanceFollowRedirects(true)
+      conn.setRequestProperty("User-Agent", "newsrdr (http://newsrdr.us/)")
       //conn.setRequestMethod("HEAD")
       conn.connect()
  
