@@ -172,10 +172,17 @@ object XmlFeedFactory {
     }
     
     var contentStream = conn.getInputStream()
-    
-    val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
-    var xmlDoc = parser.load(contentStream)
+    val s = new java.util.Scanner(contentStream).useDelimiter("\\A")
+    val text = if (s.hasNext()) { s.next() } else { "" }
     conn.disconnect()
+        
+    val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
+    var xmlDoc : xml.Elem = null
+    try {
+      xmlDoc = XML.loadString(text)
+    } catch {
+      case _:Exception => xmlDoc = parser.loadString(text)
+    }
     
     val feedLinks = (xmlDoc \\ "link").filter(attributeEquals("rel", "alternate")(_))
                                       .filter(x => attributeEquals("type", "application/rss+xml")(x) ||
@@ -193,9 +200,13 @@ object XmlFeedFactory {
         // Atom feed
         feed = new AtomFeed
       }
-      else
+      else if ((xmlDoc \\ "rss").count(x => true) > 0)
       {
         feed = new RSSFeed
+      }
+      else
+      {
+        throw new RuntimeException("not an RSS or Atom feed!")
       }
     
       feed.fillFeedProperties(xmlDoc, url)
