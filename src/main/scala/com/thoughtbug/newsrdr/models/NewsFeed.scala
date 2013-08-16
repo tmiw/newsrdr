@@ -128,79 +128,78 @@ object XmlFeedFactory {
     
   def load(url: String) : XmlFeed = {
     // We need to be really tolerant of bad Unicode, sadly.
-    var text = ""
-    val urlObj = new java.net.URL(url)
-    val conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
-    conn.setRequestMethod("HEAD")
-    conn.connect()
+    //var text = ""
+    var count = 0
+    var code = 0
+    var currentUrl = url
+    var conn : java.net.HttpURLConnection = null
+    
+    do {
+      count = count + 1
+      val urlObj = new java.net.URL(currentUrl)
+      conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
+      conn.setInstanceFollowRedirects(true)
+      //conn.setRequestMethod("HEAD")
+      conn.connect()
+ 
+      code = conn.getResponseCode() 
+      if (code >= 300 && code <= 399)
+      {
+        // Didn't automatically redirect (went from http->https or vice versa). Compensate here.
+        currentUrl = conn.getHeaderField("Location")
+      }
+    } while (count < 5 && code >= 300 && code <= 399)
+    
+    if (count >= 5)
+    {
+      conn.disconnect()
+      throw new RuntimeException("Too many redirects!")
+    }
+    else if (code > 299 || code < 200)
+    {
+      conn.disconnect()
+      throw new RuntimeException("Server error.")
+    }
     
     val contentType = conn.getContentType()
+    val contentSize = conn.getContentLength()
+    
+    if (contentSize > 1024*1024*3)
+    {
+      conn.disconnect()
+      throw new RuntimeException("Feed too large.")
+    }
+    
+    var contentStream = conn.getInputStream()
+    
+    val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
+    var xmlDoc = parser.load(contentStream)
     conn.disconnect()
     
-    try {
-      text = io.Source.fromURL(url)(io.Codec("UTF-8")).mkString
-    } catch {
-      case _:java.nio.charset.MalformedInputException => try {
-        text = io.Source.fromURL(url)(io.Codec("ISO-8859-1")).mkString
-      } catch {
-        case _:java.nio.charset.MalformedInputException => try {
-          text = io.Source.fromURL(url)(io.Codec("ASCII")).mkString
-        }
-      }
-    }
-    
-    var htmlTypeRe = "text/x?html".r
-    
-    var xmlDoc : scala.xml.Elem = null
-    xmlDoc = htmlTypeRe findFirstIn contentType match {
-      case Some(c) => {
-        // ew.
-        val feedLinkHtmlRegex = """<link\s+.*?type="application/(?:rss|atom)\+xml".*?/?>""".r
-        val feedRelAlternateRegex = """rel=\"alternate\"""".r
-        feedLinkHtmlRegex findFirstIn text match {
-          case Some(x) => {
-            val feedUrlRegex = "href=\"([^\"]+)\"".r
-            feedUrlRegex findFirstIn x match {
-              case Some(feedUrlRegex(newUrl)) => {
-                feedRelAlternateRegex findFirstIn text match {
-                  case Some(_) => {
-                    val src = stripNonValidXMLCharacters(text)
-                    XML.loadString(src)
-                  }
-                  case _ => return load(newUrl)
-                }
-              }
-              case _ => {
-                val src = stripNonValidXMLCharacters(text)
-                XML.loadString(src)
-              }
-            }
-          }
-          case None => {
-            val src = stripNonValidXMLCharacters(text)
-            XML.loadString(src)
-          }
-        }
-      }
-      case _ => {
-        val src = stripNonValidXMLCharacters(text)
-        XML.loadString(src)
-      }
-    }
-    var feed : XmlFeed = null
-    
-    if ((xmlDoc \\ "entry").count(x => true) > 0)
+    val feedLinks = (xmlDoc \\ "link").filter(attributeEquals("rel", "alternate")(_))
+                                      .filter(x => attributeEquals("type", "application/rss+xml")(x) ||
+                                                   attributeEquals("type", "application/atom+xml")(x))
+    if (feedLinks.count(_ => true) > 0 && !feedLinks.head.attribute("href").map(_.text).head.equals(url))
     {
-      // Atom feed
-      feed = new AtomFeed
+      load(feedLinks.head.attribute("href").map(_.text).head)
     }
     else
     {
-      feed = new RSSFeed
-    }
+      var feed : XmlFeed = null
+      
+      if ((xmlDoc \\ "entry").count(x => true) > 0)
+      {
+        // Atom feed
+        feed = new AtomFeed
+      }
+      else
+      {
+        feed = new RSSFeed
+      }
     
-    feed.fillFeedProperties(xmlDoc, url)
-    feed
+      feed.fillFeedProperties(xmlDoc, url)
+      feed
+    }
   }
   
   private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
