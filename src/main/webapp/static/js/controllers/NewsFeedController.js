@@ -219,10 +219,27 @@ NewsFeedController = Backbone.View.extend({
 		}
 		
 		// also update count in the title
-		document.title = document.title.replace(/^\(\d+\)\s*/, "");
+		document.title = document.title.replace(/^\(\d+\)\s*(.+:\s*)?|(.+:\s*)/, "");
+		var feedTitle = "";
+		if (this.selectedFeed)
+		{
+			feedTitle = this.selectedFeed.model.get("feed").title + ": ";
+		}
+		else
+		{
+			if (this.$("#allFeedEntry").hasClass("selectedfeed"))
+			{
+				feedTitle = "all feeds: ";
+			}
+		}
+		
 		if (total_unread > 0)
 		{
-			document.title = "(" + total_unread + ") " + document.title;
+			document.title = "(" + total_unread + ") " + feedTitle + document.title;
+		}
+		else
+		{
+			document.title = feedTitle + document.title;
 		}
 	},
 		
@@ -263,6 +280,8 @@ NewsFeedController = Backbone.View.extend({
 			},
 			error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); }
 		});
+		
+		self.updateFeedCounts();
 	},
 	
 	sortFeeds: function() {
@@ -343,6 +362,7 @@ NewsFeedController = Backbone.View.extend({
 		
 		this.selectedFeed = null;
 		this.showHideMenuOptions();
+		this.updateFeedCounts();
 	},
 	
 	showHideMenuOptions: function() {
