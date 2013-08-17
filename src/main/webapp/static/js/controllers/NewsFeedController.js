@@ -64,7 +64,7 @@ NewsFeedController = Backbone.View.extend({
 		self.currentPostCount = 0;
 		var win = $(window);
 		var doc = $(document);
-		var throttledFn = _.throttle(function () {
+		var throttledFn = _.debounce(function () {
 			if (self.enableInfiniteScrolling && self.articleCollection)
 			{
 				self.enableInfiniteScrolling = false;
@@ -82,9 +82,16 @@ NewsFeedController = Backbone.View.extend({
 					remove: false
 				});
 			}	
-		}, 1000);
+		}, 100);
+		
+		// One of these will fire, depending on browser.
 		win.scroll(function() { 
 			if (win.scrollTop() >= doc.height() - win.height() - 10) {
+				throttledFn();
+			}
+		});
+		$(".rightcol").scroll(function() { 
+			if ($(".rightcol").scrollTop() >= $("#postlist").height() - $(".rightcol").height() - 10) {
 				throttledFn();
    			}
    		});
