@@ -223,20 +223,11 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def unsubscribeFeed(implicit session: Session, userId: Int, feedId: Int) {
-	  val query = if (driver.isInstanceOf[H2Driver])
-	  {
-	    Q.update[(Int, Int)]("""DELETE FROM "UserFeeds" WHERE "userId" = ? AND "feedId" = ?""")
-	  }
-	  else
-	  {
-	    Q.update[(Int, Int)]("""DELETE FROM UserFeeds WHERE userId = ? AND feedId = ?""")
-	  }
-	  query(userId, feedId)
-	  /*val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
-	  userFeed.delete*/
+	  val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
+	  userFeed.delete
 	  
-	  val numSubscribed = for { uf <- UserFeeds if uf.feedId === feedId } yield uf.count
-	  if (numSubscribed.first == 0)
+	  val numSubscribed = for { uf <- UserFeeds if uf.feedId === feedId } yield uf
+	  if (numSubscribed.list.count(_ => true) == 0)
 	  {
 	    val feed = for { f <- NewsFeeds if f.id === feedId } yield f.feedUrl
 	    BackgroundJobManager.unscheduleFeedJob(feed.list.head)
