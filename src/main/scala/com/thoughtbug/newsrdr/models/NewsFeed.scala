@@ -99,33 +99,6 @@ trait XmlFeedParser {
 }
 
 object XmlFeedFactory {
-  /**
-     * This method ensures that the output String has only
-     * valid XML unicode characters as specified by the
-     * XML 1.0 standard. For reference, please see
-     * <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">the
-     * standard</a>. This method will return an empty
-     * String if the input is null or empty.
-     *
-     * @param in The String whose non-valid characters we want to remove.
-     * @return The in String, stripped of non-valid characters.
-     */
-    private def stripNonValidXMLCharacters(in : String) : String = {
-      in.filter(c => {
-          c == 0x9 ||
-          c == 0xA || 
-          c == 0xD || 
-          (c >= 0x20 && c <= 0xD7FF) ||
-          (c >= 0xE000 && c <= 0xFFFD) ||
-          (c >= 0x10000 && c <= 0x10FFFF)
-      })
-      
-      // fix for isolated unescaped ampersands
-      val regex = "&(\\s+)"
-      val replacement = "&amp;$1"
-      in.replaceAll(regex, replacement)
-    }    
-    
   def load(url: String) : XmlFeed = {
     // We need to be really tolerant of bad Unicode, sadly.
     //var text = ""
@@ -179,7 +152,11 @@ object XmlFeedFactory {
     val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
     var xmlDoc : xml.Elem = null
     try {
-      xmlDoc = XML.loadString(text)
+      val f = javax.xml.parsers.SAXParserFactory.newInstance()
+      f.setNamespaceAware(false)
+      f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      val MyXML = XML.withSAXParser(f.newSAXParser())
+      xmlDoc = MyXML.loadString(text)
     } catch {
       case _:Exception => xmlDoc = parser.loadString(text)
     }
