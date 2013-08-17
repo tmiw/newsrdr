@@ -212,6 +212,14 @@ body {
 	margin-right: 5px;
 }
 
+.postoptionshare {
+	display: block;
+	position: relative;
+	bottom: 5px;
+	float: left;
+	left: -30px;
+}
+
 .postoption {
 	display: inline;
 	list-style-type: none;

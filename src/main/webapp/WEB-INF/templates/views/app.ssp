@@ -77,6 +77,8 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		{{{article.description}}}
 	</div>
 	<ul class="postoptions">
+		<li class="postoptionshare"><g:plusone id="gplus_{{article.id}}" href="{{{article.link}}}" action="share" /></g:plusone></li>
+		<li class="postoptionshare"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="true" data-send="true"></div></li>
 		<li class="postoption markRead">mark read</li>
 		<li class="postoption markUnread">mark unread</li>
 	</ul>
@@ -91,6 +93,26 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js"></script>
+<script type="text/javascript">
+window.___gcfg = {
+  lang: 'en-US',
+  //parsetags: 'explicit'
+};
+
+(function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=1375893982640236";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
 
 <script src="/static/js/models/NewsFeed.js"></script>
 <script src="/static/js/models/NewsArticle.js"></script>
@@ -114,6 +136,11 @@ $.ajaxSetup({
         $("#loading").addClass("hide-element");
     }
 });
+
+function renderShareButtons(id, href)
+{
+	//gapi.plus.render("gplus_" + id, {action: "share", href: href});
+}
 
 var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 

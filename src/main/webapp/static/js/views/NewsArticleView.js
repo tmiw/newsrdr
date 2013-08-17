@@ -58,6 +58,9 @@ NewsArticleView = Backbone.View.extend({
   			}
   		});
   		
+  		// Render share links.
+  		renderShareButtons(self.model.get("article").id, self.model.get("article").link);
+  		
   		return this;
   	}
 });
