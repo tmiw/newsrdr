@@ -189,7 +189,7 @@ object XmlFeedFactory {
                                                    attributeEquals("type", "application/atom+xml")(x))
     if (feedLinks.count(_ => true) > 0 && !feedLinks.head.attribute("href").map(_.text).head.equals(url))
     {
-      load(feedLinks.head.attribute("href").map(_.text).head)
+      load(new java.net.URL(new java.net.URL(currentUrl), feedLinks.head.attribute("href").map(_.text).head).toString())
     }
     else
     {
