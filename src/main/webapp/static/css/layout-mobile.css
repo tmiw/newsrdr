@@ -151,6 +151,13 @@ body {
 	text-align: center;
 }
 
+.loadingposts {
+	max-width: 90%;
+	margin-top: 15px;
+	background-color: #ccc;
+	text-align: center;
+}
+
 .feedpost .title {
 	font-weight: bold;
 	margin-left: 5px;

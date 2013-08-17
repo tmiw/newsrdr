@@ -69,6 +69,8 @@ NewsFeedController = Backbone.View.extend({
 			{
 				self.enableInfiniteScrolling = false;
 				self.articleCollection.currentPage += 1;
+				$(".loadingposts").removeClass("hide-element");
+				$(".nomoreposts").addClass("hide-element");
 				self.articleCollection.fetch({
 					success: function(collection, response, options) {
 						if (self.articleCollection.length != self.currentPostCount)
@@ -79,7 +81,12 @@ NewsFeedController = Backbone.View.extend({
 					},
 					error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); },
 					reset: false,
-					remove: false
+					remove: false,
+					complete: function() {
+						$(".loadingposts").addClass("hide-element");
+						$("#loading").addClass("hide-element");
+						$(".nomoreposts").removeClass("hide-element");
+					}
 				});
 			}	
 		}, 100);

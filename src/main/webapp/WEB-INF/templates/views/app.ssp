@@ -40,6 +40,9 @@
 				<li class="nomoreposts">
 					no more posts.
 				</li>
+				<li class="loadingposts hide-element">
+					loading <img src="/static/img/ajax-loader.gif" />
+				</li>
 			</ul>
 		</div>
 
