@@ -513,7 +513,8 @@ NewsFeedController = Backbone.View.extend({
 				feed.$el.remove();
 				self.updateFeedCounts();
 				AppRouter.navigate("", {trigger: true});
-			}});
+			},
+			error: function(x,y,z) { self.globalAjaxErrorHandler(x,y,z); }});
 		}
 	},
 	
