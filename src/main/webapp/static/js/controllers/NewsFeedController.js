@@ -85,6 +85,40 @@ NewsFeedController = Backbone.View.extend({
 		}, 1000);
 		$(window).scroll(throttledFn);
 		
+		// Set up keyboard navigation
+		$(window).keypress(function(e) {
+			if (e.keyCode == 74 || e.keyCode == 75 ||
+			    e.keyCode == 106 || e.keyCode == 107)
+			{
+				// Scroll up/down one article.
+				if (self.articleCollection && self.articleCollection.length > 0)
+				{
+					if ((e.keyCode == 75 || e.keyCode == 107) && self.currentArticle > 0)
+					{
+						// Mark current article as read before proceeding.
+						var article = self.articleCollection.at(self.currentArticle);
+						article.set("unread", false);
+						self.currentArticle = self.currentArticle - 1;
+					}
+					else if ((e.keyCode == 74 || e.keyCode == 106) && self.currentArticle < self.articleCollection.length - 1)
+					{
+						// Mark current article as read before proceeding.
+						var article = self.articleCollection.at(self.currentArticle);
+						article.set("unread", false);
+						self.currentArticle = self.currentArticle + 1;
+					}
+					
+					var newArticle = self.articleCollection.at(self.currentArticle);
+					var newArticleId = newArticle.attributes.article.id;
+					var newArticleOffset = $("a[name='article" + newArticleId + "']").offset();
+					$('html, body').animate({
+						scrollTop: newArticleOffset.top - $(".top").height()
+					}, 500);
+					e.preventDefault();
+				}
+			}
+		});
+		
 		// Get parameters from local storage, if available.
 		if (typeof(Storage) !== "undefined")
 		{
@@ -255,6 +289,7 @@ NewsFeedController = Backbone.View.extend({
 		}
 		this.selectedFeed = feed;
 		
+		this.currentArticle = 0;
 		this.articleCollection = new NewsArticleCollection([]);
 		if (feed) {
 			this.articleCollection.urlBase = '/feeds/' + feed.model.id + "/posts?unread_only=" + this.showOnlyUnread;

@@ -57,6 +57,7 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 </script>
 
 <script type="text/template" id="news-article-template">
+	<a name="article{{article.id}}">
 	<div class="pubdate">
 		{{article.friendlyPubDate}}
 	</div>
@@ -76,6 +77,7 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		<li class="postoption markRead">mark read</li>
 		<li class="postoption markUnread">mark unread</li>
 	</ul>
+	</a>
 </script>
 
 <!-- load scripts -->
