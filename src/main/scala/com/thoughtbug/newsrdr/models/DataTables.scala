@@ -223,8 +223,17 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def unsubscribeFeed(implicit session: Session, userId: Int, feedId: Int) {
-	  val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
-	  userFeed.delete
+	  val query = if (driver.isInstanceOf[H2Driver])
+	  {
+	    Q.update[(Int, Int)]("""DELETE FROM "UserFeeds" WHERE "userId" = ? AND "feedId" = ?""")
+	  }
+	  else
+	  {
+	    Q.update[(Int, Int)]("""DELETE FROM UserFeeds WHERE userId = ? AND feedId = ?""")
+	  }
+	  query(userId, feedId)
+	  /*val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
+	  userFeed.delete*/
 	  
 	  val numSubscribed = for { uf <- UserFeeds if uf.feedId === feedId } yield uf.count
 	  if (numSubscribed.first == 0)
