@@ -42,11 +42,13 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	restoreFullUi: function() {
+		$(".leftcol").css("width", this.listWidth);
 		$(".rightcol").css("margin-left", this.listWidth);
 		this.showHideMenuOptions();
 	},
 	
 	useMobileUi: function() {
+		$(".leftcol").css("width", "100%");
 		$(".rightcol").css("margin-left", 0);
 		this.showHideMenuOptions();
 	},
