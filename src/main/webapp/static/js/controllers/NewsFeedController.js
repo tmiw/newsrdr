@@ -63,30 +63,32 @@ NewsFeedController = Backbone.View.extend({
 		var win = $(window);
 		var doc = $(document);
 		var throttledFn = _.throttle(function () {
-			if (win.scrollTop() >= doc.height() - win.height() - 10) {
-				if (self.enableInfiniteScrolling && self.articleCollection)
-				{
-					self.enableInfiniteScrolling = false;
-					self.articleCollection.currentPage += 1;
-					self.articleCollection.fetch({
-						success: function(collection, response, options) {
-							if (self.articleCollection.length != self.currentPostCount)
-							{
-								self.enableInfiniteScrolling = true;
-								self.currentPostCount = self.articleCollection.length;
-							}
-						},
-						error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); },
-						reset: false,
-						remove: false
-					});
-				}
-   			}
+			if (self.enableInfiniteScrolling && self.articleCollection)
+			{
+				self.enableInfiniteScrolling = false;
+				self.articleCollection.currentPage += 1;
+				self.articleCollection.fetch({
+					success: function(collection, response, options) {
+						if (self.articleCollection.length != self.currentPostCount)
+						{
+							self.enableInfiniteScrolling = true;
+							self.currentPostCount = self.articleCollection.length;
+						}
+					},
+					error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); },
+					reset: false,
+					remove: false
+				});
+			}	
 		}, 1000);
-		$(window).scroll(throttledFn);
+		win.scroll(function() { 
+			if (win.scrollTop() >= doc.height() - win.height() - 10) {
+				throttledFn();
+   			}
+   		});
 		
 		// Set up keyboard navigation
-		$(window).keypress(function(e) {
+		win.keypress(function(e) {
 			if (e.keyCode == 74 || e.keyCode == 75 ||
 			    e.keyCode == 106 || e.keyCode == 107)
 			{
