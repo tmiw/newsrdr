@@ -5,13 +5,13 @@ object Constants {
   var LOGIN_URI = "/auth/login"
   var AUTHENTICATED_URI = "/auth/authenticated"
     
-  def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest) : String = {
+  def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest, service: String) : String = {
     var protocol = request.isSecure() match {
       case true => "https://"
       case _ => "http://"
     }
     
-    (protocol + request.getServerName() + ":" + request.getServerPort().toString() + Constants.AUTHENTICATED_URI)
+    (protocol + request.getServerName() + ":" + request.getServerPort().toString() + Constants.AUTHENTICATED_URI + "/" + service)
   }
 }
 

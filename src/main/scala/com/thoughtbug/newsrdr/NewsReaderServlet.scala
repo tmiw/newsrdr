@@ -22,7 +22,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     ssp("/index")
   }
   
-  get("/auth/login") {
+  get("/auth/login/g+") {
     var sId = session.getId()
     var setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
     
@@ -36,7 +36,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
           val authReq = 
             manager.authenticate(
                 discovered, 
-                Constants.getAuthenticatedURL(request))
+                Constants.getAuthenticatedURL(request, "g+"))
           val fetch = FetchRequest.createFetchRequest()
           fetch.addAttribute("email", "http://schema.openid.net/contact/email",true)
           fetch.addAttribute("firstname", "http://axschema.org/namePerson/first", true)
@@ -62,10 +62,10 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     redirect("/")
   }
   
-  get("/auth/authenticated") {
+  get("/auth/authenticated/g+") {
     val openidResp = new ParameterList(request.getParameterMap())
     val discovered = session.getAttribute("discovered").asInstanceOf[DiscoveryInformation]
-    val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request)) //request.getRequestURL()
+    val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request, "g+")) //request.getRequestURL()
     val queryString = request.getQueryString()
     if (queryString != null && queryString.length() > 0)
         receivingURL.append("?").append(request.getQueryString())
@@ -83,10 +83,11 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         
         // email is username for now
         var sId = session.getId()
+        session.setAttribute("authService", "g+")
         db withTransaction { implicit session: Session =>
           dao.startUserSession(session, sId, email)
         }
-        redirect("/auth/login")
+        redirect("/auth/login/g+")
       }
     } else
       "not verified"        
@@ -94,6 +95,11 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   
   get("/news*") {
     contentType="text/html"
+    val authService = if (session.getAttribute("authService") != null) {
+      session.getAttribute("authService")
+    } else {
+      "g+"
+    }
     authenticationRequired(dao, session.id, db, {
       val sid = session.getId
       db withSession { implicit session: Session =>
@@ -108,7 +114,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds )
       }
     }, {
-      redirect(Constants.LOGIN_URI)
+      redirect(Constants.LOGIN_URI + "/" + authService)
     })
   }
 }
