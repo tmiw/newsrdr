@@ -2,7 +2,8 @@
 			<ul class="feedmenu">
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/g+">login</a></li>
+				<li class="feedmenuoption"><a href="/auth/login/g+">login via Google</a></li>
+				<li class="feedmenuoption"><a href="/auth/login/fb">login via Facebook</a></li>
 			</ul>
 			<div class="textblock">
 				<h1>newsrdr is a news reader without the extra fluff.</h1>
