@@ -1,9 +1,11 @@
 package com.thoughtbug.newsrdr.models
 
 object Constants {
-  var ITEMS_PER_PAGE = 10
-  var LOGIN_URI = "/auth/login"
-  var AUTHENTICATED_URI = "/auth/authenticated"
+  val ITEMS_PER_PAGE = 10
+  val LOGIN_URI = "/auth/login"
+  val AUTHENTICATED_URI = "/auth/authenticated"
+  val FB_CLIENT_ID = "1375893982640236"
+  val FB_CLIENT_SECRET = "INSERT SECRET HERE"
     
   def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest, service: String) : String = {
     var protocol = request.isSecure() match {
@@ -12,6 +14,12 @@ object Constants {
     }
     
     (protocol + request.getServerName() + ":" + request.getServerPort().toString() + Constants.AUTHENTICATED_URI + "/" + service)
+  }
+  
+  def getFacebookLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
+    "https://www.facebook.com/dialog/oauth?client_id=" + FB_CLIENT_ID + 
+    "&redirect_uri=" + getAuthenticatedURL(request, "fb") +
+    "&response_type=code&scope=email"
   }
 }
 

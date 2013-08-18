@@ -4,15 +4,16 @@ import org.scalatra._
 import scalate.ScalateSupport
 import com.thoughtbug.newsrdr.models._
 import scala.slick.session.{Database, Session}
-
 import org.openid4java.consumer._
 import org.openid4java.discovery._
 import org.openid4java.message.ax._
 import org.openid4java.message._
-
 import org.json4s._
+import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read, write}
+import dispatch._, Defaults._
+import dispatch.url
 
 class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
@@ -48,6 +49,20 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     }
   }
   
+  get("/auth/login/fb") {
+    var sId = session.getId()
+    var setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
+    
+    db withSession { implicit session: Session =>
+      dao.getUserSession(session, sId) match {
+        case Some(sess) => redirect("/news/")
+        case None => {
+          redirect(Constants.getFacebookLoginURL(request))    
+        }
+      }
+    }
+  }
+  
   get("/auth/logout") {
     try {
       var sId = session.getId()
@@ -60,6 +75,46 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     
     session.invalidate
     redirect("/")
+  }
+  
+  get("/auth/authenticated/fb") {
+    if (params.contains("error"))
+    {
+      // TODO: show error on home page
+      redirect("/")
+    }
+    else
+    {
+      val codeToTokenSvc = dispatch.url("https://graph.facebook.com/oauth/access_token") <<? 
+        Map("client_id" -> Constants.FB_CLIENT_ID,
+            "redirect_uri" -> Constants.getAuthenticatedURL(request, "fb"),
+            "client_secret" -> Constants.FB_CLIENT_SECRET,
+            "code" -> params.get("code").get)
+      val resultFuture = dispatch.Http(codeToTokenSvc OK as.String)
+      val result = resultFuture()
+      
+      val tokenRegex = "access_token=([^&]+)&expires=(.+)".r
+      val tokenRegex(t, e) = result
+      
+      session.setAttribute("authService", "fb")
+      session.setAttribute("fbToken", t)
+      session.setAttribute("fbTokenExpires", new java.util.Date().getTime() + e*1000)
+      
+      val getEmailSvc = dispatch.url("https://graph.facebook.com/me") <<?
+        Map("access_token" -> t)
+      val emailFuture = dispatch.Http(getEmailSvc OK as.String)
+      val emailJsonString = emailFuture()
+      
+      implicit val formats = DefaultFormats 
+      val emailJson = parse(emailJsonString)
+      val email = (emailJson \\ "email").extract[String]
+      
+      val sId = session.getId()
+      db withTransaction { implicit session: Session =>
+        dao.startUserSession(session, sId, email)
+      }
+      redirect("/auth/login/fb")
+    }
   }
   
   get("/auth/authenticated/g+") {
@@ -82,7 +137,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         val lastName = fetchResp.getAttributeValue("lastname")
         
         // email is username for now
-        var sId = session.getId()
+        val sId = session.getId()
         session.setAttribute("authService", "g+")
         db withTransaction { implicit session: Session =>
           dao.startUserSession(session, sId, email)
