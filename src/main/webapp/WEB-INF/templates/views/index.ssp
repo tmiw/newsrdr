@@ -16,7 +16,8 @@
 					We stay out of your way so you can read what's most important in the world.
 				</p>
 				<p>
-					Best of all, it's easy to get started. <a href="/auth/login">Log in</a> with your Google account today.
+					Best of all, it's easy to get started. <a href="/auth/login/g+">Log in</a> with your Google account 
+					or <a href="/auth/login/fb">with Facebook</a> today.
 				</p>
 			</div>
 		</div>

@@ -10,8 +10,6 @@
 	top: 0px;
 	height: 100px;
 	width: 100%;
-	
-	background-color: #ccc;
 }
 
 .top .header {
@@ -62,7 +60,6 @@
 	right: 5px;
 	padding-right: 5px;
 	top: 100px;
-	border: 1px dotted black;
 	list-style-type: none;
 	padding-left: 15px;
 	width: 200px;
@@ -71,7 +68,6 @@
 
 .feedmenu a {
 	cursor: pointer;
-	color: blue;
 	text-decoration: none;
 }
 
@@ -84,9 +80,7 @@
 	bottom: 0px;
 	left: 0px;
 	height: 25px;
-	
 	width: 100%;
-	background-color: #ccc;
 }
 
 .bottom .copyright {
@@ -110,11 +104,6 @@ body {
 .welcomeblock a {
 	text-decoration: none;
 	cursor: pointer;
-	color: blue;
-}
-
-.feed {
-	background-color: #fff;
 }
 
 .selectedfeed {
@@ -128,15 +117,10 @@ body {
 
 .feedlist a {
 	text-decoration: none;
-	color: black;
 }
 
 .feedlist a:hover {
 	text-decoration: underline;
-}
-
-.feedlist a:visited {
-	color: black;
 }
 
 .feedpostlist {
@@ -155,21 +139,17 @@ body {
 .feedpost {
 	max-width: 90%;
 	margin-top: 15px;
-	border: 2px solid black;
-	border-radius: 3px;
 }
 
 .nomoreposts {
 	max-width: 90%;
 	margin-top: 15px;
-	background-color: #ccc;
 	text-align: center;
 }
 
 .loadingposts {
 	max-width: 90%;
 	margin-top: 15px;
-	background-color: #ccc;
 	text-align: center;
 }
 
@@ -223,23 +203,10 @@ body {
 .postoption {
 	display: inline;
 	list-style-type: none;
-	color: blue;
 }
 
 .postoption:hover {
 	text-decoration: underline;
-}
-
-.unread {
-	border: 2px solid red;
-}
-
-.unreadcount {
-	background-color: #000;
-	color: #fff;
-	border-radius: 3px;
-	border: 1px solid black;
-	font-weight: normal;
 }
 
 .hide-element { display: none; }
@@ -256,9 +223,7 @@ body {
 	position: fixed;
 	right: 250px;
 	top: 140px;
-	border: 1px solid black;
 	height: 50px;
-	background-color: #fff;
 	padding: 5px;
 }
 

@@ -2,6 +2,11 @@ body {
 	font-family: 'Roboto', Verdana, Arial, Helvetica, sans-serif;
 }
 
+#logo {
+	width: 191px;
+	height: 40px;
+}
+
 .container {
 	max-width: 1000px;
 }
@@ -12,7 +17,6 @@ body {
 	top: 0px;
 	height: 50px;
 	width: 100%;
-	background-color: #ccc;
 	z-index: 90;
 }
 
@@ -43,7 +47,7 @@ body {
 	top: 50px;
 	width: 100%;
 	z-index: 90;
-	background-color: #ccc;
+	background-color: #ffae73;
 	margin-top: 0px;
 	padding: 0px;
 	list-style-type: none;
@@ -81,15 +85,10 @@ body {
 
 .feedlist a {
 	text-decoration: none;
-	color: black;
 }
 
 .feedlist a:hover {
 	text-decoration: underline;
-}
-
-.feedlist a:visited {
-	color: black;
 }
 
 .feed {
@@ -99,14 +98,6 @@ body {
 .selectedfeed {
 	font-weight: bold;
 	display: block;
-}
-
-.unreadcount {
-	background-color: #000;
-	color: #fff;
-	border-radius: 3px;
-	border: 1px solid black;
-	font-weight: normal;
 }
 
 /* main feed display */
@@ -140,21 +131,17 @@ body {
 .feedpost {
 	max-width: 100%;
 	margin-top: 15px;
-	border: 2px solid black;
-	border-radius: 3px;
 }
 
 .nomoreposts {
 	max-width: 90%;
 	margin-top: 15px;
-	background-color: #ccc;
 	text-align: center;
 }
 
 .loadingposts {
 	max-width: 90%;
 	margin-top: 15px;
-	background-color: #ccc;
 	text-align: center;
 }
 
@@ -208,15 +195,10 @@ body {
 .postoption {
 	display: inline;
 	list-style-type: none;
-	color: blue;
 }
 
 .postoption:hover {
 	text-decoration: underline;
-}
-
-.unread {
-	border: 2px solid red;
 }
 
 /* main menu */
@@ -228,7 +210,7 @@ body {
 	max-height: 100%;
 	width: 100%;
 	z-index: 90;
-	background-color: #ccc;
+	background-color: #ffae73;
 	margin-top: 0px;
 	padding: 0px;
 	padding-left: 5px;
@@ -269,7 +251,6 @@ body {
 	height: 25px;
 	
 	width: 100%;
-	background-color: #ccc;
 }
 
 .bottom .copyright {

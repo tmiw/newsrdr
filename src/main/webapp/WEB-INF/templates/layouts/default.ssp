@@ -3,7 +3,9 @@
 <head>
 	<title>newsrdr beta</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<link rel="shortcut icon" href="/static/img/favicon.ico" />
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
+	<link href='/static/css/colors.css' rel='stylesheet' type='text/css' />
 	<link href='/static/css/layout.css' rel='stylesheet' media='only screen and (min-width: 961px)' type='text/css' media="screen" />
 	<link rel='stylesheet' media='only screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
 	<script src="/static/js/overthrow.js"></script>
@@ -14,7 +16,7 @@
 		<img src="/static/img/menu-icon-large.gif" class="main-menu-mobile" width="42" height="36" />
 		<img src="/static/img/feed-icon-large.gif" class="feed-menu-mobile" width="42" height="36" />
 		<div class="header">
-			newsrdr
+			<img src="/static/img/logo.png" id="logo" alt="newsrdr" height="60" width="286" />
 		</div>
 	</div>
 	<div class="middle">
