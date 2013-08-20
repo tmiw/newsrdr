@@ -478,11 +478,15 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def startUserSession(implicit session: Session, sessionId: String, email: String) {
-	  val q = for { u <- Users if u.username === email } yield u
-      var userId = q.firstOption match {
+	 startUserSession(session, sessionId, email, email) 
+	}
+	
+	def startUserSession(implicit session: Session, sessionId: String, username: String, email: String) {
+	  val q = for { u <- Users if u.username === username } yield u
+      val userId = q.firstOption match {
         case Some(u) => u.id.get
         case None => {
-          Users returning Users.id insert User(None, email, "", email)
+          Users returning Users.id insert User(None, username, "", email)
         }
       }
       UserSessions.insert(UserSession(userId, sessionId))
