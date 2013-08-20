@@ -48,6 +48,10 @@ a:visited {
 	border-radius: 3px;
 }
 
+.feedpost .pubdate {
+	color: black;
+}
+
 .nomoreposts {
 	background-color: #ffae73;
 }
