@@ -157,7 +157,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      select "uf"."id", count(*) as unread 
 	      from "UserFeeds" "uf"
 	          inner join "NewsFeedArticles" "nfa" on "nfa"."feedId" = "uf"."feedId" 
-	          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id"
+	          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
 	      where "uf"."userId" = ? and
                 ("ua"."articleRead" is null or "ua"."articleRead" = false) and
 	            UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14)) and
@@ -169,7 +169,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      select uf.id, count(*) as unread 
 	      from UserFeeds uf
 	          inner join NewsFeedArticles nfa on nfa.feedId = uf.feedId 
-	          left join UserArticles ua on ua.articleId = nfa.id
+	          left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
 	      where uf.userId = ? and
                 (ua.articleRead is null or ua.articleRead = false) and
 	            UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14)) and
@@ -243,7 +243,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
-	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
 	                  "uf"."feedId" = ? and
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
@@ -256,7 +256,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
-	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
 	                  "uf"."feedId" = ? and
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
@@ -270,7 +270,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
-	        left join UserArticles ua on ua.articleId = nfa.id 
+	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
 	                  uf.feedId = ? and
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
@@ -283,7 +283,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
-	        left join UserArticles ua on ua.articleId = nfa.id 
+	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and
 	                  uf.feedId = ? and
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
@@ -307,7 +307,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
-	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                       unix_timestamp("nfa"."pubDate") <= ? and
@@ -318,7 +318,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
 	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
 	        from "NewsFeedArticles" "nfa"
-	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
                 where "uf"."userId" = ? and 
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
@@ -332,7 +332,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
-	        left join UserArticles ua on ua.articleId = nfa.id 
+	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                       unix_timestamp(nfa.pubDate) <= ? and
@@ -344,7 +344,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
-	        left join UserArticles ua on ua.articleId = nfa.id 
+	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                       unix_timestamp(nfa.pubDate) <= ?
