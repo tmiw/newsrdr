@@ -62,6 +62,7 @@ NewsArticleView = Backbone.View.extend({
 		var ele = this.el;
 		FB.XFBML.parse(ele);
 		gapi.plusone.go(ele);
+  		twttr.widgets.load(ele);
   		
   		return this;
   	}
