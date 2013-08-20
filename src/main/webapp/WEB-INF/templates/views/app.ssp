@@ -77,9 +77,9 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		{{{article.description}}}
 	</div>
 	<ul class="postoptions">
-		<li class="postoptionshare"><g:plusone href="{{{article.link}}}" action="share" /></g:plusone></li>
 		<li class="postoptionshare"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="true" data-send="true"></div></li>
 		<li class="postoptionshare"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-url="{{{article.link}}}">Tweet</a></li>
+		<li class="postoptionshare"><g:plusone href="{{{article.link}}}" action="share" size="medium" /></g:plusone></li>
 		<li class="postoption markRead">mark read</li>
 		<li class="postoption markUnread">mark unread</li>
 	</ul>

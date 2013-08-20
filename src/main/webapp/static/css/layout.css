@@ -196,6 +196,8 @@ body {
 .postoptionshare {
 	display: block;
 	position: relative;
+	padding-top: 5px;
+	padding-right: 5px;
 	bottom: 5px;
 	float: left;
 	left: -30px;
