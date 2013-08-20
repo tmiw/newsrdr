@@ -365,8 +365,9 @@ class DataTables(val driver: ExtendedProfile) {
         case Some(_) => {
 	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo)
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
+	            	     if nfa.feedId === feedId &&
+	            	        (unixTimestampFn(nfa.pubDate.get) >= upTo)
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
 	        x._2 match {
@@ -392,8 +393,8 @@ class DataTables(val driver: ExtendedProfile) {
         case Some(_) => {
 	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if (unixTimestampFn(nfa.pubDate.get) >= upTo)
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
+	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
 	        x._2 match {
@@ -437,7 +438,7 @@ class DataTables(val driver: ExtendedProfile) {
 	def setPostStatus(implicit session: Session, userId: Int, postId: Int, unread: Boolean) : Boolean = {
 	  var post_exists = for {
 	    nfa <- NewsFeedArticles if nfa.id === postId
-	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
+	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId 
 	  } yield nfa
 	  
 	  post_exists.firstOption match {
