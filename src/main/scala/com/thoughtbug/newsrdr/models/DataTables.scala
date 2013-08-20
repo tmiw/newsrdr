@@ -373,8 +373,8 @@ class DataTables(val driver: ExtendedProfile) {
 	          case (id, Some(uid), Some(aid)) => {
 	            val single_feed_post = for { 
 	              ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
-	            } yield ua
-	            single_feed_post.update(UserArticle(id, uid, aid, !unread))
+	            } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
+	            single_feed_post.update(uid, aid, !unread)
 	          }
 	          case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
 	        }
@@ -400,8 +400,8 @@ class DataTables(val driver: ExtendedProfile) {
 	          case (id, Some(uid), Some(aid)) => {
 	            val single_feed_post = for { 
 	              ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
-	            } yield ua
-	            single_feed_post.update(UserArticle(id, uid, aid, !unread))
+	            } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
+	            single_feed_post.update(uid, aid, !unread)
 	          }
 	          case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
 	        }
