@@ -365,8 +365,8 @@ class DataTables(val driver: ExtendedProfile) {
         case Some(_) => {
 	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if nfa.feedId === feedId &&
-	            	        (unixTimestampFn(nfa.pubDate.get) >= upTo)
+	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo) &&
+	            	        ua.userId === userId
 	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
@@ -393,7 +393,8 @@ class DataTables(val driver: ExtendedProfile) {
         case Some(_) => {
 	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo
+	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo &&
+	            	        ua.userId === userId
 	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
