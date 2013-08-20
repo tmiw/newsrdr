@@ -420,7 +420,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      var feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	     if nfa.feedId === feedId && ua.articleId === postId
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
 	      } yield ua
 	      feed_posts.firstOption match {
 	        case Some(x) => {
@@ -438,14 +438,14 @@ class DataTables(val driver: ExtendedProfile) {
 	def setPostStatus(implicit session: Session, userId: Int, postId: Int, unread: Boolean) : Boolean = {
 	  var post_exists = for {
 	    nfa <- NewsFeedArticles if nfa.id === postId
-	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId 
+	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	  } yield nfa
 	  
 	  post_exists.firstOption match {
 	    case Some(article) => {
 	      var feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if ua.articleId === postId
+	            	     if ua.articleId === postId && ua.userId === userId
 	      } yield ua
 	      feed_posts.firstOption match {
 	        case Some(x) => {
