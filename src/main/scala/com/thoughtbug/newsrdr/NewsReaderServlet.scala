@@ -106,6 +106,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     
     twitter.getOAuthAccessToken(requestToken, verifier);
     session.removeAttribute("requestToken");
+    session.setAttribute("authService", "twitter")
     
     val sId = session.getId()
     db withTransaction { implicit session: Session =>
