@@ -364,10 +364,9 @@ class DataTables(val driver: ExtendedProfile) {
       my_feed.firstOption match {
         case Some(_) => {
 	      val feed_posts = for {
-	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo) &&
-	            	        ua.userId === userId
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
+	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo)
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
 	        x._2 match {
@@ -392,10 +391,9 @@ class DataTables(val driver: ExtendedProfile) {
       my_feed.firstOption match {
         case Some(_) => {
 	      val feed_posts = for {
-	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo &&
-	            	        ua.userId === userId
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
+	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
 	        x._2 match {
