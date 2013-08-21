@@ -168,9 +168,17 @@ object XmlFeedFactory {
         
     var xmlDoc : xml.Elem = null
     try {
-      xmlDoc = MyXML.loadString(text)
+      MyXML.synchronized {
+        MyXML.parser.reset()
+        xmlDoc = MyXML.loadString(text)
+      }
     } catch {
-      case _:Exception => xmlDoc = parser.loadString(text)
+      case _:Exception => {
+        parser.synchronized {
+          parser.parser.reset() 
+          xmlDoc = parser.loadString(text)
+        }
+      }
     }
     
     val feedLinks = (xmlDoc \\ "link").filter(attributeEquals("rel", "alternate")(_))
