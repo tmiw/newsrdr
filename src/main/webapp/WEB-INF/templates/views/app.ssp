@@ -77,9 +77,9 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		{{{article.description}}}
 	</div>
 	<ul class="postoptions">
-		<li class="postoptionshare"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="true" data-send="true"></div></li>
-		<li class="postoptionshare"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-url="{{{article.link}}}">Tweet</a></li>
-		<li class="postoptionshare"><g:plusone href="{{{article.link}}}" action="share" size="medium" /></g:plusone></li>
+		<li class="postoptionshare" style="width: 137px"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="true" data-send="true"></div></li>
+		<li class="postoptionshare" style="width: 112px"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-url="{{{article.link}}}">Tweet</a></li>
+		<li class="postoptionshare" style="width: 95px"><g:plusone href="{{{article.link}}}" action="share" size="medium" /></g:plusone></li>
 		<li class="postoption markRead">mark read</li>
 		<li class="postoption markUnread">mark unread</li>
 	</ul>
@@ -87,13 +87,13 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 </script>
 
 <!-- load scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js"></script>
 
 <script src="/static/js/models/NewsFeed.js"></script>
 <script src="/static/js/models/NewsArticle.js"></script>
@@ -128,7 +128,7 @@ $(function(){
 
 	(function() {
     	var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-		po.src = 'https://apis.google.com/js/plusone.js';
+		po.src = '//apis.google.com/js/plusone.js';
 		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
 	})();
 	
@@ -138,7 +138,7 @@ $(function(){
 		var js, fjs = d.getElementsByTagName(s)[0];
 		if (d.getElementById(id)) return;
 		js = d.createElement(s); js.id = id;
-		js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1&appId=1375893982640236";
+		js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
 		fjs.parentNode.insertBefore(js, fjs);
 	}(document, 'script', 'facebook-jssdk'));
 	
