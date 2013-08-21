@@ -175,7 +175,6 @@ object XmlFeedFactory {
     } catch {
       case _:Exception => {
         parser.synchronized {
-          parser.parser.reset() 
           xmlDoc = parser.loadString(text)
         }
       }
