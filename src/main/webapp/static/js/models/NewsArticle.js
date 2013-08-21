@@ -13,15 +13,22 @@ NewsArticleModel = Backbone.Model.extend({
 		}
 		$.ajax("/feeds/" + this.get("article").feedId + "/posts/" + this.get("article").id, {
 			type: httpType,
-			error: function(x, y, z) { x.type = httpType; AppController.globalAjaxErrorHandler(x, y, z); }
-		}).done(function(data) {
-			if (httpType == "DELETE")
-			{
-				self.get("feedObj").subtractUnread();
-			}
-			else
-			{
-				self.get("feedObj").addUnread();
+			error: function(x, y, z) { x.type = httpType; AppController.globalAjaxErrorHandler(x, y, z); },
+			success: function() {
+				if (httpType == "DELETE")
+				{
+					self.get("feedObj").subtractUnread();
+				}
+				else
+				{
+					self.get("feedObj").addUnread();
+				}
+			},
+			beforeSend: function() {
+				$("#loading").removeClass("hide-element");
+			},
+			complete: function() {
+				$("#loading").addClass("hide-element");
 			}
 		});
 	},

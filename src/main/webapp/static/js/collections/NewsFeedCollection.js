@@ -24,9 +24,16 @@ var NewsFeedCollection = Backbone.Collection.extend({
 	addFeed: function(feedUrl, onSuccessFn, onFailFn) {
 		// shoehorn an AJAX request to add a feed.
 		var self = this;
-		$.post("/feeds/", {
-			url: feedUrl
-		}, function(data, textStatus, xhr) {
+		$.ajax({
+			data: {
+				url: feedUrl
+			},
+			url: "/feeds/",
+			type: "POST",
+			beforeSend: function() {
+				$("#loading").removeClass("hide-element");
+			}
+		}).done(function(data, textStatus, xhr) {
 			data.id = data.feed.id;
 			feed = new NewsFeedModel(data);
 			self.add(feed);
@@ -35,6 +42,8 @@ var NewsFeedCollection = Backbone.Collection.extend({
 			{
 				onSuccessFn(feed);
 			}
+		}).always(function() {
+			$("#loading").addClass("hide-element");
 		}).fail(function(x, y, z) {
 			// We need the HTTP status code as well but this does not provide it.
 			this.status = x.status;

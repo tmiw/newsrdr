@@ -84,7 +84,6 @@ NewsFeedController = Backbone.View.extend({
 					remove: false,
 					complete: function() {
 						$(".loadingposts").addClass("hide-element");
-						$("#loading").addClass("hide-element");
 						$(".nomoreposts").removeClass("hide-element");
 					}
 				});
@@ -363,9 +362,15 @@ NewsFeedController = Backbone.View.extend({
 			$.ajax({
 				url: url,
 				type: "DELETE",
+				beforeSend: function() {
+					$("#loading").removeClass("hide-element");
+				},
 				success: function(result) {
 					self.updateFeeds();
 					self.selectFeed(self.selectedFeed);
+				},
+				complete: function() {
+					$("#loading").addClass("hide-element");
 				}
 			});
 		} 
