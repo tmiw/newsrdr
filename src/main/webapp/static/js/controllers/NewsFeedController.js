@@ -351,12 +351,13 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	markAllRead: function() {
+		var self = this;
+				
 		if (this.articleCollection && this.articleCollection.length > 0)
 		{
 			var lastPost = this.articleCollection.at(this.articleCollection.length - 1);
 			var lastPostDate = new Date(lastPost.get("article").pubDate).getTime() / 1000;
 			var url = this.selectedFeed ? "/feeds/" + this.selectedFeed.model.id + "/posts" : "/posts/";
-			var self = this;
 		
 			url = url + "?upTo=" + lastPostDate;
 			$.ajax({
