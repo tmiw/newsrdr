@@ -249,6 +249,7 @@ NewsFeedController = Backbone.View.extend({
 		var self = this;
 		
 		NewsFeeds.fetch({
+			beforeSend: function() { $("#loading").removeClass("hide-element"); },
 			success: function(collection, response, options) {
 				self.updateFeedCounts();
 				NewsFeeds.each(function(x) { 
@@ -256,7 +257,8 @@ NewsFeedController = Backbone.View.extend({
 					self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
 				});
 			},
-			error: function(x,y,z) {  y.url = NewsFeeds.urlBase; self.collectionFetchErrorHandler(x,y,z); }
+			error: function(x,y,z) {  y.url = NewsFeeds.urlBase; self.collectionFetchErrorHandler(x,y,z); },
+			complete: function() { $("#loading").addClass("hide-element"); }
 		});
 	},
 
@@ -327,11 +329,19 @@ NewsFeedController = Backbone.View.extend({
 		
 		var self = this;
 		this.articleCollection.fetch({
+			beforeSend: function() {
+				$(".loadingposts").removeClass("hide-element");
+				$(".nomoreposts").addClass("hide-element");
+			},
 			success: function(collection, response, options) {
 				self.enableInfiniteScrolling = true;
 				self.currentPostCount = collection.length;
 			},
-			error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); }
+			error: function(x,y,z) { y.url = self.articleCollection.urlBase; self.collectionFetchErrorHandler(x,y,z); },
+			complete: function() {
+				$(".loadingposts").addClass("hide-element");
+				$(".nomoreposts").removeClass("hide-element");
+			}
 		});
 		
 		self.updateFeedCounts();

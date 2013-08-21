@@ -21,7 +21,7 @@
 				<li class="feedmenuoption authonly"><a id="addNewFeedLink">add new feed</a></li>
 				<li class="feedmenuoption authonly notformobile">
 					<a id="importFeedsLink">import feeds</a>
-					<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported</div></li>
+					<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported <img src="/static/img/ajax-loader.gif" /></div></li>
 				<li class="feedmenuoption authonly notformobile"><a href="/feeds/export.opml">export all feeds</a></li>
 				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
@@ -107,17 +107,6 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 
 <!-- start app once everything's loaded -->
 <script language="javascript">
-$.ajaxSetup({
-	beforeSend:function(){
-        // show gif here
-        $("#loading").removeClass("hide-element");
-    },
-    complete:function(){
-        // hide gif here
-        $("#loading").addClass("hide-element");
-    }
-});
-
 var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 
 $(function(){
