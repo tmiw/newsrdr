@@ -29,12 +29,18 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   }
   
   get("/auth/login/g+") {
-    var sId = session.getId()
-    var setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
+    val sId = session.getId()
+    val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
+    
+    if (session.getAttribute("redirectUrlOnLogin") == null)
+    {
+      session.setAttribute("redirectUrlOnLogin", "/news/")
+    }
+    val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
       dao.getUserSession(session, sId) match {
-        case Some(sess) => redirect("/news/")
+        case Some(sess) => redirect(redirectUrl)
         case None => {
           val discoveries = manager.discover("https://www.google.com/accounts/o8/id")
           val discovered = manager.associate(discoveries)
@@ -55,11 +61,17 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   }
   
   get("/auth/login/fb") {
-    var sId = session.getId()
+    val sId = session.getId()
+    
+    if (session.getAttribute("redirectUrlOnLogin") == null)
+    {
+      session.setAttribute("redirectUrlOnLogin", "/news/")
+    }
+    val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
       dao.getUserSession(session, sId) match {
-        case Some(sess) => redirect("/news/")
+        case Some(sess) => redirect(redirectUrl)
         case None => {
           redirect(Constants.getFacebookLoginURL(request))    
         }
@@ -71,9 +83,15 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     val sId = session.getId()
     val userSession = session
     
+    if (session.getAttribute("redirectUrlOnLogin") == null)
+    {
+      session.setAttribute("redirectUrlOnLogin", "/news/")
+    }
+    val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
+    
     db withSession { implicit session: Session =>
       dao.getUserSession(session, sId) match {
-        case Some(sess) => redirect("/news/")
+        case Some(sess) => redirect(redirectUrl)
         case None => {
           val twitter = new TwitterFactory().getInstance()
           request.getSession().setAttribute("twitter", twitter)
@@ -207,6 +225,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds )
       }
     }, {
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
       redirect(Constants.LOGIN_URI + "/" + authService)
     })
   }
