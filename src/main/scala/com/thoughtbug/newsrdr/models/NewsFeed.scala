@@ -99,40 +99,57 @@ trait XmlFeedParser {
 }
 
 object XmlFeedFactory {
+  val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
+  val f = javax.xml.parsers.SAXParserFactory.newInstance()
+  f.setNamespaceAware(false)
+  f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+  val MyXML = XML.withSAXParser(f.newSAXParser())
+      
   def load(url: String) : XmlFeed = {
-    // We need to be really tolerant of bad Unicode, sadly.
-    //var text = ""
     var count = 0
     var code = 0
     var currentUrl = url
     var conn : java.net.HttpURLConnection = null
     
-    do {
-      count = count + 1
-      val urlObj = new java.net.URL(currentUrl)
-      conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
-      conn.setInstanceFollowRedirects(true)
-      conn.setRequestProperty("User-Agent", "newsrdr (http://newsrdr.us/)")
-      //conn.setRequestMethod("HEAD")
-      conn.connect()
+    try {
+      do {
+        count = count + 1
+        val urlObj = new java.net.URL(currentUrl)
+      
+        if (conn != null)
+        {
+          conn.disconnect()
+        }
+      
+        conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
+        conn.setInstanceFollowRedirects(true)
+        conn.setRequestProperty("User-Agent", "newsrdr (http://newsrdr.us/)")
+        conn.connect()
  
-      code = conn.getResponseCode() 
-      if (code >= 300 && code <= 399)
-      {
-        // Didn't automatically redirect (went from http->https or vice versa). Compensate here.
-        currentUrl = conn.getHeaderField("Location")
-      }
-    } while (count < 5 && code >= 300 && code <= 399)
+        code = conn.getResponseCode() 
+        if (code >= 300 && code <= 399)
+        {
+          // Didn't automatically redirect (went from http->https or vice versa). Compensate here.
+          currentUrl = conn.getHeaderField("Location")
+        }
+      } while (count < 5 && code >= 300 && code <= 399)
     
-    if (count >= 5)
-    {
-      conn.disconnect()
-      throw new RuntimeException("Too many redirects!")
-    }
-    else if (code > 299 || code < 200)
-    {
-      conn.disconnect()
-      throw new RuntimeException("Server error.")
+      if (count >= 5)
+      {
+        throw new RuntimeException("Too many redirects!")
+      }
+      else if (code > 299 || code < 200)
+      {
+        throw new RuntimeException("Server error.")
+      }
+    } catch {
+      case e:Exception => {
+        if (conn != null)
+        {
+          conn.disconnect()
+        }
+        throw e
+      }
     }
     
     val contentType = conn.getContentType()
@@ -144,18 +161,13 @@ object XmlFeedFactory {
       throw new RuntimeException("Feed too large.")
     }
     
-    var contentStream = conn.getInputStream()
+    val contentStream = conn.getInputStream()
     val s = new java.util.Scanner(contentStream).useDelimiter("\\A")
     val text = if (s.hasNext()) { s.next() } else { "" }
     conn.disconnect()
         
-    val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
     var xmlDoc : xml.Elem = null
     try {
-      val f = javax.xml.parsers.SAXParserFactory.newInstance()
-      f.setNamespaceAware(false)
-      f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-      val MyXML = XML.withSAXParser(f.newSAXParser())
       xmlDoc = MyXML.loadString(text)
     } catch {
       case _:Exception => xmlDoc = parser.loadString(text)
