@@ -77,9 +77,10 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		{{{article.description}}}
 	</div>
 	<ul class="postoptions">
-		<li class="postoptionshare" style="width: 137px"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="true" data-send="true"></div></li>
-		<li class="postoptionshare" style="width: 112px"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-url="{{{article.link}}}">Tweet</a></li>
-		<li class="postoptionshare" style="width: 95px"><g:plusone href="{{{article.link}}}" action="share" size="medium" /></g:plusone></li>
+		<li class="postoptionshare"><a class="sharelink">share</a><span class="shareoption hide-element">:</span></li>
+		<li class="postoptionshare shareoption hide-element" style="width: 44px; overflow: hidden"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
+		<li class="postoptionshare shareoption hide-element" style="width: 56px; padding-left: 5px;"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a></li>
+		<li class="postoptionshare shareoption hide-element" style="width: 32px"><g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone></li>
 		<li class="postoption markRead">mark read</li>
 		<li class="postoption markUnread">mark unread</li>
 	</ul>

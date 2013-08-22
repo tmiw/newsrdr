@@ -14,6 +14,25 @@ NewsArticleView = Backbone.View.extend({
 		"contextmenu .markUnread": function() { this.model.set("unread", true); },
 		"contextmenu a": function() { this.model.set("unread", false); },
 		"contextmenu .body": function() { this.model.set("unread", false); },
+		"click .sharelink": "toggleShareOptions",
+	},
+	
+	toggleShareOptions: function() {
+		var shareTags = this.$('.shareoption');
+		if (shareTags.hasClass("hide-element"))
+		{
+		  	// Render share links.
+			var ele = this.el;
+			FB.XFBML.parse(ele);
+			gapi.plusone.go(ele);
+  			twttr.widgets.load(ele);
+  		
+			shareTags.removeClass("hide-element");
+		}
+		else
+		{
+			shareTags.addClass("hide-element");		
+		}
 	},
 	
 	template: Mustache.compile($('#news-article-template').html()),
@@ -57,12 +76,6 @@ NewsArticleView = Backbone.View.extend({
   				this.target = "_blank";
   			}
   		});
-  		
-  		// Render share links.
-		var ele = this.el;
-		FB.XFBML.parse(ele);
-		gapi.plusone.go(ele);
-  		twttr.widgets.load(ele);
   		
   		return this;
   	}

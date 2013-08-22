@@ -191,6 +191,7 @@ body {
 .feedpost .postoptions {
 	text-align: right;
 	margin-right: 5px;
+	padding-top: 5px;
 }
 
 .postoptionshare {
