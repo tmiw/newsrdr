@@ -189,25 +189,39 @@ body {
 }
 
 .feedpost .postoptions {
-	text-align: right;
 	margin-right: 5px;
+	margin-bottom: 5px;
 	padding-top: 5px;
+	display: inline;
 }
 
 .postoptionshare {
-	display: block;
 	position: relative;
 	padding-top: 5px;
 	padding-right: 5px;
 	bottom: 5px;
-	float: left;
-	left: -30px;
+	float: right;
 	height: 20px;
+	cursor: pointer;
+}
+
+.optiondivider {
+	color: black;
+	cursor: default;
+}
+
+.optiondivider:hover {
+	text-decoration: none;
 }
 
 .postoption {
-	display: inline;
-	list-style-type: none;
+	position: relative;
+	padding-top: 5px;
+	padding-right: 5px;
+	bottom: 5px;
+	float: right;
+	height: 20px;
+	cursor: pointer;
 }
 
 .postoption:hover {
