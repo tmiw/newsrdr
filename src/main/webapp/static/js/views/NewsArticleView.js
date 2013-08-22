@@ -22,11 +22,16 @@ NewsArticleView = Backbone.View.extend({
 		if (shareTags.hasClass("hide-element"))
 		{
 		  	// Render share links.
-			var ele = this.el;
-			FB.XFBML.parse(ele);
-			gapi.plusone.go(ele);
-  			twttr.widgets.load(ele);
-  		
+		  	if (!shareTags.hasClass("share-buttons-rendered"))
+		  	{
+				var ele = this.el;
+				FB.XFBML.parse(ele);
+				gapi.plusone.go(ele);
+  				twttr.widgets.load(ele);
+ 
+ 				shareTags.addClass("share-buttons-rendered");
+ 			}
+ 			
 			shareTags.removeClass("hide-element");
 		}
 		else
