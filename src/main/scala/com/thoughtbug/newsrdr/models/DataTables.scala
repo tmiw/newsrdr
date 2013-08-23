@@ -358,14 +358,15 @@ class DataTables(val driver: ExtendedProfile) {
 	  })
 	}
 	
-	def setPostStatusForAllPosts(implicit session: Session, userId: Int, feedId: Int, upTo: Int, unread: Boolean) : Boolean = {
+	def setPostStatusForAllPosts(implicit session: Session, userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
 	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
 	  var my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
 	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
-	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo)
+	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo) &&
+	            	        (unixTimestampFn(nfa.pubDate.get) <= from)
 	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
@@ -385,14 +386,14 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	}
 	
-	def setPostStatusForAllPosts(implicit session: Session, userId: Int, upTo: Int, unread: Boolean) : Boolean = {
+	def setPostStatusForAllPosts(implicit session: Session, userId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
 	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
 	  var my_feed = for { uf <- UserFeeds if uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
 	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
-	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo
+	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo && unixTimestampFn(nfa.pubDate.get) <= from
 	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
