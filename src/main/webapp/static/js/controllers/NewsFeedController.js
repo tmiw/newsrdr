@@ -199,11 +199,19 @@ NewsFeedController = Backbone.View.extend({
 		});
 				
 		// Update feed counts every five minutes.
-		var self = this;
-		window.setInterval(function() { self.updateFeeds(); }, 1000 * (60 * 5));
+		this.scheduleFeedUpdate();
 		
 		// make the feed list resizable.
 		this.makeDraggable();
+	},
+	
+	scheduleFeedUpdate: function() {
+		var self = this;
+		if (self.updateFeedScheduleId !== "undefined")
+		{
+			window.clearInterval(self.updateFeedScheduleId);
+		}
+		self.updateFeedScheduleId = window.setInterval(function() { self.updateFeeds(); }, 1000 * (60 * 5));
 	},
 	
 	showImportWindow: function() {
@@ -255,6 +263,8 @@ NewsFeedController = Backbone.View.extend({
 					self.stopListening(x, 'change:numUnread');
 					self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
 				});
+				
+				self.scheduleFeedUpdate();
 			},
 			error: function(x,y,z) {  y.url = NewsFeeds.urlBase; self.collectionFetchErrorHandler(x,y,z); },
 			complete: function() { $("#loading").addClass("hide-element"); }
