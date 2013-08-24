@@ -19,25 +19,20 @@ NewsArticleView = Backbone.View.extend({
 	
 	toggleShareOptions: function() {
 		var shareTags = this.$('.shareoption');
-		if (shareTags.hasClass("hide-element"))
-		{
-		  	// Render share links.
-		  	if (!shareTags.hasClass("share-buttons-rendered"))
-		  	{
-				var ele = this.el;
-				FB.XFBML.parse(ele);
-				gapi.plusone.go(ele);
-  				twttr.widgets.load(ele);
+
+	  	// Render share links.
+	  	if (!shareTags.hasClass("share-buttons-rendered"))
+	  	{
+			var ele = this.el;
+			FB.XFBML.parse(ele);
+			gapi.plusone.go(ele);
+			twttr.widgets.load(ele);
  
- 				shareTags.addClass("share-buttons-rendered");
- 			}
+ 			shareTags.addClass("share-buttons-rendered");
+ 		}
  			
-			shareTags.removeClass("hide-element");
-		}
-		else
-		{
-			shareTags.addClass("hide-element");		
-		}
+		shareTags.removeClass("hide-element");
+		this.$('.sharelink').addClass("hide-element");
 	},
 	
 	template: Mustache.compile($('#news-article-template').html()),
