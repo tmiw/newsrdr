@@ -286,7 +286,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     authenticationRequired(dao, session.getId, db, {
 	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
 	    val userId = getUserId(dao, db, session.getId).get
-	    val upTo = Integer.parseInt(params.getOrElse("upTo", halt(422)))
+	    val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
 	    val from = Integer.parseInt(params.getOrElse("from", halt(422)))
 	    
 	    db withTransaction { implicit session: Session =>
