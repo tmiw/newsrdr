@@ -192,35 +192,26 @@ body {
 	margin-right: 5px;
 	margin-bottom: 5px;
 	padding-top: 5px;
-	display: inline;
+	text-align: right;
 }
 
 .postoptionshare {
-	position: relative;
-	padding-top: 5px;
-	padding-right: 5px;
-	bottom: 5px;
-	float: right;
-	height: 20px;
+	display: inline;
 	cursor: pointer;
+}
+
+.postoptionshare:hover {
+	text-decoration: underline;
 }
 
 .optiondivider {
 	color: black;
+	display: inline;
 	cursor: default;
 }
 
-.optiondivider:hover {
-	text-decoration: none;
-}
-
 .postoption {
-	position: relative;
-	padding-top: 5px;
-	padding-right: 5px;
-	bottom: 5px;
-	float: right;
-	height: 20px;
+	display: inline;
 	cursor: pointer;
 }
 
