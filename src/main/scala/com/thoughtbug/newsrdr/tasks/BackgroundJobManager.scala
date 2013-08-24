@@ -48,6 +48,7 @@ object BackgroundJobManager {
   
   def shutdown = {
     scheduler.shutdown(true)
+    scheduler = null; // force GC of scheduler objects.
   }
   
   def unscheduleFeedJob(url: String) {
