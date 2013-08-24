@@ -277,6 +277,7 @@ NewsFeedController = Backbone.View.extend({
 		if (this.selectedFeed)
 		{
 			feedTitle = this.selectedFeed.model.get("feed").title + ": ";
+			total_unread = this.selectedFeed.model.get("numUnread");
 		}
 		else
 		{
