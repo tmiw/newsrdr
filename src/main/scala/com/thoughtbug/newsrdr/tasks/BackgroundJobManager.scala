@@ -47,7 +47,7 @@ object BackgroundJobManager {
   }
   
   def shutdown = {
-    scheduler.shutdown()
+    scheduler.shutdown(true)
   }
   
   def unscheduleFeedJob(url: String) {
