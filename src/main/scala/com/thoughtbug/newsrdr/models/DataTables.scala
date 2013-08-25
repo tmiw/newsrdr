@@ -129,8 +129,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  def userId = column[Int]("userId")
 	  def sessionId = column[String]("sessionId")
 	  def lastAccess = column[Timestamp]("lastAccess")
+	  def lastAccessIp = column[String]("lastAccessIp")
 	  
-	  def * = userId ~ sessionId ~ lastAccess <> (UserSession, UserSession.unapply _)
+	  def * = userId ~ sessionId ~ lastAccess ~ lastAccessIp <> (UserSession, UserSession.unapply _)
 	  def bIdx1 = index("userSessionKey", userId ~ sessionId, unique = true)
 	  def user = foreignKey("userSessionUserKey", userId, Users)(_.id)
 	}
@@ -481,11 +482,11 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	}
 	
-	def getUserSession(implicit session: Session, sessionId: String) : Option[UserSession] = {
+	def getUserSession(implicit session: Session, sessionId: String, ip: String) : Option[UserSession] = {
 	  var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption match {
 	    case Some(s) => {
-	      q.update(UserSession(s.userId, s.sessionId, new java.sql.Timestamp(new java.util.Date().getTime())))
+	      q.update(UserSession(s.userId, s.sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
 	      Some(s)
 	    }
 	    case None => None
@@ -505,11 +506,11 @@ class DataTables(val driver: ExtendedProfile) {
       }
 	}
 	
-	def startUserSession(implicit session: Session, sessionId: String, email: String) {
-	 startUserSession(session, sessionId, email, email) 
+	def startUserSession(implicit session: Session, sessionId: String, email: String, ip: String) {
+	 startUserSession(session, sessionId, email, email, ip) 
 	}
 	
-	def startUserSession(implicit session: Session, sessionId: String, username: String, email: String) {
+	def startUserSession(implicit session: Session, sessionId: String, username: String, email: String, ip: String) {
 	  val q = for { u <- Users if u.username === username } yield u
       val userId = q.firstOption match {
         case Some(u) => u.id.get
@@ -517,7 +518,7 @@ class DataTables(val driver: ExtendedProfile) {
           Users returning Users.id insert User(None, username, "", email)
         }
       }
-      UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime())))
+      UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
 	}
 	
 	def updateOrInsertFeed(implicit session: Session, feedUrl: String, feed: XmlFeed) : NewsFeed = {

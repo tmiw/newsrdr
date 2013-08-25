@@ -55,9 +55,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
         
   get("/", operation(getFeeds)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
       executeOrReturnError {
-        var userId = getUserId(dao, db, session.getId).get
+        var userId = getUserId(dao, db, session.getId, request).get
         
         db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
@@ -80,11 +80,11 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   get("/export.opml", operation(getFeedsOpml)) {
     contentType = "application/xml"
     
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
       executeOrReturnError {
         var sId = session.getId
         db withSession { implicit session: Session =>
-          val userId = getUserId(dao, db, sId).get
+          val userId = getUserId(dao, db, sId, request).get
           val userName = dao.getUserName(session, userId)
       
           val destFormat = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
@@ -124,7 +124,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
   
   post("/import.opml", operation(postFeedsOpml)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    db withSession { implicit session: Session =>
 	      // AJAX doesn't support file upload, so we have to do it the old-fashioned way.
           contentType = "text/html"
@@ -161,9 +161,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter queryParam[String]("url").description("The URL to the given feed to add."))
    
   post("/", operation(postFeeds)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    val url = params.getOrElse("url", halt(422))
-	    var userId = getUserId(dao, db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId, request).get
 	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
@@ -199,9 +199,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter pathParam[Int]("id").description("The ID of the feed to unsubscribe from."))
         
   delete("/:id", operation(deleteFeeds)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    val id = params.getOrElse("id", halt(422))
-	    var userId = getUserId(dao, db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId, request).get
 	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
@@ -226,10 +226,10 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter queryParam[Option[Integer]]("latest_post_date").description("The date of the oldest post."))
         
   get("/:id/posts", operation(getPostsForFeed)) {
-      authenticationRequired(dao, session.getId, db, {
+      authenticationRequired(dao, session.getId, db, request, {
 	      val id = Integer.parseInt(params.getOrElse("id", halt(422)))
 	      val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	      val userId = getUserId(dao, db, session.getId).get
+	      val userId = getUserId(dao, db, session.getId, request).get
 	      
 	      val latestPostDate = params.get("latest_post_date") match {
             case Some(x) if !x.isEmpty() => Integer.parseInt(x)
@@ -256,10 +256,10 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter pathParam[Int]("pid").description("The ID of the post."))
         
   delete("/:id/posts/:pid", operation(markReadCommand)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    var id = Integer.parseInt(params.getOrElse("id", halt(422)))
 	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId, request).get
 	    
 	    db withTransaction { implicit session: Session =>
 	      dao.setPostStatus(session, userId, id, pid, false) match {
@@ -283,9 +283,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter queryParam[Int]("from").description("The newest date/time which to mark as read."))
         
   delete("/:id/posts", operation(markAllReadCommand)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	    val userId = getUserId(dao, db, session.getId).get
+	    val userId = getUserId(dao, db, session.getId, request).get
 	    val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
 	    val from = Integer.parseInt(params.getOrElse("from", halt(422)))
 	    
@@ -310,10 +310,10 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter pathParam[Int]("pid").description("The ID of the post."))
         
   put("/:id/posts/:pid", operation(markUnreadCommand)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    var id = Integer.parseInt(params.getOrElse("id", halt(422)))
 	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId, request).get
 	    
 	    db withTransaction { implicit session: Session =>
 	      dao.setPostStatus(session, userId, id, pid, true) match {

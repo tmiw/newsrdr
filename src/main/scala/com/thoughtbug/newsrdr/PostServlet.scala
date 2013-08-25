@@ -43,9 +43,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter queryParam[Option[Integer]]("latest_post_date").description("The date of the oldest post."))
         
   get("/", operation(getPosts)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	    val userId = getUserId(dao, db, session.getId).get
+	    val userId = getUserId(dao, db, session.getId, request).get
 	    
 	    val latestPostDate = params.get("latest_post_date") match {
             case Some(x) if !x.isEmpty() => Integer.parseInt(x)
@@ -72,9 +72,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter pathParam[Int]("pid").description("The ID of the post."))
         
   delete("/:pid", operation(markReadCommand)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId, request).get
 	    
 	    db withTransaction { implicit session: Session =>
 	      dao.setPostStatus(session, userId, pid, false) match {
@@ -97,8 +97,8 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter queryParam[Int]("from").description("The newest date/time which to mark as read."))
         
   delete("/", operation(markAllReadCommand)) {
-    authenticationRequired(dao, session.getId, db, {
-	    val userId = getUserId(dao, db, session.getId).get
+    authenticationRequired(dao, session.getId, db, request, {
+	    val userId = getUserId(dao, db, session.getId, request).get
 	    val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
 	    val from = Integer.parseInt(params.getOrElse("from", halt(422)))
 	    
@@ -121,9 +121,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         notes "Marks the given post as unread."
         parameter pathParam[Int]("pid").description("The ID of the post."))
   put("/:pid", operation(markUnreadCommand)) {
-    authenticationRequired(dao, session.getId, db, {
+    authenticationRequired(dao, session.getId, db, request, {
 	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId).get
+	    var userId = getUserId(dao, db, session.getId, request).get
 	    
 	    db withTransaction { implicit session: Session =>
 	      dao.setPostStatus(session, userId, pid, true) match {

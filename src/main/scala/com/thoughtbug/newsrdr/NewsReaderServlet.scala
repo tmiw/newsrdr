@@ -39,7 +39,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sId) match {
+      dao.getUserSession(session, sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
           val discoveries = manager.discover("https://www.google.com/accounts/o8/id")
@@ -70,7 +70,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sId) match {
+      dao.getUserSession(session, sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
           redirect(Constants.getFacebookLoginURL(request))    
@@ -90,7 +90,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sId) match {
+      dao.getUserSession(session, sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
           val twitter = new TwitterFactory().getInstance()
@@ -167,7 +167,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       
       val sId = session.getId()
       db withTransaction { implicit session: Session =>
-        dao.startUserSession(session, sId, email)
+        dao.startUserSession(session, sId, email, request.getRemoteAddr())
       }
       redirect("/auth/login/fb")
     }
@@ -196,7 +196,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         val sId = session.getId()
         session.setAttribute("authService", "g+")
         db withTransaction { implicit session: Session =>
-          dao.startUserSession(session, sId, email)
+          dao.startUserSession(session, sId, email, request.getRemoteAddr())
         }
         redirect("/auth/login/g+")
       }
@@ -211,10 +211,10 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     } else {
       "g+"
     }
-    authenticationRequired(dao, session.id, db, {
+    authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
       db withSession { implicit session: Session =>
-        val userId = getUserId(dao, db, sid).get
+        val userId = getUserId(dao, db, sid, request).get
         
         implicit val formats = Serialization.formats(NoTypeHints)
         val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(

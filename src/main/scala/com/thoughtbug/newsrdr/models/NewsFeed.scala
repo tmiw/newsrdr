@@ -82,7 +82,8 @@ case class User(
 case class UserSession(
     userId: Int,
     sessionId: String,
-    lastAccess: Timestamp
+    lastAccess: Timestamp,
+    lastAccessIp: String
     )
 
 case class UserArticle(
