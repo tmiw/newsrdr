@@ -142,7 +142,7 @@ object XmlFeedFactory {
       }
       else if (code > 299 || code < 200)
       {
-        throw new RuntimeException("Server error.")
+        throw new RuntimeException("Server error: %d %s".format(code, conn.getResponseMessage()))
       }
     } catch {
       case e:Exception => {
