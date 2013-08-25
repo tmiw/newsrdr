@@ -32,10 +32,12 @@ case class NewsFeed(
     ttl: Option[Int],
     imageUrl: Option[String],
     imageTitle: Option[String],
-    imageLink: Option[String]
+    imageLink: Option[String],
     //textInput
     //skipHours
     //skipDays
+    
+    lastUpdate: Timestamp
     )
 
 case class NewsFeedInfo(
@@ -295,7 +297,8 @@ class RSSFeed extends XmlFeed {
             generateOptionValueInt((channel \ "ttl").text),
             generateOptionValue((channel \ "image" \ "url").text),
             generateOptionValue((channel \ "image" \ "title").text),
-            generateOptionValue((channel \ "image" \ "link").text)
+            generateOptionValue((channel \ "image" \ "link").text),
+            new java.sql.Timestamp(new java.util.Date().getTime())
             )
         
         feedCategories = (channel \ "category").map(_.text).toList
@@ -349,7 +352,8 @@ class AtomFeed extends XmlFeed {
             None,
             None,
             None,
-            None
+            None,
+            new java.sql.Timestamp(new java.util.Date().getTime())
             )
         
         feedCategories = (channel \ "category").map(_.text).toList
