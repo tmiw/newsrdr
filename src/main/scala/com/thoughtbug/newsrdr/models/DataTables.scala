@@ -682,4 +682,16 @@ class DataTables(val driver: ExtendedProfile) {
       case None => ()
     }
   }
+  
+  def deleteOldSessions(implicit session: Session) {
+    val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7)
+    val oldSessions = for { us <- UserSessions if unixTimestampFn(us.lastAccess) < unixTimestampFn(oneWeekAgo) } yield us
+    oldSessions.delete
+  }
+  
+  def deleteOldFailLogs(implicit session: Session) {
+    val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7)
+    val oldFailLogs = for { fl <- FeedFailureLogs if unixTimestampFn(fl.failureDate) < unixTimestampFn(oneWeekAgo) } yield fl
+    oldFailLogs.delete
+  }
 }
