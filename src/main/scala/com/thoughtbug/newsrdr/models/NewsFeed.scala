@@ -102,13 +102,25 @@ trait XmlFeedParser {
   def fillFeedProperties(root: Elem, url: String)
 }
 
+// necessary because SAX closes this on error even when the entire thing hasn't been read.
+class ManualCloseBufferedStream(s: java.io.InputStream) extends java.io.BufferedInputStream(s)
+{
+  override def close() {
+    // empty
+  }
+  
+  def actualClose() {
+    super.close()
+  }
+}
+
 object XmlFeedFactory {
   val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
   val f = javax.xml.parsers.SAXParserFactory.newInstance()
   f.setNamespaceAware(false)
   f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
   val MyXML = XML.withSAXParser(f.newSAXParser())
-      
+  
   def load(url: String) : XmlFeed = {
     var count = 0
     var code = 0
@@ -158,28 +170,33 @@ object XmlFeedFactory {
     
     val contentType = conn.getContentType()
     val contentSize = conn.getContentLength()
+    val maxContentSize = 1024*1024*3
     
-    if (contentSize > 1024*1024*3)
+    if (contentSize > maxContentSize)
     {
       conn.disconnect()
       throw new RuntimeException("Feed too large.")
     }
     
-    val contentStream = conn.getInputStream()
-    val s = new java.util.Scanner(contentStream).useDelimiter("\\A")
-    val text = if (s.hasNext()) { s.next() } else { "" }
-    conn.disconnect()
+    val contentStream = new ManualCloseBufferedStream(conn.getInputStream())
+    contentStream.mark(maxContentSize)
         
     var xmlDoc : xml.Elem = null
     try {
       MyXML.synchronized {
         MyXML.parser.reset()
-        xmlDoc = MyXML.loadString(text)
+        xmlDoc = MyXML.load(contentStream)
       }
+      contentStream.actualClose
     } catch {
       case _:Exception => {
-        parser.synchronized {
-          xmlDoc = parser.loadString(text)
+        contentStream.reset()
+        try {
+          parser.synchronized {
+            xmlDoc = parser.load(contentStream)
+          }
+        } finally {
+          contentStream.actualClose
         }
       }
     }
