@@ -32,7 +32,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  
 	  def * = id ~ feedId ~ failureDate ~ failureMessage <> (FeedFailureLog, FeedFailureLog.unapply _)
 	  
-	  def feed = foreignKey("feedIdentifierKey", feedId, NewsFeeds)(_.id)
+	  def feed = foreignKey("feedIdentifierLogKey", feedId, NewsFeeds)(_.id)
 	}
 	
 	object Categories extends Table[Category]("Categories") {
@@ -128,7 +128,9 @@ class DataTables(val driver: ExtendedProfile) {
 	object UserSessions extends Table[UserSession]("UserSessions") {
 	  def userId = column[Int]("userId")
 	  def sessionId = column[String]("sessionId")
-	  def * = userId ~ sessionId <> (UserSession, UserSession.unapply _)
+	  def lastAccess = column[Timestamp]("lastAccess")
+	  
+	  def * = userId ~ sessionId ~ lastAccess <> (UserSession, UserSession.unapply _)
 	  def bIdx1 = index("userSessionKey", userId ~ sessionId, unique = true)
 	  def user = foreignKey("userSessionUserKey", userId, Users)(_.id)
 	}
@@ -481,7 +483,13 @@ class DataTables(val driver: ExtendedProfile) {
 	
 	def getUserSession(implicit session: Session, sessionId: String) : Option[UserSession] = {
 	  var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
-	  q.firstOption
+	  q.firstOption match {
+	    case Some(s) => {
+	      q.update(UserSession(s.userId, s.sessionId, new java.sql.Timestamp(new java.util.Date().getTime())))
+	      Some(s)
+	    }
+	    case None => None
+	  }
 	}
 	
 	def getUserName(implicit session: Session, userId: Int) : String = {
@@ -509,7 +517,7 @@ class DataTables(val driver: ExtendedProfile) {
           Users returning Users.id insert User(None, username, "", email)
         }
       }
-      UserSessions.insert(UserSession(userId, sessionId))
+      UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime())))
 	}
 	
 	def updateOrInsertFeed(implicit session: Session, feedUrl: String, feed: XmlFeed) : NewsFeed = {
