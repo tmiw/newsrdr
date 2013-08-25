@@ -18,6 +18,23 @@ class DataTables(val driver: ExtendedProfile) {
 	// UNIX_TIMESTAMP support
 	val unixTimestampFn = SimpleFunction.unary[Timestamp, Int]("UNIX_TIMESTAMP")
 	
+	case class FeedFailureLog(
+	  id: Option[Int],
+      feedId: Int,
+      failureDate: Timestamp,
+      failureMessage: String)
+    
+    object FeedFailureLogs extends Table[FeedFailureLog]("FeedFailureLogs") {
+	  def id = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
+	  def feedId = column[Int]("feedId")
+	  def failureDate = column[Timestamp]("failureDate")
+	  def failureMessage = column[String]("failureMessage")
+	  
+	  def * = id ~ feedId ~ failureDate ~ failureMessage <> (FeedFailureLog, FeedFailureLog.unapply _)
+	  
+	  def feed = foreignKey("feedIdentifierKey", feedId, NewsFeeds)(_.id)
+	}
+	
 	object Categories extends Table[Category]("Categories") {
 		def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 		def name = column[String]("name")
@@ -150,6 +167,7 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == UserArticles.tableName)) UserArticles.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == UserFeeds.tableName)) UserFeeds.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == FeedFailureLogs.tableName)) FeedFailureLogs.ddl.create
 	}
 
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
@@ -644,5 +662,16 @@ class DataTables(val driver: ExtendedProfile) {
       for { c <- categoryIds } {
         (NewsFeedArticleCategories.articleId ~ NewsFeedArticleCategories.categoryId).insert(c)
       }*/
+  }
+
+  def logFeedFailure(implicit session: Session, feedUrl: String, message: String) {
+    val feed = for { nf <- NewsFeeds if nf.feedUrl === feedUrl } yield nf
+    feed.firstOption match {
+      case Some(f) => {
+        FeedFailureLogs.insert(
+            FeedFailureLog(None, f.id.get, new java.sql.Timestamp(new java.util.Date().getTime()), message))
+      }
+      case None => ()
+    }
   }
 }

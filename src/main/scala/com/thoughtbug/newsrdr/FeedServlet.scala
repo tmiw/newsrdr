@@ -171,7 +171,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	      // Grab feed from database, creating if it doesn't already exist.
 	      var feed = dao.getFeedFromUrl(session, url) getOrElse {
 	          var fetchJob = new RssFetchJob
-	          var f = fetchJob.fetch(url)
+	          var f = fetchJob.fetch(url, false)
 	          
 	          // Schedule periodic feed updates
 	          BackgroundJobManager.scheduleFeedJob(f.feedUrl)
