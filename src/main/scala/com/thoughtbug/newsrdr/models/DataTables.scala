@@ -382,14 +382,16 @@ class DataTables(val driver: ExtendedProfile) {
 	
 	def setPostStatusForAllPosts(implicit session: Session, userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
 	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
-	  var my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
+	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
 	      val feed_posts = for {
+	        uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
 	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo) &&
-	            	        (unixTimestampFn(nfa.pubDate.get) <= from)
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
+	            	        (unixTimestampFn(nfa.pubDate.get) <= from) &&
+	            	        unixTimestampFn(nfa.pubDate.get) >= (unixTimestampFn(uf.addedDate) - 60*60*24*14) &&
+	            	        (ua.articleRead.isNull || ua.articleRead === false)
 	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
 	      feed_posts.list.foreach(x => {
 	        x._2 match {
@@ -410,28 +412,27 @@ class DataTables(val driver: ExtendedProfile) {
 	
 	def setPostStatusForAllPosts(implicit session: Session, userId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
 	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
-	  val my_feeds = (for { uf <- UserFeeds if uf.userId === userId } yield uf.feedId).list
-      if (my_feeds.count(_ => true) > 0) {
-	    val feed_posts = for {
-	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
-	                   if unixTimestampFn(nfa.pubDate.get) >= upTo && unixTimestampFn(nfa.pubDate.get) <= from &&
-	            	      (nfa.feedId inSet my_feeds)
-	    } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
-	    feed_posts.list.foreach(x => {
-	      x._2 match {
-	        case (id, Some(uid), Some(aid)) => {
-	          val single_feed_post = for { 
-	            ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
-	          } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
-	          single_feed_post.update(uid, aid, !unread)
-	        }
-	        case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
+      val feed_posts = for {
+	    uf <- UserFeeds if uf.userId === userId
+	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on 
+	                   ((x,y) => x.id === y.articleId && y.userId === userId)
+	                 if unixTimestampFn(nfa.pubDate.get) >= upTo && unixTimestampFn(nfa.pubDate.get) <= from &&
+	            	    unixTimestampFn(nfa.pubDate.get) >= (unixTimestampFn(uf.addedDate) - 60*60*24*14) &&
+	            	    (ua.articleRead.isNull || ua.articleRead === false) &&
+	            	    nfa.feedId === uf.feedId
+	  } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
+	  feed_posts.list.foreach(x => {
+	    x._2 match {
+	      case (id, Some(uid), Some(aid)) => {
+	        val single_feed_post = for { 
+	          ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
+	        } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
+	        single_feed_post.update(uid, aid, !unread)
 	      }
-	    })
-	    true
-      } else {
-        false
-      }
+	      case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
+	    }
+	  })
+	  true
 	}
 	
 	def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
