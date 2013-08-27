@@ -410,29 +410,28 @@ class DataTables(val driver: ExtendedProfile) {
 	
 	def setPostStatusForAllPosts(implicit session: Session, userId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
 	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
-	  var my_feed = for { uf <- UserFeeds if uf.userId === userId } yield uf
-      my_feed.firstOption match {
-        case Some(_) => {
-	      val feed_posts = for {
-	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
-	            	     if unixTimestampFn(nfa.pubDate.get) >= upTo && unixTimestampFn(nfa.pubDate.get) <= from
-	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
-	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
-	      feed_posts.list.foreach(x => {
-	        x._2 match {
-	          case (id, Some(uid), Some(aid)) => {
-	            val single_feed_post = for { 
-	              ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
-	            } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
-	            single_feed_post.update(uid, aid, !unread)
-	          }
-	          case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
+	  val my_feeds = (for { uf <- UserFeeds if uf.userId === userId } yield uf.feedId).list
+      if (my_feeds.count(_ => true) > 0) {
+	    val feed_posts = for {
+	      (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
+	                   if unixTimestampFn(nfa.pubDate.get) >= upTo && unixTimestampFn(nfa.pubDate.get) <= from &&
+	            	      (nfa.feedId inSet my_feeds)
+	    } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
+	    feed_posts.list.foreach(x => {
+	      x._2 match {
+	        case (id, Some(uid), Some(aid)) => {
+	          val single_feed_post = for { 
+	            ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
+	          } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
+	          single_feed_post.update(uid, aid, !unread)
 	        }
-	      })
-	      true
-        }
-	    case _ => false
-	  }
+	        case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
+	      }
+	    })
+	    true
+      } else {
+        false
+      }
 	}
 	
 	def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
