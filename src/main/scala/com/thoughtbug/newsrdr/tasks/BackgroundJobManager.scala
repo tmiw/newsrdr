@@ -73,4 +73,18 @@ object BackgroundJobManager {
       scheduler.scheduleJob(job, trigger)
     }
   }
+  
+  def rescheduleFeedJob(url: String, intervalInSeconds: Int) {
+    val t = new TriggerKey(url)
+    val oldTrigger = scheduler.getTrigger(t)
+	val builder = oldTrigger.getTriggerBuilder()
+	        
+	val newTrigger = TriggerBuilder.newTrigger()
+                                   .withIdentity(t.getName())
+                                   .startAt(futureDate(intervalInSeconds, IntervalUnit.SECOND))
+                                   .withSchedule(simpleSchedule().withIntervalInSeconds(intervalInSeconds).repeatForever())
+                                   .build()
+
+    scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger)
+  }
 }

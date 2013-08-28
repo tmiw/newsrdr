@@ -36,14 +36,18 @@ class RssFetchJob extends Job {
   }
   
   def fetch(feedUrl: String, log: Boolean): NewsFeed = {
+    val today = new java.sql.Timestamp(new java.util.Date().getTime())
     try {
       val feed = XmlFeedFactory.load(feedUrl)
 
-      return preventDeadlock { implicit session: Session =>
+      val ret = preventDeadlock { implicit session: Session =>
         // Update feed's contents with whatever we've fetched from the server.
         // If it doesn't already exist, create.
         BackgroundJobManager.dao.updateOrInsertFeed(session, feedUrl, feed)
       }
+      
+      BackgroundJobManager.rescheduleFeedJob(feedUrl, 60*60)
+      ret
     }
     catch
     {
@@ -54,8 +58,32 @@ class RssFetchJob extends Job {
           // log to error log
           preventDeadlock { implicit session: Session =>
             BackgroundJobManager.dao.logFeedFailure(session, feedUrl, e.getMessage())
-            null
           }
+          
+          // Hold off on updating again for 2x the previous interval (max 24 hours).
+          // This will reduce the amount of load/bandwidth on the server if the outage
+          // is longer than expected.
+          BackgroundJobManager.db.withTransaction { implicit session: Session =>
+            val feed = BackgroundJobManager.dao.getFeedFromUrl(session, feedUrl)
+            feed match {
+              case Some(f) => {
+                val timeDiff = 2 * (today.getTime() - f.lastUpdate.getTime()) / 1000
+                val newInterval = 
+                  if (timeDiff > 60*60*24)
+                  {
+                    60*60*24
+                  }
+                  else
+                  {
+                    timeDiff
+                  }
+                BackgroundJobManager.rescheduleFeedJob(feedUrl, newInterval.asInstanceOf[Int])
+              }
+              case _ => ()
+            }
+          }
+          
+          null
         }
       }
     }
