@@ -217,11 +217,15 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         val userId = getUserId(dao, db, sid, request).get
         
         implicit val formats = Serialization.formats(NoTypeHints)
-        val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
+        val today = new java.util.Date().getTime()
+        val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => {
+          NewsFeedInfo(
             		  x._1, 
             		  x._1.id.get,
-            		  x._2
-              )))
+            		  x._2,
+            		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
+          )
+        }))
         ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds )
       }
     }, {

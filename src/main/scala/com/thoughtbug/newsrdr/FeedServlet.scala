@@ -57,14 +57,16 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   get("/", operation(getFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
       executeOrReturnError {
-        var userId = getUserId(dao, db, session.getId, request).get
+        val userId = getUserId(dao, db, session.getId, request).get
+        val today = new java.util.Date().getTime()
         
         db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
               dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
             		  x._1, 
             		  x._1.id.get,
-            		  x._2
+            		  x._2,
+            		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
               )))
         }
       }
@@ -163,15 +165,15 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   post("/", operation(postFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
 	    val url = params.getOrElse("url", halt(422))
-	    var userId = getUserId(dao, db, session.getId, request).get
+	    val userId = getUserId(dao, db, session.getId, request).get
 	    
 	    // TODO: handle possible exceptions and output error data.
 	    // We probably also want to return validation error info above.
 	    db withTransaction { implicit session: Session =>
 	      // Grab feed from database, creating if it doesn't already exist.
-	      var feed = dao.getFeedFromUrl(session, url) getOrElse {
-	          var fetchJob = new RssFetchJob
-	          var f = fetchJob.fetch(url, false)
+	      val feed = dao.getFeedFromUrl(session, url) getOrElse {
+	          val fetchJob = new RssFetchJob
+	          val f = fetchJob.fetch(url, false)
 	          
 	          // Schedule periodic feed updates
 	          BackgroundJobManager.scheduleFeedJob(f.feedUrl)
@@ -182,10 +184,12 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	      // Add subscription at the user level.
 	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
+	      val today = new java.util.Date().getTime()
 	      NewsFeedInfo(
 	    		  feed,
 	    		  feed.id.get,
-	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get))
+	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get),
+	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false })
 	    }
     }, {
       halt(401)

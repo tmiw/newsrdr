@@ -43,7 +43,8 @@ case class NewsFeed(
 case class NewsFeedInfo(
     feed: NewsFeed,
     id: Integer,
-    numUnread: Integer
+    numUnread: Integer,
+    errorsUpdating: Boolean
 )
 
 case class NewsFeedArticle(
