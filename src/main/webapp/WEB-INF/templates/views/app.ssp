@@ -66,7 +66,7 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		{{article.friendlyPubDate}}
 	</div>
 	<div class="title">
-		<a href="{{article.link}}" target="_blank" class="postlink">{{article.title}}</a>
+		<a href="{{article.link}}" target="_blank" class="postlink">{{{article.title}}}</a>
 	</div>
 	<div class="author">
 		{{article.author}}
