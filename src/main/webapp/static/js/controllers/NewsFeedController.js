@@ -113,15 +113,21 @@ NewsFeedController = Backbone.View.extend({
 					if ((e.keyCode == 75 || e.keyCode == 107) && self.currentArticle > 0)
 					{
 						// Mark current article as read before proceeding.
-						var article = self.articleCollection.at(self.currentArticle);
-						article.set("unread", false);
+						if (typeof(bootstrappedFeeds) !== "undefined")
+						{
+							var article = self.articleCollection.at(self.currentArticle);
+							article.set("unread", false);
+						}
 						self.currentArticle = self.currentArticle - 1;
 					}
 					else if ((e.keyCode == 74 || e.keyCode == 106) && self.currentArticle < self.articleCollection.length - 1)
 					{
-						// Mark current article as read before proceeding.
-						var article = self.articleCollection.at(self.currentArticle);
-						article.set("unread", false);
+						if (typeof(bootstrappedFeeds) !== "undefined")
+						{
+							// Mark current article as read before proceeding.
+							var article = self.articleCollection.at(self.currentArticle);
+							article.set("unread", false);
+						}
 						self.currentArticle = self.currentArticle + 1;
 					}
 					
@@ -191,18 +197,36 @@ NewsFeedController = Backbone.View.extend({
 		this.listenTo(NewsFeeds, 'sort', this.addAllFeeds);
 		
 		// Perform initial fetch from server.
-		NewsFeeds.reset(bootstrappedFeeds);
-		self.updateFeedCounts();
-		NewsFeeds.each(function(x) { 
-			self.stopListening(x, 'change:numUnread');
-			self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
-		});
+		if (typeof(bootstrappedFeeds) !== "undefined")
+		{
+			NewsFeeds.reset(bootstrappedFeeds);
+			self.updateFeedCounts();
+			NewsFeeds.each(function(x) { 
+				self.stopListening(x, 'change:numUnread');
+				self.listenTo(x, 'change:numUnread', function() { self.updateFeedCounts(); });
+			});
 				
-		// Update feed counts every five minutes.
-		this.scheduleFeedUpdate();
+			// Update feed counts every five minutes.
+			this.scheduleFeedUpdate();
 		
-		// make the feed list resizable.
-		this.makeDraggable();
+			// make the feed list resizable.
+			this.makeDraggable();
+		}
+		
+		if (typeof(bootstrappedPosts) !== "undefined")
+		{
+			this.articleCollection = new NewsArticleCollection([]);
+			this.articleCollection.urlBase = "/saved/" + bootstrappedUid + "/posts";
+			self.enableInfiniteScrolling = true;
+			self.currentPostCount = bootstrappedPosts.length;
+			
+			this.listenTo(this.articleCollection, 'add', this.addOneArticle);
+			this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
+			
+			this.articleCollection.reset(bootstrappedPosts);
+			$(".loadingposts").addClass("hide-element");
+			$(".nomoreposts").removeClass("hide-element");
+		}
 	},
 	
 	scheduleFeedUpdate: function() {
@@ -442,7 +466,11 @@ NewsFeedController = Backbone.View.extend({
 		
 		this.selectedFeed = null;
 		this.showHideMenuOptions();
-		this.updateFeedCounts();
+		
+		if (typeof(bootstrappedPosts) === "undefined")
+		{
+			this.updateFeedCounts();
+		}
 	},
 	
 	showHideMenuOptions: function() {

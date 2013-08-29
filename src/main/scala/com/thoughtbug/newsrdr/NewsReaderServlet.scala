@@ -20,12 +20,15 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.RequestToken;
 
+// Swagger support
+import org.scalatra.swagger._
+
 class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
   
   get("/") {
     contentType = "text/html"
-    ssp("/index")
+    ssp("/index", "title" -> "")
   }
   
   get("/auth/login/g+") {
@@ -228,7 +231,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
             		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
           )
         }))
-        ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName )
+        ssp("/app", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName )
       }
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI())

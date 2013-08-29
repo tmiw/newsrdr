@@ -1,7 +1,12 @@
 <%@ val body: String %>
+<%@ val title: String %>
 <html>
 <head>
-	<title>newsrdr beta</title>
+	<title>
+#if (!title.isEmpty())
+${title}:
+#end
+newsrdr beta</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	<link rel="shortcut icon" href="/static/img/favicon.ico" />
 	<link href='//fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />

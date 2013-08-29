@@ -34,6 +34,11 @@
 	cursor: e-resize;
 }
 
+.noresize {
+	border-right: 0px;
+	cursor: auto;
+}
+
 .leftcol .leftcolcontent {
 	white-space: nowrap;
 	padding-right: 7px;

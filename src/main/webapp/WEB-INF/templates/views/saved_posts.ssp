@@ -1,0 +1,118 @@
+<%@ val bootstrappedPosts : String %>
+<%@ val uid : Integer %>
+		<div class="leftcol overthrow noresize">
+			<div class="leftcolcontent">
+			</div>
+		</div>
+		<div class="rightcol overthrow">
+			<ul class="feedmenu">
+				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
+				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
+			</ul>
+			<ul class="feedpostlist" id="postlist">
+			</ul>
+			<ul class="feedpostlistend authonly feedonly allonly">
+				<li class="nomoreposts">
+					no more posts.
+				</li>
+				<li class="loadingposts hide-element">
+					loading <img src="/static/img/ajax-loader.gif" />
+				</li>
+			</ul>
+		</div>
+
+<script type="text/template" id="news-article-template">
+<div class="feedpostcontainer">
+	<a name="article{{article.id}}" id="article_{{article.id}}">
+	<div class="pubdate">
+		{{article.friendlyPubDate}}
+	</div>
+	<div class="title">
+		<a href="{{article.link}}" target="_blank" class="postlink">{{{article.title}}}</a>
+	</div>
+	<div class="author">
+		{{article.author}}
+	</div>
+	<div class="fromfeed">
+		from <a href="{{feed.link}}" target="_blank" class="feedlink">{{feed.title}}</a>
+	</div>
+	<div class="body">
+		{{{article.description}}}
+	</div>
+	<ul class="postoptions">
+		<li class="postoptionshare"><a class="sharelink">share</a></li>
+		<li class="postoptionshare shareoption hide-element"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
+		<li class="postoptionshare shareoption hide-element"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a></li>
+		<li class="postoptionshare shareoption hide-element"><g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone></li>
+	</ul>
+	</a>
+</div>
+</script>
+
+<!-- load scripts -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js"></script>
+
+<script src="/static/js/models/NewsFeed.js"></script>
+<script src="/static/js/models/NewsArticle.js"></script>
+<script src="/static/js/collections/NewsFeedCollection.js"></script>
+<script src="/static/js/collections/NewsArticleCollection.js"></script>
+<script src="/static/js/views/NewsFeedView.js"></script>
+<script src="/static/js/views/NewsArticleView.js"></script>
+<script src="/static/js/views/FileUploadForm.js"></script>
+<script src="/static/js/controllers/NewsFeedController.js"></script>
+<script src="/static/js/controllers/NewsFeedRouter.js"></script>
+
+<!-- start app once everything's loaded -->
+<script language="javascript">
+var bootstrappedPosts = ${unescape(bootstrappedPosts)};
+var bootstrappedUid = "${uid}";
+
+$(function(){
+	window.___gcfg = {
+	  lang: 'en-US',
+	  parsetags: 'explicit'
+	};
+
+	(function() {
+    	var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = '//apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+	
+	!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+
+	(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) return;
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
+		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	AppController = new NewsFeedController();
+	
+	// only show feed menu button if mobile device
+	var mql = window.matchMedia("(min-width: 961px)");
+	if (!mql.matches) {
+		AppController.useMobileUi();
+	} else {
+		AppController.restoreFullUi();
+	}
+		
+	mql.addListener(function(m) {
+		if(!m.matches) {
+			$(".main-menu-mobile").css("display", "block");
+			AppController.useMobileUi();
+		} else {
+			$(".main-menu-mobile").css("display", "none");
+			AppController.restoreFullUi();
+		}
+	});
+});
+</script>

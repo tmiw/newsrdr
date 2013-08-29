@@ -382,6 +382,40 @@ class DataTables(val driver: ExtendedProfile) {
 	  })
 	}
 	
+	def getSavedPosts(implicit session: Session, userId: Int, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
+
+	  val feed_posts = if (driver.isInstanceOf[H2Driver]) {
+	    Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
+	      select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	      from "NewsFeedArticles" "nfa"
+	      inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
+	      left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+              where "uf"."userId" = ? and 
+	                unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                    unix_timestamp("nfa"."pubDate") <= ? and
+	                "ua"."articleSaved" = 1
+	      order by "nfa"."pubDate" desc
+	      limit ? offset ?""")
+	  } else {
+	    Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
+	      select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	      from NewsFeedArticles nfa
+	      inner join UserFeeds uf on uf.feedId = nfa.feedId
+	      left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+              where uf.userId = ? and 
+	                unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                    unix_timestamp(nfa.pubDate) <= ? and
+	                ua.articleSaved = 1
+	      order by nfa.pubDate desc
+	      limit ? offset ?""")
+	  }
+	  
+	  feed_posts.list((userId, latestPostId, maxEntries, offset)).map(x => {
+	    NewsFeedArticleInfo(x._1, false)
+	  })
+	}
+	
 	def setPostStatusForAllPosts(implicit session: Session, userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
 	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
 	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf

@@ -40,6 +40,7 @@ class ScalatraBootstrap extends LifeCycle {
     context.mount(new NewsReaderServlet(dao, db), "/*")
     context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")
     context.mount(new PostServlet(dao, db, swagger), "/posts/*")
+    context.mount(new SavedPostsServlet(dao, db, swagger), "/saved/*")
     context mount(new ResourcesApp, "/api-docs/*")
     
     if (dao.driver.isInstanceOf[H2Driver]) {
