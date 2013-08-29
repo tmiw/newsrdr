@@ -91,7 +91,8 @@ case class UserArticle(
     id: Option[Int],
     userId: Int,
     articleId: Int,
-    articleRead: Boolean)
+    articleRead: Boolean,
+    articleSaved: Boolean)
 
 case class UserFeed(
     id: Option[Int],

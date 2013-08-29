@@ -141,8 +141,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  def userId = column[Int]("userId")
 	  def articleId = column[Int]("articleId")
 	  def articleRead = column[Boolean]("articleRead")
+	  def articleSaved = column[Boolean]("articleSaved")
 	  
-	  def * = id.? ~ userId ~ articleId ~ articleRead <> (UserArticle, UserArticle.unapply _)
+	  def * = id.? ~ userId ~ articleId ~ articleRead ~ articleSaved <> (UserArticle, UserArticle.unapply _)
 	  
 	  def article = foreignKey("userArticleIdKey", articleId, NewsFeedArticles)(_.id)
 	  def user = foreignKey("userArticleUserIdKey", userId, Users)(_.id)
@@ -229,12 +230,12 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getFeedFromUrl(implicit session: Session, url: String) : Option[NewsFeed] = {
-	  var feedQuery = for { f <- NewsFeeds if f.feedUrl === url } yield f
+	  val feedQuery = for { f <- NewsFeeds if f.feedUrl === url } yield f
 	  feedQuery.firstOption
 	}
 	
 	def addSubscriptionIfNotExists(implicit session: Session, userId: Int, feedId: Int) {	  
-	  var userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
+	  val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
 	  userFeed.firstOption match {
 	    case Some(uf) => ()
 	    case None => {
@@ -401,7 +402,7 @@ class DataTables(val driver: ExtendedProfile) {
 	            } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
 	            single_feed_post.update(uid, aid, !unread)
 	          }
-	          case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
+	          case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread, false))
 	        }
 	      })
 	      true
@@ -429,7 +430,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
 	        single_feed_post.update(uid, aid, !unread)
 	      }
-	      case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread))
+	      case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread, false))
 	    }
 	  })
 	  true
@@ -446,10 +447,10 @@ class DataTables(val driver: ExtendedProfile) {
 	      } yield ua
 	      feed_posts.firstOption match {
 	        case Some(x) => {
-	          var single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
-	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread))
+	          val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
+	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread, x.articleSaved))
 	        }
-	        case None => UserArticles.insert(UserArticle(None, userId, postId, !unread))
+	        case None => UserArticles.insert(UserArticle(None, userId, postId, !unread, false))
 	      }
 	      true
 	    }
@@ -458,23 +459,23 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def setPostStatus(implicit session: Session, userId: Int, postId: Int, unread: Boolean) : Boolean = {
-	  var post_exists = for {
+	  val post_exists = for {
 	    nfa <- NewsFeedArticles if nfa.id === postId
 	    uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
 	  } yield nfa
 	  
 	  post_exists.firstOption match {
 	    case Some(article) => {
-	      var feed_posts = for {
+	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	     if ua.articleId === postId && ua.userId === userId
 	      } yield ua
 	      feed_posts.firstOption match {
 	        case Some(x) => {
-	          var single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
-	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread))
+	          val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
+	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread, x.articleSaved))
 	        }
-	        case None => UserArticles.insert(UserArticle(None, userId, postId, !unread))
+	        case None => UserArticles.insert(UserArticle(None, userId, postId, !unread, false))
 	      }
 	      true
 	    }
@@ -483,7 +484,7 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getUserSession(implicit session: Session, sessionId: String, ip: String) : Option[UserSession] = {
-	  var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
+	  val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption match {
 	    case Some(s) => {
 	      q.update(UserSession(s.userId, s.sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
@@ -494,12 +495,12 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getUserName(implicit session: Session, userId: Int) : String = {
-	  var q = for { u <- Users if u.id === userId } yield u.username
+	  val q = for { u <- Users if u.id === userId } yield u.username
 	  q.firstOption.getOrElse("")
 	}
 	
 	def invalidateSession(implicit session: Session, sessionId: String) {
-	  var q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
+	  val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption match {
         case Some(s) => q.delete
         case None => ()
