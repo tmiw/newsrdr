@@ -231,7 +231,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
             		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
           )
         }))
-        ssp("/app", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName )
+        ssp("/app", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "uid" -> userId )
       }
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI())

@@ -1,5 +1,6 @@
 <%@ val bootstrappedFeeds : String %>
 <%@ val realName: String %>
+<%@ val uid : Integer %>
 		<div id="uploadForm" class="hide-element"></div>
 		<div class="leftcol overthrow">
 			<div class="leftcolcontent">
@@ -25,6 +26,7 @@
 					<a id="importFeedsLink">import feeds</a>
 					<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported <img src="/static/img/ajax-loader.gif" /></div></li>
 				<li class="feedmenuoption authonly notformobile"><a href="/feeds/export.opml">export all feeds</a></li>
+				<li class="feedmenuoption authonly"><a href="/saved/${uid}" target="_blank">my saved posts</a></li>
 				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
