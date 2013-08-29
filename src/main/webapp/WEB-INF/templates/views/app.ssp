@@ -1,4 +1,5 @@
 <%@ val bootstrappedFeeds : String %>
+<%@ val realName: String %>
 		<div id="uploadForm" class="hide-element"></div>
 		<div class="leftcol overthrow">
 			<div class="leftcolcontent">
@@ -13,6 +14,7 @@
 		</div>
 		<div class="rightcol overthrow">
 			<ul class="feedmenu">
+				<li class="feedmenuoption authonly">hi <%= realName %></li>
 				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a><span id="showAllPosts">all</span></a>] posts</li>
 				<li class="feedmenuoption authonly feedonly allonly" id="markAllReadLink"><a>mark all as read</a></li>
 				<li class="feedmenuoption authonly feedonly" id="removeFeedLink"><a>remove current feed</a></li>

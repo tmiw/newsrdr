@@ -128,7 +128,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     
     val sId = session.getId()
     db withTransaction { implicit session: Session =>
-      dao.startUserSession(session, sId, "tw:" + twitter.getId(), "")
+      dao.startUserSession(session, sId, "tw:" + twitter.getId(), "", twitter.getScreenName())
     }
     redirect("/auth/login/twitter")
   }
@@ -164,10 +164,11 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       implicit val formats = DefaultFormats 
       val emailJson = parse(emailJsonString)
       val email = (emailJson \\ "email").extract[String]
+      val realName = (emailJson \\ "name").extract[String]
       
       val sId = session.getId()
       db withTransaction { implicit session: Session =>
-        dao.startUserSession(session, sId, email, request.getRemoteAddr())
+        dao.startUserSession(session, sId, email, request.getRemoteAddr(), realName)
       }
       redirect("/auth/login/fb")
     }
@@ -196,7 +197,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         val sId = session.getId()
         session.setAttribute("authService", "g+")
         db withTransaction { implicit session: Session =>
-          dao.startUserSession(session, sId, email, request.getRemoteAddr())
+          dao.startUserSession(session, sId, email, request.getRemoteAddr(), firstName + " " + lastName)
         }
         redirect("/auth/login/g+")
       }
@@ -215,6 +216,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       val sid = session.getId
       db withSession { implicit session: Session =>
         val userId = getUserId(dao, db, sid, request).get
+        val user = dao.getUserInfo(session, userId)
         
         implicit val formats = Serialization.formats(NoTypeHints)
         val today = new java.util.Date().getTime()
@@ -226,7 +228,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
             		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
           )
         }))
-        ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds )
+        ssp("/app", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName )
       }
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI())

@@ -121,8 +121,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  def username = column[String]("username")
 	  def password = column[String]("password")
 	  def email = column[String]("email")
+	  def friendlyName = column[String]("friendlyName")
 	  
-	  def * = id.? ~ username ~ password ~ email <> (User, User.unapply _)
+	  def * = id.? ~ username ~ password ~ email ~ friendlyName <> (User, User.unapply _)
 	}
 	
 	object UserSessions extends Table[UserSession]("UserSessions") {
@@ -437,10 +438,10 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
-	  var my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
+	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
-	      var feed_posts = for {
+	      val feed_posts = for {
 	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
 	            	     if nfa.feedId === feedId && ua.articleId === postId
 	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
@@ -499,6 +500,11 @@ class DataTables(val driver: ExtendedProfile) {
 	  q.firstOption.getOrElse("")
 	}
 	
+	def getUserInfo(implicit session: Session, userId: Int) : User = {
+	  val q = for { u <- Users if u.id === userId } yield u
+	  q.first
+	}
+	
 	def invalidateSession(implicit session: Session, sessionId: String) {
 	  val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption match {
@@ -507,16 +513,19 @@ class DataTables(val driver: ExtendedProfile) {
       }
 	}
 	
-	def startUserSession(implicit session: Session, sessionId: String, email: String, ip: String) {
-	 startUserSession(session, sessionId, email, email, ip) 
+	def startUserSession(implicit session: Session, sessionId: String, email: String, ip: String, friendlyName: String) {
+	 startUserSession(session, sessionId, email, email, ip, friendlyName) 
 	}
 	
-	def startUserSession(implicit session: Session, sessionId: String, username: String, email: String, ip: String) {
+	def startUserSession(implicit session: Session, sessionId: String, username: String, email: String, ip: String, friendlyName: String) {
 	  val q = for { u <- Users if u.username === username } yield u
       val userId = q.firstOption match {
-        case Some(u) => u.id.get
+        case Some(u) => {
+          q.update(User(u.id, u.username, u.password, email, u.friendlyName))
+          u.id.get
+        }
         case None => {
-          Users returning Users.id insert User(None, username, "", email)
+          Users returning Users.id insert User(None, username, "", email, friendlyName)
         }
       }
       UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))

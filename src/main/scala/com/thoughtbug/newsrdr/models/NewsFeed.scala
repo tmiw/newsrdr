@@ -77,7 +77,8 @@ case class User(
     id: Option[Int],
     username: String,
     password: String, // for future use
-    email: String // for future use
+    email: String, // for future use
+    friendlyName: String
     )
 
 case class UserSession(
