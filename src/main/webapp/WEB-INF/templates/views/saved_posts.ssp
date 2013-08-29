@@ -11,7 +11,7 @@
 			</ul>
 			<ul class="feedpostlist" id="postlist">
 			</ul>
-			<ul class="feedpostlistend authonly feedonly allonly">
+			<ul class="feedpostlistend">
 				<li class="nomoreposts">
 					no more posts.
 				</li>
@@ -33,9 +33,11 @@
 	<div class="author">
 		{{article.author}}
 	</div>
+	{{#feed}}
 	<div class="fromfeed">
 		from <a href="{{feed.link}}" target="_blank" class="feedlink">{{feed.title}}</a>
 	</div>
+	{{/feed}}
 	<div class="body">
 		{{{article.description}}}
 	</div>

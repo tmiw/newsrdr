@@ -263,8 +263,9 @@ class DataTables(val driver: ExtendedProfile) {
 
 	  val feed_posts = if (driver.isInstanceOf[H2Driver]) {
 	    if (unreadOnly) {
-	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
+	          (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
@@ -276,8 +277,9 @@ class DataTables(val driver: ExtendedProfile) {
 	        order by "nfa"."pubDate" desc
 	        limit ? offset ?""")
 	    } else {
-	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
+	          (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
@@ -290,8 +292,9 @@ class DataTables(val driver: ExtendedProfile) {
 	    }
 	  } else {
 	    if (unreadOnly) {
-	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
+	          (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
 	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
@@ -303,8 +306,9 @@ class DataTables(val driver: ExtendedProfile) {
 	        order by nfa.pubDate desc
 	        limit ? offset ?""")
 	    } else {
-	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	      Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
+	          (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
 	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
@@ -318,7 +322,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	  
 	  feed_posts.list((userId, feedId, latestPostId, maxEntries, offset)).map(x => {
-	    NewsFeedArticleInfo(x._1, x._2 == false)
+	    NewsFeedArticleInfo(x._1, x._2 == false, x._3)
 	  })
 	}
 	
@@ -327,8 +331,9 @@ class DataTables(val driver: ExtendedProfile) {
 
 	  val feed_posts = if (driver.isInstanceOf[H2Driver]) {
 	    if (unreadOnly) {
-	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
+	          (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
@@ -339,8 +344,9 @@ class DataTables(val driver: ExtendedProfile) {
 	        order by "nfa"."pubDate" desc
 	        limit ? offset ?""")
 	    } else {
-	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
+	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
+	          (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
 	        from "NewsFeedArticles" "nfa"
 	        inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
@@ -352,8 +358,9 @@ class DataTables(val driver: ExtendedProfile) {
 	    }
 	  } else {
 	    if (unreadOnly) {
-	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
+	          (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
 	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
@@ -364,8 +371,9 @@ class DataTables(val driver: ExtendedProfile) {
 	        order by nfa.pubDate desc
 	        limit ? offset ?""")
 	    } else {
-	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
-	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
+	      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+	        select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
+	          (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
 	        from NewsFeedArticles nfa
 	        inner join UserFeeds uf on uf.feedId = nfa.feedId
 	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
@@ -378,7 +386,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	  
 	  feed_posts.list((userId, latestPostId, maxEntries, offset)).map(x => {
-	    NewsFeedArticleInfo(x._1, x._2 == false)
+	    NewsFeedArticleInfo(x._1, x._2 == false, x._3)
 	  })
 	}
 	
@@ -412,7 +420,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	  
 	  feed_posts.list((userId, latestPostId, maxEntries, offset)).map(x => {
-	    NewsFeedArticleInfo(x._1, false)
+	    NewsFeedArticleInfo(x._1, false, true)
 	  })
 	}
 	
@@ -515,6 +523,50 @@ class DataTables(val driver: ExtendedProfile) {
 	      true
 	    }
 	    case None => false
+	  }
+	}
+	
+	def savePost(implicit session: Session, userId: Int, feedId: Int, postId: Int) : Boolean = {
+	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
+      my_feed.firstOption match {
+        case Some(_) => {
+	      val feed_posts = for {
+	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	            	     if nfa.feedId === feedId && ua.articleId === postId
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+	      } yield ua
+	      feed_posts.firstOption match {
+	        case Some(x) => {
+	          val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
+	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, x.articleRead, true))
+	        }
+	        case None => UserArticles.insert(UserArticle(None, userId, postId, false, true))
+	      }
+	      true
+	    }
+	    case _ => false
+	  }
+	}
+	
+	def unsavePost(implicit session: Session, userId: Int, feedId: Int, postId: Int) : Boolean = {
+	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
+      my_feed.firstOption match {
+        case Some(_) => {
+	      val feed_posts = for {
+	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
+	            	     if nfa.feedId === feedId && ua.articleId === postId
+	        uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+	      } yield ua
+	      feed_posts.firstOption match {
+	        case Some(x) => {
+	          val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
+	          single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, x.articleRead, false))
+	        }
+	        case None => UserArticles.insert(UserArticle(None, userId, postId, false, false))
+	      }
+	      true
+	    }
+	    case _ => false
 	  }
 	}
 	

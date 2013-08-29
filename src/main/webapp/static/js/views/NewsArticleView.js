@@ -8,6 +8,8 @@ NewsArticleView = Backbone.View.extend({
 	events: {
 		"click .markRead": function() { this.model.set("unread", false); },
 		"click .markUnread": function() { this.model.set("unread", true); },
+		"click .markSaved": function() { this.model.set("saved", true); },
+		"click .markUnsaved": function() { this.model.set("saved", false); },
 		"click a": function() { this.model.set("unread", false); },
 		"click .body": function() { this.model.set("unread", false); },
 		"contextmenu .markRead": function() { this.model.set("unread", false); },
@@ -55,15 +57,35 @@ NewsArticleView = Backbone.View.extend({
 	  		this.$(".markRead").addClass("hide-element");
   			this.$(".markUnread").removeClass("hide-element");
   		}
+  		
+  		if (this.model.get("saved") == true)
+  		{
+  			this.$(".markSaved").addClass("hide-element");
+  			this.$(".markUnsaved").removeClass("hide-element");
+  		}
+  		else
+  		{
+  			this.$(".markSaved").removeClass("hide-element");
+  			this.$(".markUnsaved").addClass("hide-element");
+  		}
   	},
   	
   	render: function() {
   		var self = this;
   		var feedObj = NewsFeeds.find(function(x) { return x.id == self.model.get("article").feedId; });
-  		var newView = $.extend(true, this.model.attributes, {
-  			feed: feedObj.get("feed"),
-  			feedObj: feedObj
-  		});
+  		var newView = null;
+  		
+  		if (feedObj != null)
+  		{
+  			newView = $.extend(true, this.model.attributes, {
+	  			feed: feedObj.get("feed"),
+  				feedObj: feedObj
+  			});
+  		}
+  		else
+  		{
+  			newView = this.model.attributes;
+  		}
   		
   		// Format date in a friendlier manner.
   		newView.article.friendlyPubDate = new Date(newView.article.pubDate).toLocaleString();

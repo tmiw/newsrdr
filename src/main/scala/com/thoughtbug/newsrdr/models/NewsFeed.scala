@@ -70,7 +70,8 @@ case class NewsFeedArticle(
 
 case class NewsFeedArticleInfo(
     article: NewsFeedArticle,
-    unread: Boolean
+    unread: Boolean,
+    saved: Boolean
 )
 
 case class User(

@@ -15,6 +15,10 @@ a:visited {
 	background-color: #ffae73;
 }
 
+.noresize {
+	background-color: #ffd9bd;
+}
+
 .feedmenu {
 	border: 1px dotted black;
 }

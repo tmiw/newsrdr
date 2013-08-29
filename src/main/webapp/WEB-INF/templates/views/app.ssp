@@ -87,6 +87,9 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 		<li class="optiondivider">|</li>
 		<li class="postoption markRead">mark read</li>
 		<li class="postoption markUnread">mark unread</li>
+		<li class="optiondivider">|</li>
+		<li class="postoption markSaved">save</li>
+		<li class="postoption markUnsaved">unsave</li>
 	</ul>
 	</a>
 </div>

@@ -216,7 +216,7 @@ NewsFeedController = Backbone.View.extend({
 		if (typeof(bootstrappedPosts) !== "undefined")
 		{
 			this.articleCollection = new NewsArticleCollection([]);
-			this.articleCollection.urlBase = "/saved/" + bootstrappedUid + "/posts";
+			this.articleCollection.urlBase = "/saved/" + bootstrappedUid + "/posts?";
 			self.enableInfiniteScrolling = true;
 			self.currentPostCount = bootstrappedPosts.length;
 			
@@ -605,7 +605,11 @@ NewsFeedController = Backbone.View.extend({
 		} else if (/\/feeds\/\d+\/posts\/\d+\/?/.test(url) && type == "DELETE") {
 			errorText = "Could not mark post as read. Please try again.";
 		} else if (/\/feeds\/\d+\/posts\/\d+\/?/.test(url) && type == "PUT") {
-			errorText = "Could not mark post as read. Please try again.";
+			errorText = "Could not mark post as unread. Please try again.";
+		} else if (/\/feeds\/\d+\/posts\/\d+\/saved\/?/.test(url) && type == "DELETE") {
+			errorText = "Could not unsave post. Please try again.";
+		} else if (/\/feeds\/\d+\/posts\/\d+\/saved\/?/.test(url) && type == "PUT") {
+			errorText = "Could not save post. Please try again.";
 		} else if (/\/posts\/?/.test(url) && type == "GET") {
 			errorText = "Could not retrieve posts. Please try again.";
 		} else if (/\/posts\/?/.test(url) && type == "DELETE") {

@@ -33,8 +33,31 @@ NewsArticleModel = Backbone.Model.extend({
 		});
 	},
 	
+	onSavedStatusChanged: function() {
+		// We cannot rely on normal Backbone.sync() to update saved status
+		// due to the unusual REST API calls needed. Perform the jQuery AJAX
+		// call by hand here.
+		var self = this;
+		var httpType = "PUT";
+		if (this.get("saved") == false)
+		{
+			httpType = "DELETE";
+		}
+		$.ajax("/feeds/" + this.get("article").feedId + "/posts/" + this.get("article").id + "/saved", {
+			type: httpType,
+			error: function(x, y, z) { x.type = httpType; AppController.globalAjaxErrorHandler(x, y, z); },
+			beforeSend: function() {
+				$("#loading").removeClass("hide-element");
+			},
+			complete: function() {
+				$("#loading").addClass("hide-element");
+			}
+		});
+	},
+	
 	initialize: function() {
 		this.on("change:unread", this.onUnreadStatusChanged);
+		this.on("change:saved", this.onSavedStatusChanged);
 	},
 	
 	markRead: function() {
@@ -43,6 +66,14 @@ NewsArticleModel = Backbone.Model.extend({
 	
 	markUnead: function() {
 		this.set("unread", true);
+	},
+	
+	markSaved: function() {
+		this.set("saved", true);
+	},
+	
+	markUnsaved: function() {
+		this.set("saved", false);
 	}
 });
 

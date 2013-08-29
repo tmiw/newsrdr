@@ -278,6 +278,58 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     })
   }
   
+  val saveCommand =
+    (apiOperation[Unit]("save")
+        summary "Saves post."
+        notes "Saves post"
+        parameter pathParam[Int]("id").description("The ID of the feed.")
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  put("/:id/posts/:pid/saved", operation(saveCommand)) {
+    authenticationRequired(dao, session.getId, db, request, {
+	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+	    val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+	    val userId = getUserId(dao, db, session.getId, request).get
+	    
+	    db withTransaction { implicit session: Session =>
+	      dao.savePost(session, userId, id, pid) match {
+	        case true => ()
+	        case _ => halt(404)
+	      }
+	    }
+	    
+	    NoDataApiResult(true, None)
+    }, {
+      halt(401)
+    })
+  }
+  
+  val unsaveCommand =
+    (apiOperation[Unit]("unsave")
+        summary "Unsaves post."
+        notes "Unsaves post"
+        parameter pathParam[Int]("id").description("The ID of the feed.")
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  delete("/:id/posts/:pid/saved", operation(saveCommand)) {
+    authenticationRequired(dao, session.getId, db, request, {
+	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+	    val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+	    val userId = getUserId(dao, db, session.getId, request).get
+	    
+	    db withTransaction { implicit session: Session =>
+	      dao.unsavePost(session, userId, id, pid) match {
+	        case true => ()
+	        case _ => halt(404)
+	      }
+	    }
+	    
+	    NoDataApiResult(true, None)
+    }, {
+      halt(401)
+    })
+  }
+  
   val markAllReadCommand =
     (apiOperation[Unit]("markAllRead")
         summary "Marks all posts as read."
