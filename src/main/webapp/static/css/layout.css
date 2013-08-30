@@ -44,7 +44,7 @@
 	padding-right: 7px;
 	cursor: auto;
 	height: 100%;
-	overflow-x: scroll;
+	overflow-x: auto;
 	overflow-y: auto;
 }
 
