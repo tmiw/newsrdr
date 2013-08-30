@@ -6,7 +6,16 @@ object Constants {
   val AUTHENTICATED_URI = "/auth/authenticated"
   val FB_CLIENT_ID = "1375893982640236"
   val FB_CLIENT_SECRET = "INSERT SECRET HERE"
+  
+  def getURL(request: javax.servlet.http.HttpServletRequest, uri: String) : String = {
+    var protocol = request.isSecure() match {
+      case true => "https://"
+      case _ => "http://"
+    }
     
+    (protocol + request.getServerName() + ":" + request.getServerPort().toString() + uri)
+  }
+  
   def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest, service: String) : String = {
     var protocol = request.isSecure() match {
       case true => "https://"

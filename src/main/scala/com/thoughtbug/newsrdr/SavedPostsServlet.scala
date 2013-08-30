@@ -62,6 +62,43 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
     }
   }
   
+  get("/:uid/feed") {
+    contentType="application/rss+xml"
+    db withSession { implicit session: Session =>
+      val userId = Integer.parseInt(params.get("uid").get)
+      
+      if (dao.getUserName(session, userId).isEmpty())
+      {
+        halt(404)
+      }
+      else
+      {
+        val user = dao.getUserInfo(session, userId)
+        val posts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue)
+        val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
+        
+        <rss version="2.0">
+          <channel>
+            <title>{(user.friendlyName + "'s saved posts")}</title>
+            <link>{Constants.getURL(request, "/saved/" + userId.toString())}</link>
+            <description>{(user.friendlyName + "'s saved posts")}</description>
+            <lastBuildDate>{dateFormatter.format(new java.util.Date())}</lastBuildDate>
+            {posts.map(p => {
+              val permalink = p.article.isGuidPermalink.getOrElse(true).toString()
+              <item>
+                <title>{p.article.title}</title>
+                <link>{p.article.link}</link>
+                <description>{p.article.description}</description>
+                <pubDate>{dateFormatter.format(p.article.pubDate.getOrElse(new java.sql.Timestamp(new java.util.Date().getTime())))}</pubDate>
+                <guid isPermaLink={permalink}>{p.article.guid.getOrElse("")}</guid>
+              </item>
+            })}
+          </channel>
+        </rss>
+      }
+    }
+  }
+  
   val getPosts =
     (apiOperation[List[NewsFeedArticleInfo]]("getPosts")
         summary "Retrieves saved posts from the given user."

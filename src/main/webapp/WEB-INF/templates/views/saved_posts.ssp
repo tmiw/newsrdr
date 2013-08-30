@@ -1,5 +1,6 @@
 <%@ val bootstrappedPosts : String %>
 <%@ val uid : Integer %>
+		<link rel="alternate" type="application/rss+xml" title="RSS" href="/saved/${uid}/feed" />
 		<div class="leftcol overthrow noresize">
 			<div class="leftcolcontent">
 			</div>
