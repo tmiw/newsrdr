@@ -14,14 +14,23 @@ NewsFeedRouter = Backbone.Router.extend({
 		} else {
 			this.navigate("home");
 		}
+		
+		// Tell Google Analytics about the new page.
+		ga('send', 'pageview');
 	},
 	
 	getAllPosts: function() {
 		AppController.selectFeed.call(AppController, null);
+		
+		// Tell Google Analytics about the new page.
+		ga('send', 'pageview');
 	},
 	
 	goHome: function() {
 		AppController.clearPosts.call(AppController);
+		
+		// Tell Google Analytics about the new page.
+		ga('send', 'pageview');
 	}
 });
 
