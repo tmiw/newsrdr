@@ -43,7 +43,11 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
     contentType="text/html"
     
     db withSession { implicit session: Session =>
-      val userId = Integer.parseInt(params.get("uid").get)
+      val userId = try {
+        Integer.parseInt(params.get("uid").get)
+      } catch {
+        case _:Exception => halt(404)
+      }
       
       if (dao.getUserName(session, userId).isEmpty())
       {
@@ -109,7 +113,11 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
         
   get("/:uid/posts", operation(getPosts)) {
     val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	val userId = Integer.parseInt(params.get("uid").get)
+	val userId = try {
+      Integer.parseInt(params.get("uid").get)
+    } catch {
+      case _:Exception => halt(404)
+    }
 	    
 	val latestPostDate = params.get("latest_post_date") match {
       case Some(x) if !x.isEmpty() => Integer.parseInt(x)
