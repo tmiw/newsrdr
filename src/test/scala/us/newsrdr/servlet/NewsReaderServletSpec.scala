@@ -1,4 +1,4 @@
-package com.thoughtbug.newsrdr
+package us.newsrdr.servlet
 
 import org.scalatra.test.specs2._
 

@@ -1,6 +1,6 @@
-package com.thoughtbug.newsrdr.models
+package us.newsrdr.models
 
-import com.thoughtbug.newsrdr.tasks._
+import us.newsrdr.tasks._
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.jdbc.meta.{MTable}
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}

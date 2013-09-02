@@ -1,10 +1,10 @@
-package com.thoughtbug.newsrdr
+package us.newsrdr.servlet
 
 import org.scalatra.swagger.{NativeSwaggerBase, Swagger}
 
 import org.scalatra.ScalatraServlet
 import org.json4s.{DefaultFormats, Formats}
-import com.thoughtbug.newsrdr.models._
+import us.newsrdr.models._
 
 import scala.slick.session.{Database, Session}
 

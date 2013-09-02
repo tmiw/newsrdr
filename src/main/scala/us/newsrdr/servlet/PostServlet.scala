@@ -1,10 +1,10 @@
-package com.thoughtbug.newsrdr
+package us.newsrdr.servlet
 
 import org.scalatra._
 import scalate.ScalateSupport
 import scala.slick.session.Database
-import com.thoughtbug.newsrdr.models._
-import com.thoughtbug.newsrdr.tasks._
+import us.newsrdr.models._
+import us.newsrdr.tasks._
 
 import scala.slick.session.{Database, Session}
 

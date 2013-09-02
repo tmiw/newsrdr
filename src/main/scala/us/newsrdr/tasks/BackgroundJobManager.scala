@@ -1,7 +1,7 @@
-package com.thoughtbug.newsrdr.tasks
+package us.newsrdr.tasks
 
 import javax.servlet.ServletContext
-import com.thoughtbug.newsrdr.models.DataTables
+import us.newsrdr.models.DataTables
 import scala.slick.session.Database
 import org.quartz.impl.StdSchedulerFactory
 import org.quartz.JobBuilder._

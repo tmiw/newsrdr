@@ -1,4 +1,4 @@
-import com.thoughtbug.newsrdr._
+import us.newsrdr.servlet._
 import org.scalatra._
 import javax.servlet.ServletContext
 import com.mchange.v2.c3p0.ComboPooledDataSource
@@ -8,8 +8,8 @@ import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.session.{Database, Session}
 import scala.slick.jdbc.{StaticQuery => Q}
 
-import com.thoughtbug.newsrdr.models._;
-import com.thoughtbug.newsrdr.tasks.BackgroundJobManager
+import us.newsrdr.models._;
+import us.newsrdr.tasks.BackgroundJobManager
 
 class ScalatraBootstrap extends LifeCycle {
   val logger = LoggerFactory.getLogger(getClass)

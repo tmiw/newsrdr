@@ -6,7 +6,7 @@ import com.mojolly.scalate.ScalatePlugin._
 import ScalateKeys._
 
 object NewsrdrBuild extends Build {
-  val Organization = "com.thoughtbug"
+  val Organization = "us.newsrdr"
   val Name = "newsrdr"
   val Version = "0.1.0-SNAPSHOT"
   val ScalaVersion = "2.10.2"

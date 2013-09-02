@@ -1,8 +1,8 @@
-package com.thoughtbug.newsrdr
+package us.newsrdr.servlet
 
 import org.scalatra._
 import scalate.ScalateSupport
-import com.thoughtbug.newsrdr.models._
+import us.newsrdr.models._
 import scala.slick.session.{Database, Session}
 import org.openid4java.consumer._
 import org.openid4java.discovery._

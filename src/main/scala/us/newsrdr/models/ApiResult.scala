@@ -1,4 +1,4 @@
-package com.thoughtbug.newsrdr.models
+package us.newsrdr.models
 
 object Constants {
   val ITEMS_PER_PAGE = 10

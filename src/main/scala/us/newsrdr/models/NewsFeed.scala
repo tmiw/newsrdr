@@ -1,4 +1,4 @@
-package com.thoughtbug.newsrdr.models
+package us.newsrdr.models
 
 import scala.xml._
 import java.sql.Timestamp

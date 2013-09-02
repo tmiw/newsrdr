@@ -1,8 +1,8 @@
-package com.thoughtbug.newsrdr.tasks
+package us.newsrdr.tasks
 
 import org.quartz.Job
 import org.quartz.JobExecutionContext
-import com.thoughtbug.newsrdr.models._
+import us.newsrdr.models._
 import scala.slick.session.{Database, Session}
 import scala.collection.JavaConversions._
 import org.quartz.impl.matchers._
