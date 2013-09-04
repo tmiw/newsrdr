@@ -260,7 +260,7 @@ body {
 }
 
 .sponsor {
-	position: absolute;
+	position: fixed;
 	bottom: 30px;
 	right: 5px;
 	padding-right: 5px;
