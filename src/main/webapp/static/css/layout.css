@@ -258,3 +258,20 @@ body {
 .feed-menu-mobile {
 	display: none;
 }
+
+.sponsor {
+	position: absolute;
+	bottom: 30px;
+	right: 5px;
+	padding-right: 5px;
+	width: 200px;
+	height: 200px;
+	padding-left: 15px;
+	border: 1px dotted black;
+}
+
+.sponsor_content {
+	position: relative;
+	top: 20%;
+	left: 10%;
+}

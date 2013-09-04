@@ -312,6 +312,10 @@ body {
 	height: 36px;
 }
 
+.sponsor {
+	display: none;
+}
+
 /* upload form (NOT USED FOR MOBILE DEVICES) */
 
 #uploadForm {
