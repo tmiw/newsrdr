@@ -122,8 +122,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  def password = column[String]("password")
 	  def email = column[String]("email")
 	  def friendlyName = column[String]("friendlyName")
+	  def optOutSharing = column[Boolean]("optOutSharing")
 	  
-	  def * = id.? ~ username ~ password ~ email ~ friendlyName <> (User, User.unapply _)
+	  def * = id.? ~ username ~ password ~ email ~ friendlyName ~ optOutSharing <> (User, User.unapply _)
 	}
 	
 	object UserSessions extends Table[UserSession]("UserSessions") {
@@ -270,25 +271,22 @@ class DataTables(val driver: ExtendedProfile) {
 	  val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
 	  
 	  val articleQuery = 
-	    NewsFeedArticles.filter(p => unixTimestampFn(p.pubDate.get) >= unixTimestampFn(yesterday))
-	                    .map(_.id)
-	  
-	  val maxRowQ = Query(articleQuery.max)
-	  val minRowQ = Query(articleQuery.min)
-	  val maxRow = maxRowQ.first
-	  val minRow = minRowQ.first
-	  (maxRow, minRow) match {
-	    case (Some(max), Some(min)) => {
-	      val rng = new util.Random()
-	      val randId = rng.nextInt(max - min) + min
-	      val article = for { nfa <- NewsFeedArticles if nfa.id >= randId } yield nfa
-	      article.firstOption match {
-	        case Some(a) => Some(NewsFeedArticleInfo(a, false, false))
-	        case _ => None
-	      }
+	    for {
+	      nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday)
+	      nf <- NewsFeeds if nfa.feedId === nf.id
+	      uf <- UserFeeds if nf.id === uf.feedId
+	      u <- Users if u.optOutSharing === false && u.id === uf.userId
+	    } yield nfa
+
+	  val length = Query(articleQuery.length).first
+	  if (length > 0) {
+	    val rng = new util.Random()
+	    val randId = rng.nextInt(length)
+	    articleQuery.drop(randId).firstOption match {
+	      case Some(a) => Some(NewsFeedArticleInfo(a, false, false))
+	      case _ => None
 	    }
-	    case _ => None
-	  }
+	  } else None
 	}
 	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
@@ -624,6 +622,12 @@ class DataTables(val driver: ExtendedProfile) {
 	  q.first
 	}
 	
+	def setOptOut(implicit session: Session, userId: Int, optOut: Boolean) {
+	  val user = getUserInfo(session, userId)
+	  val q = for { u <- Users if u.id === userId } yield u
+	  q.update(User(user.id, user.username, user.password, user.email, user.friendlyName, optOut))
+	}
+	
 	def invalidateSession(implicit session: Session, sessionId: String) {
 	  val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption match {
@@ -640,11 +644,11 @@ class DataTables(val driver: ExtendedProfile) {
 	  val q = for { u <- Users if u.username === username } yield u
       val userId = q.firstOption match {
         case Some(u) => {
-          q.update(User(u.id, u.username, u.password, email, friendlyName))
+          q.update(User(u.id, u.username, u.password, email, friendlyName, false))
           u.id.get
         }
         case None => {
-          Users returning Users.id insert User(None, username, "", email, friendlyName)
+          Users returning Users.id insert User(None, username, "", email, friendlyName, false)
         }
       }
       UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))

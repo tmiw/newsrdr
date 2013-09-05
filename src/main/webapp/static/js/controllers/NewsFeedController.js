@@ -10,6 +10,8 @@ NewsFeedController = Backbone.View.extend({
 		"click #removeFeedLink": "removeFeed",
 		"click #markAllReadLink": "markAllRead",
 		"click #importFeedsLink": "showImportWindow",
+		"click #optOutSharing": "optOutSharing",
+		"click #optInSharing": "optInSharing",
 		
 		// Prevents full page refresh when using pushState.
 		// Oddly, Chrome does this but Safari doesn't (!), even though both support pushState.
@@ -485,6 +487,47 @@ NewsFeedController = Backbone.View.extend({
 				$(".allonly").removeClass("hide-element");
 			}
 		}
+	},
+	
+	setOptOut: function(val) {
+		if (val) {
+			$("#optOutSharing").unwrap();
+			$("#optInSharing").wrap("<a />");
+		}
+	},
+	
+	optOutSharing: function() {		
+		$.ajax({
+			url: "/user/optout",
+			type: "POST",
+			beforeSend: function() {
+				$("#loading").removeClass("hide-element");
+			},
+			success: function(result) {
+				$("#optOutSharing").unwrap();
+				$("#optInSharing").wrap("<a />");
+			},
+			complete: function() {
+				$("#loading").addClass("hide-element");
+			}
+		});
+	},
+	
+	optInSharing: function() {		
+		$.ajax({
+			url: "/user/optout",
+			type: "DELETE",
+			beforeSend: function() {
+				$("#loading").removeClass("hide-element");
+			},
+			success: function(result) {
+				$("#optInSharing").unwrap();
+				$("#optOutSharing").wrap("<a />");
+			},
+			complete: function() {
+				$("#loading").addClass("hide-element");
+			}
+		});
 	},
 	
 	toggleAllPosts: function() {

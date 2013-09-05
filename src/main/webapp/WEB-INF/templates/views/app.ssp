@@ -1,5 +1,6 @@
 <%@ val bootstrappedFeeds : String %>
 <%@ val realName: String %>
+<%@ val optOut: Boolean %>
 <%@ val uid : Integer %>
 		<div id="uploadForm" class="hide-element"></div>
 		<div class="leftcol overthrow">
@@ -26,6 +27,7 @@
 				<a id="importFeedsLink">import feeds</a>
 				<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported <img src="/static/img/ajax-loader.gif" /></div></li>
 				<li class="feedmenuoption authonly notformobile"><a href="/feeds/export.opml">export all feeds</a></li>
+				<li class="feedmenuoption authonly">opt [<a><span id="optOutSharing">out</span></a> | <span id="optInSharing">in</span>] of sharing<br/>(on the front page)</li>
 				<li class="feedmenuoption authonly"><a href="/saved/${uid}" target="_blank">my saved posts</a></li>
 				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
 				<li class="feedmenuseparator authonly"><hr noshade/></li>
@@ -161,6 +163,7 @@ $(function(){
 	AppRouter = new NewsFeedRouter();
 	
 	window.fbAsyncInit = function() {
+		AppController.setOptOut(<%= optOut %>);
 		Backbone.history.start({pushState: "pushState" in window.history, root: "/news/"});
 	};
 	

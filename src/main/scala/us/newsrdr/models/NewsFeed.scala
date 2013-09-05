@@ -79,7 +79,8 @@ case class User(
     username: String,
     password: String, // for future use
     email: String, // for future use
-    friendlyName: String
+    friendlyName: String,
+    optOutSharing: Boolean
     )
 
 case class UserSession(
