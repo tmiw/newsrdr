@@ -1,3 +1,6 @@
+<%@ val randomPost: Option[us.newsrdr.models.NewsFeedArticleInfo] %>
+<%@ val randomPostFeed: Option[us.newsrdr.models.NewsFeed] %>
+
 <div class="rightcol">
 			<ul class="feedmenu">
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
@@ -36,4 +39,28 @@
 					Or if you like, you can use <a href="/auth/login/fb">Facebook</a> or <a href="/auth/login/twitter">Twitter</a>.
 				</p>
 			</div>
+			#if (randomPost != None)
+			<div class="randompost">
+				<div class="randompostcontainer">
+					<h2>Latest news others are reading</h2>
+					<div class="feedpost">
+						<div class="pubdate">
+							<%= randomPost.get.article.pubDate %>
+						</div>
+						<div class="title">
+							<a href="<%= randomPost.get.article.link %>" target="_blank" class="postlink"><%= unescape(randomPost.get.article.title) %></a>
+						</div>
+						<div class="author">
+							<%= randomPost.get.article.author %>
+						</div>
+						<div class="fromfeed">
+							from <a href="<%= randomPostFeed.get.link %>" target="_blank" class="feedlink"><%= randomPostFeed.get.title %></a>
+						</div>
+						<div class="body">
+							<%= unescape(randomPost.get.article.description) %>
+						</div>
+					</div>
+				</div>
+			</div>
+			#end
 		</div>

@@ -258,6 +258,36 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	}
 	
+	def getFeedByPostId(implicit session: Session, postId: Int) : NewsFeed = {
+		val feed = for {
+		  (nfa, nf) <- NewsFeedArticles innerJoin NewsFeeds on (_.feedId === _.id) if nfa.id === postId
+		} yield nf
+		return feed.first
+	}
+	
+	def getNewestRandomPost(implicit session: Session) : Option[NewsFeedArticleInfo] = {
+	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
+	  val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
+	  
+	  val articleQuery = 
+	    NewsFeedArticles.filter(p => unixTimestampFn(p.pubDate.get) >= unixTimestampFn(yesterday))
+	                    .map(_.id)
+	  
+	  val maxRowQ = Query(articleQuery.max)
+	  val minRowQ = Query(articleQuery.min)
+	  val maxRow = maxRowQ.first
+	  val minRow = minRowQ.first
+	  (maxRow, minRow) match {
+	    case (Some(max), Some(min)) => {
+	      val rng = new util.Random()
+	      val randId = rng.nextInt(max - min)
+	      val article = for { nfa <- NewsFeedArticles if nfa.id >= randId } yield nfa
+	      Some(NewsFeedArticleInfo(article.first, false, false))
+	    }
+	    case _ => None
+	  }
+	}
+	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
 	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 

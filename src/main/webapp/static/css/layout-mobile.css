@@ -105,7 +105,12 @@ body {
 .overthrow-enabled .rightcol {
 	max-height: 100%;
 	max-width: 100%;
-	width: 90%;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.randompost {
+	padding-bottom: 15px;
 }
 
 .rightcol {
@@ -113,6 +118,7 @@ body {
 	left: 0px;
 	top: 50px;
 	bottom: 25px;
+	overflow-y: auto;
 }
 
 .feedpostlist {
@@ -123,10 +129,6 @@ body {
 
 .feedpostlistend {
 	list-style-type: none;
-}
-
-.textblock {
-	top: 35%;
 }
 
 .feedpost {

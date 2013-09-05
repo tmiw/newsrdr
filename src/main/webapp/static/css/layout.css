@@ -57,10 +57,6 @@
 	overflow: auto;
 }
 
-.rightcol .textblock {
-	width: 55%;
-}
-
 .feedmenu {
 	position: fixed;
 	right: 5px;
@@ -137,9 +133,10 @@ body {
 	list-style-type: none;
 }
 
-.textblock {
-	position: absolute;
-	top: 35%;
+.rightcol .textblock {
+	width: 80%;
+	/*position: absolute;
+	top: 35%;*/
 }
 
 .feedpost {
@@ -157,6 +154,10 @@ body {
 	max-width: 90%;
 	margin-top: 15px;
 	text-align: center;
+}
+
+.randompost {
+	padding-bottom: 15px;
 }
 
 .feedpost .title {

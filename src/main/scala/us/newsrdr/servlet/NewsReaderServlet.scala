@@ -28,7 +28,12 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   
   get("/") {
     contentType = "text/html"
-    ssp("/index", "title" -> "")
+      
+    db withSession { implicit session: Session =>
+      val randomPost = dao.getNewestRandomPost(session)
+      val randomPostFeed = randomPost.map(p => dao.getFeedByPostId(session, p.article.id.get))
+      ssp("/index", "title" -> "", "randomPost" -> randomPost, "randomPostFeed" -> randomPostFeed)
+    }
   }
   
   get("/auth/login/g+") {
