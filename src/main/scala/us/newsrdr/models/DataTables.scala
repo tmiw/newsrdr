@@ -280,9 +280,12 @@ class DataTables(val driver: ExtendedProfile) {
 	  (maxRow, minRow) match {
 	    case (Some(max), Some(min)) => {
 	      val rng = new util.Random()
-	      val randId = rng.nextInt(max - min)
+	      val randId = rng.nextInt(max - min) + min
 	      val article = for { nfa <- NewsFeedArticles if nfa.id >= randId } yield nfa
-	      Some(NewsFeedArticleInfo(article.first, false, false))
+	      article.firstOption match {
+	        case Some(a) => Some(NewsFeedArticleInfo(a, false, false))
+	        case _ => None
+	      }
 	    }
 	    case _ => None
 	  }
