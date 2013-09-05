@@ -36,6 +36,11 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     }
   }
   
+  get("/privacy_policy") {
+    contentType = "text/html"
+    ssp("/privacy_policy", "title" -> "privacy policy")
+  }
+  
   get("/auth/login/g+") {
     val sId = session.getId()
     val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
