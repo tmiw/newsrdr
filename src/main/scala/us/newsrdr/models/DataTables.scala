@@ -290,22 +290,19 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getLatestPostsForUser(implicit session: Session, userId: Int) : List[NewsFeedArticleInfo] = {
-	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
-	  val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
-	  
 	  val userOptedOut = Query(Users).filter(_.id === userId).first.optOutSharing
 	  
 	  val articleQuery = 
 	    if (userOptedOut) {
 	      for {
-	        nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday)
+	        nfa <- NewsFeedArticles
 	        nf <- NewsFeeds if nfa.feedId === nf.id
 	        uf <- UserFeeds if nf.id === uf.feedId
 	        u <- Users if u.optOutSharing === false && u.id === uf.userId
 	      } yield nfa
 	    } else {
 	      for {
-	        nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday)
+	        nfa <- NewsFeedArticles
 	        nf <- NewsFeeds if nfa.feedId === nf.id
 	        uf <- UserFeeds if nf.id === uf.feedId
 	        u <- Users if u.id === uf.userId && u.id === userId
