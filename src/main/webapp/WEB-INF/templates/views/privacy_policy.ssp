@@ -7,15 +7,15 @@
 				<li class="feedmenuoption"><a href="/auth/login/twitter">login via Twitter</a></li>
 			</ul>
 			<div class="sponsor">
-				<script async src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- newsrdr lower right -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:200px;height:200px"
-     data-ad-client="ca-pub-8495652429132340"
-     data-ad-slot="6897805113"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+				<div id="div-gpt-ad-1378477224990-0">
+					<script type='text/javascript'>
+						googletag.cmd.push(function() {
+						var slot1 = googletag.defineSlot('/70574502/newsrdr_lower_right', [200, 200], 'div-gpt-ad-1378477224990-0').addService(googletag.pubads());
+						googletag.enableServices();
+						googletag.display("div-gpt-ad-1378477224990-0");
+						});
+					</script>
+				</div>
 			</div>
 			<div class="textblock">
 				<h1>privacy policy</h1>
