@@ -56,13 +56,14 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       else
       {
         val user = dao.getUserInfo(session, userId)
-        val savedPosts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue)
+        val savedPosts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
         val bootstrappedPosts = write(savedPosts)
         
         // Render the posts directly in the HTML only if the AdSense bot visited.
         // Needed to produce relevant ads because AdSense can't grok JS.
         val postList = if (request.getHeader("User-Agent") == "Mediapartners-Google") {
-          savedPosts.map(p => NewsFeedArticleInfoWithFeed(p.article, null))
+          savedPosts
         } else {
           List[NewsFeedArticleInfoWithFeed]()
         }
@@ -114,7 +115,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
   }
   
   val getPosts =
-    (apiOperation[List[NewsFeedArticleInfo]]("getPosts")
+    (apiOperation[List[NewsFeedArticleInfoWithFeed]]("getPosts")
         summary "Retrieves saved posts from the given user."
         notes "Retrieves saved posts from the given user, sorted by post date."
         parameter pathParam[Integer]("uid").description("The user's ID.")
@@ -135,7 +136,8 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
     }
 	    
 	db withSession { implicit session: Session =>
-	  dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
+	  dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
     }
   }
 }

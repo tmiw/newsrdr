@@ -31,19 +31,22 @@
 							<%= i.article.pubDate %>
 						</div>
 						<div class="title">
-							<a href="<%= i.article.link %>" target="_blank" class="postlink"><%= unescape(i.article.title) %>}</a>
+							<a href="<%= i.article.link %>" target="_blank" class="postlink"><%= unescape(i.article.title) %></a>
 						</div>
 						<div class="author">
 							<%= i.article.author %>
 						</div>
+						<div class="fromfeed">
+							from <a href="<%= i.feed.link %>" target="_blank" class="feedlink"><%= i.feed.title %></a>
+						</div>
 						<div class="body">
-							<%= unescape(i.article.description) %>}
+							<%= unescape(i.article.description) %>
 						</div>
 						<ul class="postoptions">
 							<li class="postoptionshare"><a class="sharelink">share</a></li>
-							<li class="postoptionshare shareoption hide-element"><div class="fb-like" data-href="<%= unescape(i.article.link) %>}" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
-							<li class="postoptionshare shareoption hide-element"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="<%= unescape(i.article.title) %>}" data-via="newsrdr_dot_us" data-count="none" data-url="<%= unescape(i.article.link) %>}">Tweet</a></li>
-							<li class="postoptionshare shareoption hide-element"><g:plusone href="<%= unescape(i.article.link) %>}" action="share" size="medium" annotation="none" /></g:plusone></li>
+							<li class="postoptionshare shareoption hide-element"><div class="fb-like" data-href="<%= unescape(i.article.link) %>" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
+							<li class="postoptionshare shareoption hide-element"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="<%= unescape(i.article.title) %>" data-via="newsrdr_dot_us" data-count="none" data-url="<%= unescape(i.article.link) %>">Tweet</a></li>
+							<li class="postoptionshare shareoption hide-element"><g:plusone href="<%= unescape(i.article.link) %>" action="share" size="medium" annotation="none" /></g:plusone></li>
 						</ul>
 						</a>
 					</div>
