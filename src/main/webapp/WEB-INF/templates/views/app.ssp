@@ -160,7 +160,7 @@ $(function(){
 	
 	window.fbAsyncInit = function() {
 		AppController.setOptOut(<%= optOut %>);
-		Backbone.history.start({pushState: "pushState" in window.history, root: "/news/"});
+		Backbone.history.start({pushState: "pushState" in window.history, root: "/news/<%= uid %>"});
 	};
 	
 	// only show feed menu button if mobile device

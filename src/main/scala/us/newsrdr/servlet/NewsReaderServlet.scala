@@ -218,8 +218,29 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       "not verified"        
   }
   
-  get("/news*") {
+  get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
+    val authService = if (session.getAttribute("authService") != null) {
+      session.getAttribute("authService")
+    } else {
+      "g+"
+    }
+    
+    authenticationRequired(dao, session.id, db, request, {
+      val sid = session.getId
+      db withSession { implicit session: Session =>
+        val userId = getUserId(dao, db, sid, request).get
+        val tail = if (multiParams("captures") == null) { "" } else { multiParams("captures").head }
+        redirect("/news/" + userId.toString + tail)
+      }
+    }, {
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+      redirect(Constants.LOGIN_URI + "/" + authService)
+    })
+  }
+  
+  get("""^/news/([0-9]+)""".r) {
     contentType="text/html"
+    val sess = session;
     val authService = if (session.getAttribute("authService") != null) {
       session.getAttribute("authService")
     } else {
@@ -231,17 +252,25 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         val userId = getUserId(dao, db, sid, request).get
         val user = dao.getUserInfo(session, userId)
         
-        implicit val formats = Serialization.formats(NoTypeHints)
-        val today = new java.util.Date().getTime()
-        val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => {
-          NewsFeedInfo(
+        if (userId.toString != multiParams("captures").head)
+        {
+          sess.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+          redirect(Constants.LOGIN_URI + "/" + authService)
+        }
+        else
+        {
+          implicit val formats = Serialization.formats(NoTypeHints)
+          val today = new java.util.Date().getTime()
+          val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => {
+            NewsFeedInfo(
             		  x._1, 
             		  x._1.id.get,
             		  x._2,
             		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
-          )
-        }))
-        ssp("/app", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId )
+            )
+          }))
+          ssp("/app", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId )
+        }
       }
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
