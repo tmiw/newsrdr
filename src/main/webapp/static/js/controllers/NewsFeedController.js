@@ -224,8 +224,8 @@ NewsFeedController = Backbone.View.extend({
 			
 			this.listenTo(this.articleCollection, 'add', this.addOneArticle);
 			this.listenTo(this.articleCollection, 'reset', this.addAllArticles);
-			
 			this.articleCollection.reset(bootstrappedPosts);
+						
 			$(".loadingposts").addClass("hide-element");
 			$(".nomoreposts").removeClass("hide-element");
 		}

@@ -74,6 +74,11 @@ case class NewsFeedArticleInfo(
     saved: Boolean
 )
 
+case class NewsFeedArticleInfoWithFeed(
+    article: NewsFeedArticle,
+    feed: NewsFeed
+)
+
 case class User(
     id: Option[Int],
     username: String,

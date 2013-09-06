@@ -56,11 +56,21 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       else
       {
         val user = dao.getUserInfo(session, userId)
-        val bootstrappedPosts = write(dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue))
-      
+        val savedPosts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue)
+        val bootstrappedPosts = write(savedPosts)
+        
+        // Render the posts directly in the HTML only if the AdSense bot visited.
+        // Needed to produce relevant ads because AdSense can't grok JS.
+        val postList = if (request.getHeader("User-Agent") == "Mediapartners-Google") {
+          savedPosts.map(p => NewsFeedArticleInfoWithFeed(p.article, null))
+        } else {
+          List[NewsFeedArticleInfoWithFeed]()
+        }
+        
         ssp("/saved_posts",
             "title" -> (user.friendlyName + "'s saved posts"), 
             "bootstrappedPosts" -> bootstrappedPosts,
+            "postList" -> postList,
             "uid" -> userId)
       }
     }
