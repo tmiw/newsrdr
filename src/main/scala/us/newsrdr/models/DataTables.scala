@@ -289,6 +289,32 @@ class DataTables(val driver: ExtendedProfile) {
 	  } else None
 	}
 	
+	def getLatestPostsForUser(implicit session: Session, userId: Int) : List[NewsFeedArticleInfo] = {
+	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
+	  val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
+	  
+	  val userOptedOut = Query(Users).filter(_.id === userId).first.optOutSharing
+	  
+	  val articleQuery = 
+	    if (userOptedOut) {
+	      for {
+	        nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday)
+	        nf <- NewsFeeds if nfa.feedId === nf.id
+	        uf <- UserFeeds if nf.id === uf.feedId
+	        u <- Users if u.optOutSharing === false && u.id === uf.userId
+	      } yield nfa
+	    } else {
+	      for {
+	        nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday)
+	        nf <- NewsFeeds if nfa.feedId === nf.id
+	        uf <- UserFeeds if nf.id === uf.feedId
+	        u <- Users if u.id === uf.userId && u.id === userId
+	      } yield nfa
+	    }
+	  
+	  articleQuery.take(Constants.ITEMS_PER_PAGE).list.map(NewsFeedArticleInfo(_, false, false))
+	}
+	
 	def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
 	  implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 

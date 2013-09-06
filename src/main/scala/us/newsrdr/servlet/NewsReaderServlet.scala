@@ -238,6 +238,9 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     })
   }
   
+  // Sets up automatic case class to JSON output serialization
+  protected implicit val jsonFormats: Formats = DefaultFormats
+  
   get("""^/news/([0-9]+)""".r) {
     contentType="text/html"
     val sess = session;
@@ -246,15 +249,16 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     } else {
       "g+"
     }
+    val uidAsString = multiParams("captures").head
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
       db withSession { implicit session: Session =>
         val userId = getUserId(dao, db, sid, request).get
         val user = dao.getUserInfo(session, userId)
         
-        if (userId.toString != multiParams("captures").head)
+        if (userId.toString != uidAsString)
         {
-          sess.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+          sess.setAttribute("redirectUrlOnLogin", "/news/" + userId.toString)
           redirect(Constants.LOGIN_URI + "/" + authService)
         }
         else
@@ -273,8 +277,24 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         }
       }
     }, {
-      session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
-      redirect(Constants.LOGIN_URI + "/" + authService)
+      if (request.getHeader("User-Agent") == "Mediapartners-Google") {
+        db withSession { implicit session: Session =>
+          val userId = Integer.parseInt(uidAsString)
+          val user = dao.getUserInfo(session, userId)
+          val savedPosts = dao.getLatestPostsForUser(session, userId).map(p =>
+            NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
+          val bootstrappedPosts = write(savedPosts)
+        
+          ssp("/saved_posts",
+              "title" -> "", 
+              "bootstrappedPosts" -> bootstrappedPosts,
+              "postList" -> savedPosts,
+              "uid" -> userId)
+        }
+      } else {
+        session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+        redirect(Constants.LOGIN_URI + "/" + authService)
+      }
     })
   }
 }
