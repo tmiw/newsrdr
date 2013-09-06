@@ -14,6 +14,32 @@ newsrdr beta</title>
 	<link href='/static/css/layout.css' rel='stylesheet' media='only screen and (min-width: 961px)' type='text/css' media="screen" />
 	<link rel='stylesheet' media='only screen and (max-width: 960px)' href='/static/css/layout-mobile.css' />
 	<script src="/static/js/overthrow.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	<script type="text/javascript">
+	function _adblocked() {
+		$(".sponsor").html('<div class="sponsor_content"> \
+           newsrdr relies on your support.<br/><br/> \
+           <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"> \
+ <input type="hidden" name="cmd" value="_donations"> \
+ <input type="hidden" name="business" value="mooneer@gmail.com"> \
+ <input type="hidden" name="lc" value="US"> \
+ <input type="hidden" name="no_note" value="0"> \
+ <input type="hidden" name="currency_code" value="USD"> \
+ <input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest"> \
+ <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!"> \
+ <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1"> \
+           </form> \
+         </div>');
+	}
+	$(function() {
+		setTimeout(function() {
+			if ($(".sponsor ins ins ins iframe").length == 0)
+			{
+				_adblocked();
+			}
+		}, 1000);
+	});
+	</script>
 	<script>
 	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -35,7 +61,6 @@ newsrdr beta</title>
 		</div>
 	</div>
 	<div class="middle">
-	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 	<script language="javascript">
 	$(function() {
 		var correctButtonFile = function(toHide) {
