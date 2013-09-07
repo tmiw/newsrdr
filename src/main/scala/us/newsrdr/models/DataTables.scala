@@ -272,10 +272,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  
 	  val articleQuery = 
 	    for {
-	      nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday)
-	      nf <- NewsFeeds if nfa.feedId === nf.id
-	      uf <- UserFeeds if nf.id === uf.feedId
-	      u <- Users if u.optOutSharing === false && u.id === uf.userId
+	      (uf, u) <- UserFeeds innerJoin Users on (_.userId === _.id) if u.optOutSharing === false
+	      nf <- NewsFeeds if uf.feedId === nf.id
+	      nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday) && nfa.feedId === uf.feedId
 	    } yield nfa
 
 	  val length = Query(articleQuery.length).first
@@ -295,10 +294,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  val articleQuery = 
 	    if (userOptedOut) {
 	      for {
-	        nfa <- NewsFeedArticles
-	        nf <- NewsFeeds if nfa.feedId === nf.id
-	        uf <- UserFeeds if nf.id === uf.feedId
-	        u <- Users if u.optOutSharing === false && u.id === uf.userId
+	        (uf, u) <- UserFeeds innerJoin Users on (_.userId === _.id) if u.optOutSharing === false
+	        nf <- NewsFeeds if uf.feedId === nf.id
+	        nfa <- NewsFeedArticles if nfa.feedId === uf.feedId
 	      } yield nfa
 	    } else {
 	      for {
