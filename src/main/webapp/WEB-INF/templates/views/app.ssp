@@ -112,26 +112,27 @@ File to upload (in OPML format): <input name="feedFile" type="file" />
 </script>
 
 <!-- load scripts -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js" type="text/javascript"></script>
 
-<script src="/static/js/models/NewsFeed.js"></script>
-<script src="/static/js/models/NewsArticle.js"></script>
-<script src="/static/js/collections/NewsFeedCollection.js"></script>
-<script src="/static/js/collections/NewsArticleCollection.js"></script>
-<script src="/static/js/views/NewsFeedView.js"></script>
-<script src="/static/js/views/NewsArticleView.js"></script>
-<script src="/static/js/views/FileUploadForm.js"></script>
-<script src="/static/js/controllers/NewsFeedController.js"></script>
-<script src="/static/js/controllers/NewsFeedRouter.js"></script>
+<script src="/static/js/models/NewsFeed.js" type="text/javascript"></script>
+<script src="/static/js/models/NewsArticle.js" type="text/javascript"></script>
+<script src="/static/js/collections/NewsFeedCollection.js" type="text/javascript"></script>
+<script src="/static/js/collections/NewsArticleCollection.js" type="text/javascript"></script>
+<script src="/static/js/views/NewsFeedView.js" type="text/javascript"></script>
+<script src="/static/js/views/NewsArticleView.js" type="text/javascript"></script>
+<script src="/static/js/views/FileUploadForm.js" type="text/javascript"></script>
+<script src="/static/js/controllers/NewsFeedController.js" type="text/javascript"></script>
+<script src="/static/js/controllers/NewsFeedRouter.js" type="text/javascript"></script>
 
 <!-- start app once everything's loaded -->
-<script language="javascript">
+<script language="javascript" type="text/javascript">
+<!--
 var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
 
 $(function(){
@@ -185,4 +186,5 @@ $(function(){
 		}
 	});
 });
+// -->
 </script>
