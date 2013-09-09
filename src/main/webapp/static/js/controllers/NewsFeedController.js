@@ -56,6 +56,7 @@ NewsFeedController = Backbone.View.extend({
 	},
 	
 	initialize: function() {
+		this.originalTitle = document.title;
 			
 		this.enableInfiniteScrolling = false;
 		this.clearPosts();
@@ -308,28 +309,27 @@ NewsFeedController = Backbone.View.extend({
 		}
 		
 		// also update count in the title
-		document.title = document.title.replace(/^\(\d+\)\s*(.+:\s*)?|(.+:\s*)/, "");
 		var feedTitle = "";
 		if (this.selectedFeed)
 		{
-			feedTitle = this.selectedFeed.model.get("feed").title + ": ";
+			feedTitle = this.selectedFeed.model.get("feed").title + " | ";
 			total_unread = this.selectedFeed.model.get("numUnread");
 		}
 		else
 		{
 			if (this.$("#allFeedEntry").hasClass("selectedfeed"))
 			{
-				feedTitle = "all feeds: ";
+				feedTitle = "all feeds | ";
 			}
 		}
 		
 		if (total_unread > 0)
 		{
-			document.title = "(" + total_unread + ") " + feedTitle + document.title;
+			document.title = "(" + total_unread + ") " + feedTitle + this.originalTitle;
 		}
 		else
 		{
-			document.title = feedTitle + document.title;
+			document.title = feedTitle + this.originalTitle;
 		}
 	},
 		

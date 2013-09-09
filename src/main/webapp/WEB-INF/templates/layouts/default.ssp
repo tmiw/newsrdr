@@ -6,8 +6,10 @@
 #if (!title.isEmpty())
 ${title}:
 #end
-newsrdr beta</title>
+newsrdr beta: a news reader without the extra fluff</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<meta name="description" content="newsrdr is a Web based RSS/Atom news reader that allows you to follow the latest news from your favorite websites in one place." />
+	<meta name="keywords" content="RSS,Atom,news reader,news,newsrdr,websites,latest,Google Reader" />
 	<link rel="shortcut icon" href="/static/img/favicon.ico" />
 	<link href='//fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href='/static/css/colors.css' rel='stylesheet' type='text/css' />
@@ -68,8 +70,8 @@ node.parentNode.insertBefore(gads, node);
 <div id="fb-root"></div>
 <div class="container">
 	<div class="top">
-		<img src="/static/img/menu-icon-large.gif" class="main-menu-mobile" width="42" height="36" />
-		<img src="/static/img/feed-icon-large.gif" class="feed-menu-mobile" width="42" height="36" />
+		<img src="/static/img/menu-icon-large.gif" alt="main menu" class="main-menu-mobile" width="42" height="36" />
+		<img src="/static/img/feed-icon-large.gif" alt="feed list" class="feed-menu-mobile" width="42" height="36" />
 		<div class="header">
 			<img src="/static/img/logo.png" id="logo" alt="newsrdr" height="60" width="286" />
 		</div>
