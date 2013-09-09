@@ -64,7 +64,7 @@ class ServerMaintenanceJob extends Job {
   }
   
   def execute(ctxt: JobExecutionContext) {
-    //rebalanceJobs
+    rebalanceJobs
     deleteOldSessions
     deleteOldFailLogs
   }

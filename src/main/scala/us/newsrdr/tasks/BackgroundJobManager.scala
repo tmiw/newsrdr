@@ -7,6 +7,7 @@ import org.quartz.impl.StdSchedulerFactory
 import org.quartz.JobBuilder._
 import org.quartz.TriggerBuilder._
 import org.quartz.SimpleScheduleBuilder._
+import org.quartz.CronScheduleBuilder._
 import org.quartz.DateBuilder._
 import org.quartz._
 import org.scalatra._
@@ -28,19 +29,30 @@ object BackgroundJobManager {
       case _ => StdSchedulerFactory.getDefaultScheduler()
     }
     
-    if (scheduler.getJobDetail(new JobKey(CLEANUP_JOB_NAME)) == null)
+    val jobDetail = scheduler.getJobDetail(new JobKey(CLEANUP_JOB_NAME))
+    if (jobDetail == null)
     {
       // schedule cleanup job since it hasn't been done yet.
       val trigger = newTrigger()
     		.withIdentity(CLEANUP_JOB_NAME)
     		.startNow()
-    		.withSchedule(simpleSchedule().withIntervalInHours(24).repeatForever())
+    		.withSchedule(dailyAtHourAndMinute(0, 0))
     		.build()
       val job = newJob(classOf[ServerMaintenanceJob])
     		.withIdentity(CLEANUP_JOB_NAME)
     		.build()
     
       scheduler.scheduleJob(job, trigger)
+    }
+    else
+    {
+      // reschedule so it starts at 00:00 GMT
+      val trigger = newTrigger()
+    		.withIdentity(CLEANUP_JOB_NAME)
+    		.startNow()
+    		.withSchedule(dailyAtHourAndMinute(0, 0))
+    		.build()
+      scheduler.rescheduleJob(new TriggerKey(CLEANUP_JOB_NAME), trigger)
     }
     
     scheduler.start()
