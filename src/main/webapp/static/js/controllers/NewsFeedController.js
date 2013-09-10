@@ -148,11 +148,15 @@ NewsFeedController = Backbone.View.extend({
 		// Get parameters from local storage, if available.
 		if (typeof(Storage) !== "undefined")
 		{
-			if (!localStorage.showOnlyUnread)
-			{
-				localStorage.showOnlyUnread = true;
+			try {
+				if (!localStorage.showOnlyUnread)
+				{
+					localStorage.showOnlyUnread = true;
+				}
+				this.showOnlyUnread = localStorage.showOnlyUnread;
+			} catch (PrivateBrowsingError) {
+				this.showOnlyUnread = true;
 			}
-			this.showOnlyUnread = localStorage.showOnlyUnread;
 			
 			// Only update HTML if we're showing all, since the HTML is hardcoded as unread only.
 			// Note: why is it making things into strings? :(
@@ -164,8 +168,12 @@ NewsFeedController = Backbone.View.extend({
 			
 			// Reset width of feed list from last session.
 			var listWidth = $(".leftcol").width;
-			if (localStorage.feedListWidth !== "undefined")
-			{
+			try {
+				if (localStorage.feedListWidth !== "undefined")
+				{
+					listWidth = 1 * localStorage.feedListWidth; // typecast to int
+				}
+			} catch (PrivateBrowsingError) {
 				listWidth = 1 * localStorage.feedListWidth; // typecast to int
 			}
 			if (isNaN(listWidth))
@@ -258,7 +266,11 @@ NewsFeedController = Backbone.View.extend({
 			
 			if (typeof(Storage) !== "undefined")
 			{
-				localStorage.feedListWidth = newWidth;
+				try {
+					localStorage.feedListWidth = newWidth;
+				} catch (PrivateBrowsingError) {
+					// ignore
+				}
 			}
 		};
 		
@@ -537,7 +549,11 @@ NewsFeedController = Backbone.View.extend({
 		this.showOnlyUnread = false;
 		if (typeof(Storage) !== "undefined")
 		{
-			localStorage.showOnlyUnread = this.showOnlyUnread;
+			try {
+				localStorage.showOnlyUnread = this.showOnlyUnread;
+			} catch (PrivateBrowsingError) {
+				// ignore
+			}
 		}
 		this.selectFeed(this.selectedFeed);
 	},
@@ -549,7 +565,11 @@ NewsFeedController = Backbone.View.extend({
 		this.showOnlyUnread = true;
 		if (typeof(Storage) !== "undefined")
 		{
-			localStorage.showOnlyUnread = this.showOnlyUnread;
+			try {
+				localStorage.showOnlyUnread = this.showOnlyUnread;
+			} catch (PrivateBrowsingError) {
+				// ignore
+			}
 		}
 		this.selectFeed(this.selectedFeed);
 	},
