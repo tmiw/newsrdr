@@ -41,7 +41,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     ssp("/privacy_policy", "title" -> "privacy policy")
   }
   
-  get("/auth/login/g+") {
+  get("/auth/login/google") {
     val sId = session.getId()
     val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
     
@@ -61,7 +61,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
           val authReq = 
             manager.authenticate(
                 discovered, 
-                Constants.getAuthenticatedURL(request, "g+"))
+                Constants.getAuthenticatedURL(request, "google"))
           val fetch = FetchRequest.createFetchRequest()
           fetch.addAttribute("email", "http://schema.openid.net/contact/email",true)
           fetch.addAttribute("firstname", "http://axschema.org/namePerson/first", true)
@@ -126,16 +126,9 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       case _:Exception => () // ignore any exceptions here
     }
     
-    val authService = session.get("authService")
+    val authService = session.getValue("authService")
     session.invalidate
-    if (authService == "g+")
-    {
-      redirect("https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://newsrdr.us/")
-    }
-    else
-    {
-      redirect("/")
-    }
+    redirect("/")
   }
   
   get("/auth/authenticated/twitter") {
@@ -195,10 +188,10 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     }
   }
   
-  get("/auth/authenticated/g+") {
+  get("/auth/authenticated/google") {
     val openidResp = new ParameterList(request.getParameterMap())
     val discovered = session.getAttribute("discovered").asInstanceOf[DiscoveryInformation]
-    val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request, "g+")) //request.getRequestURL()
+    val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request, "google")) //request.getRequestURL()
     val queryString = request.getQueryString()
     if (queryString != null && queryString.length() > 0)
         receivingURL.append("?").append(request.getQueryString())
@@ -216,19 +209,14 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         
         // email is username for now
         val sId = session.getId()
-        session.setAttribute("authService", "g+")
+        session.setAttribute("authService", "google")
         db withTransaction { implicit session: Session =>
           dao.startUserSession(session, sId, email, request.getRemoteAddr(), firstName + " " + lastName)
         }
-        redirect("/auth/login/g+")
+        redirect("/auth/login/google")
       }
     } else {
-      val sId = session.getId()
-      db withTransaction { implicit session: Session =>
-        dao.invalidateSession(session, sId)
-      }
-      session.invalidate()
-      redirect("https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://newsrdr.us/auth/login/g+")
+      "not verified"
     }
   }
   
@@ -236,7 +224,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     val authService = if (session.getAttribute("authService") != null) {
       session.getAttribute("authService")
     } else {
-      "g+"
+      "google"
     }
     
     authenticationRequired(dao, session.id, db, request, {
@@ -261,7 +249,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     val authService = if (session.getAttribute("authService") != null) {
       session.getAttribute("authService")
     } else {
-      "g+"
+      "google"
     }
     val uidAsString = multiParams("captures").head
     authenticationRequired(dao, session.id, db, request, {

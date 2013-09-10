@@ -5,7 +5,7 @@
 			<ul class="feedmenu">
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/g+">login via Google</a></li>
+				<li class="feedmenuoption"><a href="/auth/login/google">login via Google</a></li>
 				<li class="feedmenuoption"><a href="/auth/login/fb">login via Facebook</a></li>
 				<li class="feedmenuoption"><a href="/auth/login/twitter">login via Twitter</a></li>
 			</ul>
