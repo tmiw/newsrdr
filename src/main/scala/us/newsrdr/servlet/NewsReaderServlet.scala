@@ -214,6 +214,10 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         }
       }
     } else {
+      val sId = session.getId()
+      db withTransaction { implicit session: Session =>
+        dao.invalidateSession(session, sId)
+      }
       session.invalidate()
     }
     redirect("/auth/login/g+")
