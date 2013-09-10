@@ -118,7 +118,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   
   get("/auth/logout") {
     try {
-      var sId = session.getId()
+      val sId = session.getId()
       db withTransaction { implicit session: Session =>
         dao.invalidateSession(session, sId)
       }
@@ -126,8 +126,16 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       case _:Exception => () // ignore any exceptions here
     }
     
+    val authService = session.get("authService")
     session.invalidate
-    redirect("/")
+    if (authService == "g+")
+    {
+      redirect("https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://newsrdr.us/")
+    }
+    else
+    {
+      redirect("/")
+    }
   }
   
   get("/auth/authenticated/twitter") {
@@ -212,6 +220,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         db withTransaction { implicit session: Session =>
           dao.startUserSession(session, sId, email, request.getRemoteAddr(), firstName + " " + lastName)
         }
+        redirect("/auth/login/g+")
       }
     } else {
       val sId = session.getId()
@@ -219,8 +228,8 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         dao.invalidateSession(session, sId)
       }
       session.invalidate()
+      redirect("https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://newsrdr.us/auth/login/g+")
     }
-    redirect("/auth/login/g+")
   }
   
   get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
