@@ -212,10 +212,11 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         db withTransaction { implicit session: Session =>
           dao.startUserSession(session, sId, email, request.getRemoteAddr(), firstName + " " + lastName)
         }
-        redirect("/auth/login/g+")
       }
-    } else
-      "not verified"        
+    } else {
+      session.invalidate()
+    }
+    redirect("/auth/login/g+")
   }
   
   get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
