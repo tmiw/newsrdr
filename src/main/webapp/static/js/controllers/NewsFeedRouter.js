@@ -14,17 +14,17 @@ NewsFeedRouter = Backbone.Router.extend({
 		} else {
 			this.navigate("home");
 		}
-		updateAnalytics();
+		this.updateAnalytics();
 	},
 	
 	getAllPosts: function() {
 		AppController.selectFeed.call(AppController, null);
-		updateAnalytics();
+		this.updateAnalytics();
 	},
 	
 	goHome: function() {
 		AppController.clearPosts.call(AppController);
-		updateAnalytics();
+		this.updateAnalytics();
 	},
 	
 	updateAnalytics: function() {
