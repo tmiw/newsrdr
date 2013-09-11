@@ -29,7 +29,7 @@ NewsFeedRouter = Backbone.Router.extend({
 	
 	updateAnalytics: function() {
 		// Tell Google Analytics about the new page.
-		ga('send', 'pageview', {'title': document.title, 'page': location.href});
+		ga('send', 'pageview', {'title': document.title, 'page': location.pathname});
 	}
 });
 
