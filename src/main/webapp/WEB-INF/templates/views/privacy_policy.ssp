@@ -1,23 +1,6 @@
-<div class="rightcol">
-			<ul class="feedmenu">
-				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
-				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/google">login via Google</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/fb">login via Facebook</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/twitter">login via Twitter</a></li>
-			</ul>
-			<div class="sponsor">
-				<div id="div-gpt-ad-1378477224990-0">
-					<script type='text/javascript'>
-						googletag.cmd.push(function() {
-						var slot1 = googletag.defineSlot('/70574502/newsrdr_lower_right', [200, 200], 'div-gpt-ad-1378477224990-0').addService(googletag.pubads());
-						googletag.enableServices();
-						googletag.display("div-gpt-ad-1378477224990-0");
-						});
-					</script>
-				</div>
-			</div>
-			<div class="textblock">
+<div class="container">
+<div class="row">
+<div class="col-md-8 col-md-offset-2">
 				<h1>privacy policy</h1>
 
 <!-- START PRIVACY POLICY CODE -->
@@ -86,5 +69,6 @@
   <li>Email: mooneer@lifeafterking.org</li>
   <li>HTTP: <a href="http://newsrdr.us/">http://newsrdr.us/</a></li>
 </ul>
-<!-- END PRIVACY POLICY CODE -->
 </div>
+</div>
+<!-- END PRIVACY POLICY CODE -->
