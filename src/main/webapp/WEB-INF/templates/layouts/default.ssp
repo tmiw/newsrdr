@@ -1,5 +1,5 @@
 <%@ val body: String %>
-<%@ val title: String %>
+<%@ val title: String = "" %>
 <!DOCTYPE html>
 <html lang="en">
   <head>
