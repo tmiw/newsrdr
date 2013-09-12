@@ -2,6 +2,7 @@
 <%@ val realName: String %>
 <%@ val optOut: Boolean %>
 <%@ val uid : Integer %>
+<div class="middle">
 		<div id="uploadForm" class="hide-element"></div>
 		<div class="leftcol overthrow">
 			<div class="leftcolcontent">
@@ -34,18 +35,6 @@
 				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
 				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
 			</ul>
-			<div class="sponsor">
-				<div id="div-gpt-ad-1378477224990-0">
-					<script type='text/javascript'>
-						googletag.cmd.push(function() {
-						var slot1 = googletag.defineSlot('/70574502/newsrdr_lower_right', [200, 200], 'div-gpt-ad-1378477224990-0').addService(googletag.pubads());
-						googletag.enableServices();
-						googletag.display("div-gpt-ad-1378477224990-0");
-						setInterval(function(){googletag.pubads().refresh([slot1]);}, 30000);
-						});
-					</script>
-				</div>
-			</div>
 			<div class="welcomeblock">
 				<h1>welcome</h1>
 				<p>
@@ -188,3 +177,4 @@ $(function(){
 });
 // -->
 </script>
+</div>
