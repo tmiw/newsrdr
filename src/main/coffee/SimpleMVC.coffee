@@ -1,3 +1,5 @@
+SimpleMVC = exports? and exports or @SimpleMVC = {}
+
 class SimpleMVC.Event
     ensureInitialized: (name) ->
         this.eventHandlers = [] if !this.eventHandlers?
@@ -18,7 +20,7 @@ class SimpleMVC.Event
 
     triggerEvent: (name, args...) ->
         this.ensureInitialized(name)
-        fn.apply(this, args) for fn in this.eventHandlers[name]
+        fn.apply(this, args) for idx, fn of this.eventHandlers[name]
 
 class SimpleMVC.Model extends SimpleMVC.Event
     constructor: () -> 
@@ -36,22 +38,83 @@ class SimpleMVC.Model extends SimpleMVC.Event
     @fields: (names...) ->
         @defineGetterSetter(name) for name in names
 
-class SimpleMVC.Controller extends SimpleMVC.Event
-    constructor: () -> this.routes = []
+class SimpleMVC.View extends SimpleMVC.Event
+    # Default properties
+    hideOnStart: false
+    events: {}
+    
+    @tag: (name) -> this.prototype.outerTag = name
+    @class: (name) -> this.prototype.outerClass = name
+    @id: (id) -> this.prototype.outerId = id
+    
+    @hideOnStart: (v) -> this.prototype.hideOnStart = v
+    
+    @event: (eventName, id, fn) ->
+        this.prototype.events[eventName] = {} if not this.prototype.events[eventName]?
+        this.prototype.events[eventName][id] = fn
+    
+    delegateEvents: () ->
+        for k,v of this.events
+            for k2,v2 of v
+                this.domObject.on(k, k2, v2)
+    
+    undelegateEvents: () ->
+        for k,v of this.events
+            for k2,v2 of v
+                this.domObject.off(k, k2, v2)
+                
+    constructor: () ->
+        if this.outerId?
+            this.domObject = $("#" + this.outerId)
+        else
+            this.domObject = $(this.outerTag + " ." + this.outerClass)
+        
+        this.delegateEvents()
+        this.hide() if this.hideOnStart
+        
+    show: () ->
+        this.domObject.show()
+    
+    hide: () ->
+        this.domObject.hide()
+    
+    render: () =>
+        # Default render operation. If provided, @template should be a JS/CoffeeScript
+        # function that takes the model object as its sole parameter and 
+        # returns HTML.
+        if @template?
+            this.domObject.html(@template(this.model))
+        else
+            this.domObject.html(this.model?.toString())
+    
+    # Use JS getters/setters for this.model. This will allow us to clean up 
+    # event handlers as needed.
+    Object.defineProperty(this.prototype, "model", {
+        get: () -> this._model,
+        set: (val) -> 
+            if this._model?
+                this._model.unregisterEvent("change", this.render)
+            this._model = val
+            if this._model?
+                this._model.registerEvent("change", this.render)
+                this.render()
+    })
 
+class SimpleMVC.Controller extends SimpleMVC.Event
+    this.prototype.baseUrl = "/"
+     
     @escapeRegex: (rgx) -> rgx.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
-    @urlBase: (base = "/") -> this.baseUrl = @escapeRegex(base)
+    @urlBase: (base = "/") -> this.prototype.baseUrl = @escapeRegex(base)
 
     @route: (path, fn) ->
         # Convert to regexp before inserting into routes list.
         # First, escape regexp characters, then replace :[A-Za-z] with ([^/]+)
         # for :name entries.
         escapedPath = @escapeRegex(path)
-        escapedPath = escapedPath.replace(/:[A-Za-z]/, "([^/]+)")
-        this.routes[new RegExp(escapedPath)] = fn
-	
-    @urlBase "/"
+        escapedPath = escapedPath.replace(/:[A-Za-z]+/, "([^/]+)")
+        this.prototype.routes = {} if not this.prototype.routes?
+        this.prototype.routes[escapedPath] = fn
 
     addNewState: (uri) ->
         if history.pushState?
@@ -61,12 +124,16 @@ class SimpleMVC.Controller extends SimpleMVC.Event
             location.replace(urlWithoutBase + "#" + uri)
         this.triggerEvent("navigated", uri)
 
-    navigate: (uri, callRouteFn) =>
-        uri = @escapeRegex uri.replace(new RegExp("^" + this.baseUrl), "")
-        exists = this.routes.some((r) ->
-            v = r.exec uri
-            ret = false
-            ret = this.routes[r].apply(this, v.slice(1)) if v? && callRouteFn
-            ret || (v? && !callRouteFn))
-        this.addNewState(uri) if exists
-        exists
+    navigate: (uri, callRouteFn = false) ->
+        shortUri = uri.replace(new RegExp("^" + this.baseUrl), "")
+        ret = false
+        for k,v of this.routes
+            matches = new RegExp(k).exec shortUri
+            if not ret
+                ret = v.apply(this, matches.slice(1)) if matches? && callRouteFn
+                ret = matches? && !callRouteFn if !callRouteFn
+        this.addNewState(uri) if ret
+        ret
+        
+    start: (callRouteFn = true) =>
+        this.navigate(location.pathname, callRouteFn)
