@@ -2,179 +2,63 @@
 <%@ val realName: String %>
 <%@ val optOut: Boolean %>
 <%@ val uid : Integer %>
-<div class="middle">
-		<div id="uploadForm" class="hide-element"></div>
-		<div class="leftcol overthrow">
-			<div class="leftcolcontent">
-				<ul class="feedlist">
-					<li class="feedcategory selectedfeed" id="homeEntry"><a href="#">Home</a> <img src="/static/img/ajax-loader.gif" id="loading" class="hide-element" /></li>
-					<li class="feedcategory" id="allFeedEntry"><a href="#feeds"><span class="unreadcount hide-element" id="allCount">0</span> All</a></li>
-					<ul class="feedlist" id="allfeeds">
-						<!-- dynamically added by js -->
-					</ul>
-				</ul>
-			</div>
-		</div>
-		<div class="rightcol overthrow">
-			<ul class="feedmenu">
-				<li class="feedmenuoption authonly">hi <%= realName %></li>
-				<li class="feedmenuoption authonly feedonly allonly">viewing [<span id="showUnreadPosts">unread</span> | <a><span id="showAllPosts">all</span></a>] posts</li>
-				<li class="feedmenuoption authonly feedonly allonly" id="markAllReadLink"><a>mark all as read</a></li>
-				<li class="feedmenuoption authonly feedonly" id="removeFeedLink"><a>remove current feed</a></li>
-				<li class="feedmenuoption authonly feedonly"><a id="feedsiteurl" target="_blank">visit feed's website</a></li>
-				<li class="feedmenuseparator authonly feedonly allonly"><hr noshade/></li>
-				<li class="feedmenuoption authonly"><a id="addNewFeedLink">add new feed</a></li>
-				<li class="feedmenuoption authonly notformobile">
-				<a id="importFeedsLink">import feeds</a>
-				<div id="importProgress" class="hide-element"><span id="currentImportingFeed"></span>/<span id="totalImportCount"></span> imported <img src="/static/img/ajax-loader.gif" /></div></li>
-				<li class="feedmenuoption authonly notformobile"><a href="/feeds/export.opml">export all feeds</a></li>
-				<li class="feedmenuoption authonly">opt [<a><span id="optOutSharing">out of</span></a> | <span id="optInSharing">into</span>] sharing<br/>(on the front page)</li>
-				<li class="feedmenuoption authonly"><a href="/saved/${uid}" target="_blank">my saved posts</a></li>
-				<li class="feedmenuoption authonly"><a href="/auth/logout">logout</a></li>
-				<li class="feedmenuseparator authonly"><hr noshade/></li>
-				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
-				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
-			</ul>
-			<div class="welcomeblock">
-				<h1>welcome</h1>
-				<p>
-					To get started, select a feed from the left. Or, if you don't have any feeds yet, <a id="addNewFeedLink">add one</a>.
-				</p>
-			</div>
-			<ul class="feedpostlist" id="postlist">
-			</ul>
-			<ul class="feedpostlistend authonly feedonly allonly">
-				<li class="nomoreposts">
-					no more posts.
-				</li>
-				<li class="loadingposts hide-element">
-					loading <img src="/static/img/ajax-loader.gif" />
-				</li>
-			</ul>
-		</div>
-
-<script type="text/template" id="news-feed-row-template">
-<a href="#feeds/{{feed.id}}">{{#numUnread}}<span class="unreadcount">{{numUnread}}</span>{{/numUnread}} {{#errorsUpdating}}<img src="/static/img/error.png" width="20" height="20" title="currently having problems updating this feed" />{{/errorsUpdating}} {{feed.title}}</a>
-</script>
-
-<script type="text/template" id="import-feeds-template">
-<div class="closeButton">X</div>
-<form method="POST" action="/feeds/import.opml" enctype="multipart/form-data" target="upload_target" onsubmit="AppController.UploadForm.submit();">
-File to upload (in OPML format): <input name="feedFile" type="file" />
-<input type="submit" name="submitBtn" value="Upload" /> <img src="/static/img/ajax-loader.gif" id="uploading" class="hide-element" />
-</form>
-<iframe id="upload_target" name="upload_target" src="#" style="width:0;height:0;border:0px solid #fff;"></iframe>
-</script>
-
-<script type="text/template" id="news-article-template">
-<div class="feedpostcontainer">
-	<a name="article{{article.id}}" id="article_{{article.id}}">
-	<div class="pubdate">
-		{{article.friendlyPubDate}}
-	</div>
-	<div class="title">
-		<a href="{{article.link}}" target="_blank" class="postlink">{{{article.title}}}</a>
-	</div>
-	<div class="author">
-		{{article.author}}
-	</div>
-	<div class="fromfeed">
-		from <a href="{{feed.link}}" target="_blank" class="feedlink">{{feed.title}}</a>
-	</div>
-	<div class="body">
-		{{{article.description}}}
-	</div>
-	<ul class="postoptions">
-		<li class="postoptionshare"><a class="sharelink">share</a></li>
-		<li class="postoptionshare shareoption hide-element"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
-		<li class="postoptionshare shareoption hide-element"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a></li>
-		<li class="postoptionshare shareoption hide-element"><g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone></li>
-		<li class="optiondivider">|</li>
-		<li class="postoption markRead">mark read</li>
-		<li class="postoption markUnread">mark unread</li>
-		<li class="optiondivider">|</li>
-		<li class="postoption markSaved">save</li>
-		<li class="postoption markUnsaved">unsave</li>
-	</ul>
-	</a>
-</div>
-</script>
-
-<!-- load scripts -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js" type="text/javascript"></script>
-
-<script src="/static/js/models/NewsFeed.js" type="text/javascript"></script>
-<script src="/static/js/models/NewsArticle.js" type="text/javascript"></script>
-<script src="/static/js/collections/NewsFeedCollection.js" type="text/javascript"></script>
-<script src="/static/js/collections/NewsArticleCollection.js" type="text/javascript"></script>
-<script src="/static/js/views/NewsFeedView.js" type="text/javascript"></script>
-<script src="/static/js/views/NewsArticleView.js" type="text/javascript"></script>
-<script src="/static/js/views/FileUploadForm.js" type="text/javascript"></script>
-<script src="/static/js/controllers/NewsFeedController.js" type="text/javascript"></script>
-<script src="/static/js/controllers/NewsFeedRouter.js" type="text/javascript"></script>
-
-<!-- start app once everything's loaded -->
-<script language="javascript" type="text/javascript">
-<!--
-var bootstrappedFeeds = ${unescape(bootstrappedFeeds)};
-
-$(function(){
-	window.___gcfg = {
-	  lang: 'en-US',
-	  parsetags: 'explicit'
-	};
-
-	(function() {
-    	var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-		po.src = '//apis.google.com/js/plusone.js';
-		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-	})();
-	
-	!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
-
-	(function(d, s, id) {
-		var js, fjs = d.getElementsByTagName(s)[0];
-		if (d.getElementById(id)) return;
-		js = d.createElement(s); js.id = id;
-		js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
-		fjs.parentNode.insertBefore(js, fjs);
-	}(document, 'script', 'facebook-jssdk'));
-	
-	AppController = new NewsFeedController();
-	AppRouter = new NewsFeedRouter();
-	
-	window.fbAsyncInit = function() {
-		AppController.setOptOut(<%= optOut %>);
-		Backbone.history.start({pushState: "pushState" in window.history, root: "/news/<%= uid %>"});
-	};
-	
-	// only show feed menu button if mobile device
-	var mql = window.matchMedia("(min-width: 961px)");
-	if (!mql.matches) {
-		$(".feed-menu-mobile").css("display", "block");
-		AppController.useMobileUi();
-	} else {
-		AppController.restoreFullUi();
-	}
-		
-	mql.addListener(function(m) {
-		if(!m.matches) {
-			$(".feed-menu-mobile").css("display", "block");
-			$(".main-menu-mobile").css("display", "block");
-			AppController.useMobileUi();
-		} else {
-			$(".feed-menu-mobile").css("display", "none");
-			$(".main-menu-mobile").css("display", "none");
-			AppController.restoreFullUi();
-		}
-	});
-});
-// -->
-</script>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <ul class="nav nav-pills nav-stacked">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">All Feeds <span class="badge">42</span></a></li>
+                    <li class="active"><a href="#">Engadget <span class="badge">42</span></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="collapse navbar-collapse navbar-ex1-collapse">
+                    <ul class="nav navbar-nav">
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Feed <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                          <li><a href="#">Add new feed</a></li>
+                          <li><a href="#">Mark all as read</a></li>
+                          <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
+                          <li><a href="#">Remove feed</a></li>
+                          <li><a href="#">Visit feed's site</a></li>
+                        </ul>
+                      </li>
+                      <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+                          <ul class="dropdown-menu">
+                              <li><a href="#">Import new feeds</a></li>
+                              <li><a href="#">Export all feeds</a></li>
+                              <li><a href="#">Opt-out of sharing (front page)</a></li>
+                          </ul>
+                      </li>
+                      <li><a href="#">Saved posts</a></li>
+                      <li><a href="#">Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">NYT: Rdio to offer free streaming by year's end, strikes deal with traditional radio company</h3>
+                    <div>September 15, 2013 8:45:00 PM PDT</div>
+                </div>
+                <div class="panel-body">
+                    Having a hard time making it in the internet radio space? Maybe you should take a feather from the cap of a firm that still rides the airwaves. That seems to be Rdio's approach -- according to the New York Times, the company is partnering with Cumulus Media (a company that owns for-real radio stations) to create a free version of its audio streaming service. Rdio will also trade a stake in its parent company, Pulser Media, for chunks of Cumulus programming and promotion on the traditional airwaves. Cumulus will sell ads for Rdio's impending free service, as well as compile playlists from its catalog of syndicated programming. This could buffer Rdio's music library with news and talk shows, which will hopefully give the service a competitive advantage over services like Spotify, Pandora and iTunes Radio. Although the deal doesn't involve a cash exchange, the Times reports the value of Cumulus' services at over $100 million. As for that free Rdio overhaul? It's predicted to be out sometime before the end of the year. The deal will be officially announced on Monday, until then, check out the NYT report at the source link below.
+                </div>
+                <div class="panel-footer">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-default">Share</button>
+                      <button type="button" class="btn btn-default">Mark Read</button>
+                      <button type="button" class="btn btn-default">Save</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">No more posts.</div>
+            </div>
+        </div>
+    </div>
 </div>
