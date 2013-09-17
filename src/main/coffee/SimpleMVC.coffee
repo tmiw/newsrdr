@@ -81,6 +81,9 @@ class SimpleMVC.Collection extends SimpleMVC.Event
     replace: (i, v) ->
         this.removeAt i
         this.insert v, i
+    
+    sort: (fn) ->
+        this.reset(this._coll.sort fn)
         
 class SimpleMVC.View extends SimpleMVC.Event
     # Default properties
