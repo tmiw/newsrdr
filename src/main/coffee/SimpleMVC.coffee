@@ -38,6 +38,36 @@ class SimpleMVC.Model extends SimpleMVC.Event
     @fields: (names...) ->
         @defineGetterSetter(name) for name in names
 
+class SimpleMVC.Collection extends SimpleMVC.Event
+    constructor: () ->
+        this._coll = []
+    
+    reset: (x) ->
+        this._coll = []
+        this.triggerEvent "reset", this
+        this.add(i) for i in x
+        
+    add: (x) ->
+        this._coll.push x
+        this.triggerEvent "add", this, this._coll.length - 1
+    
+    insert: (x, i) ->
+        this._coll.splice i, 0, x
+        this.triggerEvent "add", this, i
+        
+    removeAt: (i) ->
+        removed = this._coll.splice i, 1
+        this.triggerEvent "remove", this, removed[0]
+    
+    remove: (x) ->
+        i = this._coll.indexOf x
+        if i > -1
+            this._coll.splice i, 1
+            this.triggerEvent "remove", this, x
+    
+    each: (fn) ->
+        fn.call(this, i) for i in this._coll
+            
 class SimpleMVC.View extends SimpleMVC.Event
     # Default properties
     hideOnStart: false
