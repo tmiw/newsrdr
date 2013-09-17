@@ -67,7 +67,14 @@ class SimpleMVC.Collection extends SimpleMVC.Event
     
     each: (fn) ->
         fn.call(this, i) for i in this._coll
-            
+    
+    at: (i) ->
+        this._coll[i]
+    
+    replace: (i, v) ->
+        this.removeAt i
+        this.insert v, i
+        
 class SimpleMVC.View extends SimpleMVC.Event
     # Default properties
     hideOnStart: false
@@ -98,9 +105,18 @@ class SimpleMVC.View extends SimpleMVC.Event
             this.domObject = $("#" + this.outerId)
         else
             this.domObject = $(this.outerTag + " ." + this.outerClass)
-        
+            
+            if this.domObject.length == 0
+                # Create object but don't add it yet. Parent will have to add it
+                # to the DOM at the right time.
+                this.domObject = $("<" + this.outerTag + ">", {class: this.outerClass})
+                
         this.delegateEvents()
         this.hide() if this.hideOnStart
+    
+    destroy: () ->
+        this.model = null
+        this.domObject.remove()
         
     show: () ->
         this.domObject.show()
@@ -128,8 +144,59 @@ class SimpleMVC.View extends SimpleMVC.Event
             if this._model?
                 this._model.registerEvent("change", this.render)
                 this.render()
+            else
+                this.domObject.empty()
     })
 
+class SimpleMVC.CollectionView extends SimpleMVC.View
+    constructor: (coll, viewType) ->
+        super()
+        this.model = coll
+        this._viewType = viewType
+        this._childViews = []
+    
+    _appendModel: (x) ->
+        v = new this._viewType
+        v.model = x
+        this.domObject.append v.domObject
+        this._childViews.push v
+    
+    _onRemove: (coll, index) ->
+        this._childViews[index].destroy()
+        this._childViews.splice index, 1
+        
+    _onAdd: (coll, index) ->
+        if index == coll.length - 1
+            this._appendModel coll.at(index)
+        else
+            v = new this._viewType
+            v.model = this.model
+            this._childViews[index].domObject.append v.domObject
+            this._childViews.splice index, 0, v
+            
+    # Use JS getters/setters for this.model. This will allow us to clean up 
+    # event handlers as needed.
+    Object.defineProperty(this.prototype, "model", {
+        get: () -> this._model,
+        set: (val) -> 
+            if this._model?
+                this._model.unregisterEvent("add", this._onAdd)
+                this._model.unregisterEvent("remove", this._onRemove)
+                this._model.unregisterEvent("reset", this._onReset)
+            this._model = val
+            
+            # Destroy child views in preparation for reset.
+            i.destroy() for i in this._childViews
+            this._childViews = []
+            
+            if this._model?
+                this._model.registerEvent("add", this._onAdd)
+                this._model.registerEvent("remove", this._onRemove)
+                this._model.registerEvent("reset", this._onReset)
+                this.render()
+                this._model.each (x) => this._appendModel x
+    })
+    
 class SimpleMVC.Controller extends SimpleMVC.Event
     this.prototype.baseUrl = "/"
      
