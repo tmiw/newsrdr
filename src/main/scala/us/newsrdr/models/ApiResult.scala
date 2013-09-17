@@ -39,3 +39,6 @@ case class NoDataApiResult(success: Boolean, error_string: Option[String])
 
 case class FeedListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeedInfo]) 
 	extends ApiResult(success, error_string)
+
+case class ArticleListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeedArticleInfo]) 
+    extends ApiResult(success, error_string)

@@ -52,14 +52,14 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case _ => new java.util.Date().getTime()
         }
 	    
-	    db withSession { implicit session: Session =>
+	    ArticleListApiResult(true, None, db withSession { implicit session: Session =>
 	      params.get("unread_only") match {
 	        case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
 	          dao.getPostsForAllFeeds(session, userId, true, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
 	        }
 	        case _ => dao.getPostsForAllFeeds(session, userId, false, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
 	      }
-	    }
+	    })
     }, {
       halt(401)
     })
@@ -133,6 +133,57 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    }
 	    
 	    NoDataApiResult(true, None)
+    }, {
+      halt(401)
+    })
+  }
+  
+    
+  val saveCommand =
+    (apiOperation[Unit]("save")
+        summary "Saves post."
+        notes "Saves post"
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  put("/:pid/saved", operation(saveCommand)) {
+    authenticationRequired(dao, session.getId, db, request, {
+        val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+        val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+        val userId = getUserId(dao, db, session.getId, request).get
+        
+        db withTransaction { implicit session: Session =>
+          dao.savePost(session, userId, id, pid) match {
+            case true => ()
+            case _ => halt(404)
+          }
+        }
+        
+        NoDataApiResult(true, None)
+    }, {
+      halt(401)
+    })
+  }
+  
+  val unsaveCommand =
+    (apiOperation[Unit]("unsave")
+        summary "Unsaves post."
+        notes "Unsaves post"
+        parameter pathParam[Int]("pid").description("The ID of the post."))
+        
+  delete("/posts/:pid/saved", operation(saveCommand)) {
+    authenticationRequired(dao, session.getId, db, request, {
+        val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+        val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+        val userId = getUserId(dao, db, session.getId, request).get
+        
+        db withTransaction { implicit session: Session =>
+          dao.unsavePost(session, userId, id, pid) match {
+            case true => ()
+            case _ => halt(404)
+          }
+        }
+        
+        NoDataApiResult(true, None)
     }, {
       halt(401)
     })
