@@ -12,8 +12,11 @@
 # See AsyncResult definition below for more information.
 #############################################################################
 
-NR = exports? and exports or @NR = {}
-NR.API = exports? and exports or @NR.API = {}
+if not @NR?
+    NR = exports? and exports or @NR = {}
+else
+    NR = @NR
+NR.API = {}
 
 NR.API._initialized = false
 NR.API._rootURL = "//newsrdr.us"

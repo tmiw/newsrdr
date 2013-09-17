@@ -1,5 +1,8 @@
-SimpleMVC = exports? and exports or @SimpleMVC = {}
-
+if not @SimpleMVC?
+    SimpleMVC = exports? and exports or @SimpleMVC = {}
+else
+    SimpleMVC = @SimpleMVC
+    
 class SimpleMVC.Event
     ensureInitialized: (name) ->
         this.eventHandlers = [] if !this.eventHandlers?
@@ -41,6 +44,10 @@ class SimpleMVC.Model extends SimpleMVC.Event
 class SimpleMVC.Collection extends SimpleMVC.Event
     constructor: () ->
         this._coll = []
+    
+    Object.defineProperty(this.prototype, "length", {
+        get: () -> this._coll.length
+    })
     
     reset: (x) ->
         this._coll = []
@@ -104,12 +111,9 @@ class SimpleMVC.View extends SimpleMVC.Event
         if this.outerId?
             this.domObject = $("#" + this.outerId)
         else
-            this.domObject = $(this.outerTag + " ." + this.outerClass)
-            
-            if this.domObject.length == 0
-                # Create object but don't add it yet. Parent will have to add it
-                # to the DOM at the right time.
-                this.domObject = $("<" + this.outerTag + ">", {class: this.outerClass})
+            # Create object but don't add it yet. Parent will have to add it
+            # to the DOM at the right time.
+            this.domObject = $("<" + this.outerTag + ">", {class: this.outerClass})
                 
         this.delegateEvents()
         this.hide() if this.hideOnStart
@@ -149,24 +153,25 @@ class SimpleMVC.View extends SimpleMVC.Event
     })
 
 class SimpleMVC.CollectionView extends SimpleMVC.View
-    constructor: (coll, viewType) ->
+    @viewType: (v) -> this.prototype._viewType = v
+
+    constructor: (coll) ->
         super()
-        this.model = coll
-        this._viewType = viewType
         this._childViews = []
+        this.model = coll
     
-    _appendModel: (x) ->
+    _appendModel: (x) =>
         v = new this._viewType
         v.model = x
         this.domObject.append v.domObject
         this._childViews.push v
     
-    _onRemove: (coll, index) ->
+    _onRemove: (coll, index) =>
         this._childViews[index].destroy()
         this._childViews.splice index, 1
         
-    _onAdd: (coll, index) ->
-        if index == coll.length - 1
+    _onAdd: (coll, index) =>
+        if index >= coll.length - 1
             this._appendModel coll.at(index)
         else
             v = new this._viewType
