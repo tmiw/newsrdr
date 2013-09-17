@@ -49,6 +49,17 @@ class SimpleMVC.Collection extends SimpleMVC.Event
         get: () -> this._coll.length
     })
     
+    any: (fn) ->
+        v = -1
+        index = 0
+        for i in this._coll
+            if v == -1
+                tmp = fn.call(this, i)
+                if tmp
+                    v = index
+            index = index + 1
+        v
+        
     reset: (x) ->
         this._coll = []
         this.triggerEvent "reset", this
