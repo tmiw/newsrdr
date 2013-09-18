@@ -101,11 +101,11 @@
 <script type="text/template" id="template-newsArticle">
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title">NYT: Rdio to offer free streaming by year's end, strikes deal with traditional radio company</h3>
-        <div>September 15, 2013 8:45:00 PM PDT</div>
+        <h3 class="panel-title">{{{article.title}}}</h3>
+        <div>{{article.pubDate}}</div>
     </div>
     <div class="panel-body">
-        Having a hard time making it in the internet radio space? Maybe you should take a feather from the cap of a firm that still rides the airwaves. That seems to be Rdio's approach -- according to the New York Times, the company is partnering with Cumulus Media (a company that owns for-real radio stations) to create a free version of its audio streaming service. Rdio will also trade a stake in its parent company, Pulser Media, for chunks of Cumulus programming and promotion on the traditional airwaves. Cumulus will sell ads for Rdio's impending free service, as well as compile playlists from its catalog of syndicated programming. This could buffer Rdio's music library with news and talk shows, which will hopefully give the service a competitive advantage over services like Spotify, Pandora and iTunes Radio. Although the deal doesn't involve a cash exchange, the Times reports the value of Cumulus' services at over $100 million. As for that free Rdio overhaul? It's predicted to be out sometime before the end of the year. The deal will be officially announced on Monday, until then, check out the NYT report at the source link below.
+        {{{article.description}}}
     </div>
     <div class="panel-footer">
         <div class="btn-group">

@@ -11,6 +11,8 @@ class NRApplication extends SimpleMVC.Controller
         alert "Error: " + type + " " + desc
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
+        this._uid = uid
+        
         # Specific feed listing.
         this.newsArticleView.show()
         this.welcomeView.hide()
@@ -19,6 +21,8 @@ class NRApplication extends SimpleMVC.Controller
         NR.API.GetPostsForFeed fid, 0, "", true, this._processFeedPosts, this._apiError
                 
     @route "news/:uid/feeds", (uid) ->
+       this._uid = uid
+    
         # "All Feeds" listing.
         this.newsArticleView.show()
         this.welcomeView.hide()
