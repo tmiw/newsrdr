@@ -20,21 +20,29 @@ class NR.Application extends SimpleMVC.Controller
         
         # Specific feed listing.
         this.newsArticleView.show()
+        this.articleList.reset()
         this.welcomeView.hide()
         
         # Get posts from server
         NR.API.GetPostsForFeed fid, 0, "", true, this._processFeedPosts, this._apiError
-                
+        
+        # Update left hand side.
+        this.newsFeedView.feedSelected fid
+        
     @route "news/:uid/feeds", (uid) ->
         this._uid = uid
     
         # "All Feeds" listing.
         this.newsArticleView.show()
+        this.articleList.reset()
         this.welcomeView.hide()
         
         # Get posts from server
         NR.API.GetAllPosts 0, "", true, this._processFeedPosts, this._apiError
      
+        # Update left hand side.
+        this.newsFeedView.allFeedsSelected()
+        
     @route "news/:uid", (uid) ->
         this._uid = uid
         
@@ -42,7 +50,10 @@ class NR.Application extends SimpleMVC.Controller
         this.newsArticleView.hide()
         this.articleList.reset()
         this.welcomeView.show()
-    
+        
+        # Update left hand side.
+        this.newsFeedView.homeSelected()
+        
     constructor: (bootstrappedFeeds) ->
         super()
 
@@ -64,8 +75,14 @@ class NR.Application extends SimpleMVC.Controller
         # Set up timer for feed updates (every 5min).
         setInterval this.updateFeeds, 1000*60*5
     
+    selectAllFeeds: () =>
+        this.navigate "/news/" + this._uid + "/feeds", true
+        
     selectFeed: (feed) =>
         this.navigate "/news/" + this._uid + "/feeds/" + feed.id, true
+    
+    deselectFeed: () =>
+        this.navigate "/news/" + this._uid, true
         
     addFeed: (url) =>
         NR.API.AddFeed url, (data) =>

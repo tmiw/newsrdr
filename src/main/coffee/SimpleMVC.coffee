@@ -100,6 +100,7 @@ class SimpleMVC.Collection extends SimpleMVC.Event
 class SimpleMVC.View extends SimpleMVC.Event
     # Default properties
     hideOnStart: false
+    $: window.jQuery
     
     @tag: (name) -> this.prototype.outerTag = name
     @class: (name) -> this.prototype.outerClass = name
@@ -189,6 +190,11 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
         this.listDomObject.append v.domObject
         this._childViews.push v
     
+    _onReset: (coll) =>
+        for v in this._childViews
+            v.destroy()
+        this._childViews = []
+        
     _onRemove: (coll, index) =>
         this._childViews[index].destroy()
         this._childViews.splice index, 1

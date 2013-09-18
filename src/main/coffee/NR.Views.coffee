@@ -16,7 +16,27 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     @id "feedList"
     @viewType NR.Views.NewsFeed
     this.prototype.template = Mustache.compile $("#template-newsFeedListing").html()
+    
+    homeSelected: () ->
+        this.domObject.children().removeClass("active")
+        this.$("#homeLink").addClass("active")
+    
+    allFeedsSelected: () ->
+        this.domObject.children().removeClass("active")
+        this.$("#allFeedsLink").addClass("active")
+        
+    feedSelected: (feed) ->
+        this.domObject.children().removeClass("active")
+        index = this.model.any((i) -> i.id.toString() == feed.toString())
+        if index >= 0
+            this._childViews[index].domObject.addClass("active")
+            
+    @event "click", "#allFeedsLink", () ->
+        window.app.selectAllFeeds()
 
+    @event "click", "#homeLink", () ->
+        window.app.deselectFeed()
+        
 class NR.Views.WelcomeBlock extends SimpleMVC.View
     @id "welcome-block"
     this.prototype.template = Mustache.compile $("#template-welcomeBlock").html()

@@ -81,8 +81,8 @@
 </script>
 
 <script type="text/template" id="template-newsFeedListing">
-<li><a href="#">Home</a></li>
-<li><a href="#">All Feeds <span class="badge" id="totalUnread"></span></a></li>
+<li id="homeLink"><a href="#">Home</a></li>
+<li id="allFeedsLink"><a href="#">All Feeds <span class="badge" id="totalUnread"></span></a></li>
 </script>
 
 <script type="text/template" id="template-newsFeed">
