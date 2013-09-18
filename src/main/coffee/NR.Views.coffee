@@ -9,6 +9,9 @@ class NR.Views.NewsFeed extends SimpleMVC.View
     @class "newsFeed"
     this.prototype.template = Mustache.compile $("#template-newsFeed").html()
     
+    @event "click", "", () ->
+        window.app.selectFeed this.model
+    
 class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     @id "feedList"
     @viewType NR.Views.NewsFeed

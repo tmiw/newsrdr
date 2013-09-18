@@ -21,7 +21,7 @@ class NRApplication extends SimpleMVC.Controller
         NR.API.GetPostsForFeed fid, 0, "", true, this._processFeedPosts, this._apiError
                 
     @route "news/:uid/feeds", (uid) ->
-       this._uid = uid
+        this._uid = uid
     
         # "All Feeds" listing.
         this.newsArticleView.show()
@@ -59,13 +59,16 @@ class NRApplication extends SimpleMVC.Controller
         # Set up timer for feed updates (every 5min).
         setInterval this.updateFeeds, 1000*60*5
     
+    selectFeed: (feed) =>
+        this.navigate "/news/" + this._uid + "/feeds/" + feed.id, true
+        
     addFeed: (url) =>
         NR.API.AddFeed url, (data) =>
             feed = new NR.Models.NewsFeedInfo
             for k,v of data
                 feed[k] = v
             this.feedList.add feed
-            this.navigate "/news/" + this._uid + "/feeds/" + feed.id, true
+            this.selectFeed feed
         , this._apiError
     
     updateFeeds: =>
