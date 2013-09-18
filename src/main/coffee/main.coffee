@@ -26,8 +26,11 @@ class NR.Application extends SimpleMVC.Controller
         # Get posts from server
         NR.API.GetPostsForFeed fid, 0, "", true, this._processFeedPosts, this._apiError
         
-        # Update left hand side.
+        # Update nav elements.
+        index = this.feedList.any((i) -> i.id.toString() == fid.toString())
+        feed = this.feedList.at index
         this.newsFeedView.feedSelected fid
+        this.topNavView.feedSelected feed
         
     @route "news/:uid/feeds", (uid) ->
         this._uid = uid
@@ -40,8 +43,9 @@ class NR.Application extends SimpleMVC.Controller
         # Get posts from server
         NR.API.GetAllPosts 0, "", true, this._processFeedPosts, this._apiError
      
-        # Update left hand side.
+        # Update nav elements.
         this.newsFeedView.allFeedsSelected()
+        this.topNavView.allFeedsSelected()
         
     @route "news/:uid", (uid) ->
         this._uid = uid
@@ -51,8 +55,9 @@ class NR.Application extends SimpleMVC.Controller
         this.articleList.reset()
         this.welcomeView.show()
         
-        # Update left hand side.
+        # Update nav elements.
         this.newsFeedView.homeSelected()
+        this.topNavView.homeSelected()
         
     constructor: (bootstrappedFeeds) ->
         super()
@@ -62,6 +67,7 @@ class NR.Application extends SimpleMVC.Controller
         this.feedList = new SimpleMVC.Collection
         this.articleList = new SimpleMVC.Collection
         
+        this.topNavView = new NR.Views.TopNavBar
         this.welcomeView = new NR.Views.WelcomeBlock
         this.newsArticleView = new NR.Views.NewsArticleListing this.articleList
         this.newsFeedView = new NR.Views.NewsFeedListing this.feedList

@@ -36,7 +36,31 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
 
     @event "click", "#homeLink", () ->
         window.app.deselectFeed()
+
+class NR.Views.TopNavBar extends SimpleMVC.View
+    @id "top-nav-bar"
+    this.prototype.template = Mustache.compile $("#template-topNavBar").html()
+    
+    @event "click", "#feedLink", (e) ->
+        if $("#feedLink").parent().hasClass("disabled")
+            e.preventDefault()
+            
+    _disableFeedLink: () ->
+        e = $("#feedLink")
+        e.attr "href", "#"
+        e.parent().addClass "disabled"
+    
+    homeSelected: () ->
+        this._disableFeedLink()
+            
+    allFeedsSelected: () ->
+        this._disableFeedLink()
         
+    feedSelected: (feed) ->
+        e = $("#feedLink")
+        e.attr "href", feed.feed.link
+        e.parent().removeClass "disabled"
+          
 class NR.Views.WelcomeBlock extends SimpleMVC.View
     @id "welcome-block"
     this.prototype.template = Mustache.compile $("#template-welcomeBlock").html()

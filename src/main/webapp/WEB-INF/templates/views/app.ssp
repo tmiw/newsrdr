@@ -11,40 +11,16 @@
             </div>
         </div>
         <div class="col-md-9">
-            <nav class="navbar navbar-default" role="navigation">
-                <div class="collapse navbar-collapse navbar-ex1-collapse">
-                    <ul class="nav navbar-nav">
-                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Feed <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                          <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
-                          <li><a href="#">Mark all as read</a></li>
-                          <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
-                          <li><a href="#">Remove feed</a></li>
-                          <li><a href="#">Visit feed's site</a></li>
-                        </ul>
-                      </li>
-                      <li class="dropdown">
-                          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
-                          <ul class="dropdown-menu">
-                              <li><a href="#">Import new feeds</a></li>
-                              <li><a href="#">Export all feeds</a></li>
-                              <li><a href="#">Opt-out of sharing (front page)</a></li>
-                          </ul>
-                      </li>
-                      <li><a href="#">Saved posts</a></li>
-                      <li><a href="#">Logout</a></li>
-                    </ul>
-                </div>
+            <nav class="navbar navbar-default" role="navigation" id="top-nav-bar">
             </nav>
             <div id="post-list-ui">
             </div>
             <div id="welcome-block">
-                
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- Modal -->
   <div class="modal fade" id="addFeed" tabindex="-1" role="dialog" aria-labelledby="addFeedLabel" aria-hidden="true">
@@ -69,6 +45,33 @@
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
+  
+<script type="text/template" id="template-topNavBar">
+<div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav">
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Feed <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
+          <li><a href="#">Mark all as read</a></li>
+          <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
+          <li><a href="#">Remove feed</a></li>
+          <li class="disabled"><a href="#" target="_blank" id="feedLink">Visit feed's site</a></li>
+        </ul>
+      </li>
+      <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+              <li><a href="#">Import new feeds</a></li>
+              <li><a href="/feeds/export.opml" target="_blank">Export all feeds</a></li>
+              <li><a href="#">Opt-out of sharing (front page)</a></li>
+          </ul>
+      </li>
+      <li><a href="/saved/<%= uid %>">Saved posts</a></li>
+      <li><a href="/auth/logout">Logout</a></li>
+    </ul>
+</div>
+</script>
   
 <script type="text/template" id="template-welcomeBlock">
 <div class="panel panel-default">
