@@ -84,7 +84,7 @@ class AsyncResult
                     else
                         fail.call(this, NR.API.ServerError, jsonData.errorString)
                 else
-                    fail.call(this, NR.API.httpErrorCodeList[req.status], "")
+                    fail.call(this, NR.API.httpErrorCodeList[this._ajax.status], "")
         this._ajax.open method, NR.API._rootURL + url, true
         this._ajax.send()
     

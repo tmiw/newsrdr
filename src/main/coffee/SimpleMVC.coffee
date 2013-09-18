@@ -100,7 +100,6 @@ class SimpleMVC.Collection extends SimpleMVC.Event
 class SimpleMVC.View extends SimpleMVC.Event
     # Default properties
     hideOnStart: false
-    events: {}
     
     @tag: (name) -> this.prototype.outerTag = name
     @class: (name) -> this.prototype.outerClass = name
@@ -109,18 +108,21 @@ class SimpleMVC.View extends SimpleMVC.Event
     @hideOnStart: (v) -> this.prototype.hideOnStart = v
     
     @event: (eventName, id, fn) ->
+        this.prototype.events = {} if not this.prototype.events?
         this.prototype.events[eventName] = {} if not this.prototype.events[eventName]?
         this.prototype.events[eventName][id] = fn
     
     delegateEvents: () ->
-        for k,v of this.events
-            for k2,v2 of v
-                this.domObject.on(k, k2, v2)
+        if this.events?
+            for k,v of this.events
+                for k2,v2 of v
+                    this.domObject.on(k, k2, v2.bind this)
     
     undelegateEvents: () ->
-        for k,v of this.events
-            for k2,v2 of v
-                this.domObject.off(k, k2, v2)
+        if this.events?
+            for k,v of this.events
+                for k2,v2 of v
+                    this.domObject.off(k, k2, v2.bind this)
                 
     constructor: () ->
         if this.outerId?

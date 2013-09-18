@@ -1,4 +1,9 @@
-class NRApplication extends SimpleMVC.Controller
+if not @NR?
+    NR = exports? and exports or @NR = {}
+else
+    NR = @NR
+
+class NR.Application extends SimpleMVC.Controller
     _processFeedPosts: (data) =>
         for i in data
             post = new NR.Models.NewsFeedArticleInfo
@@ -92,12 +97,3 @@ class NRApplication extends SimpleMVC.Controller
             # Remove feeds that no longer exist.
             # TODO
         , () ->
-
-bootstrappedFeeds = []       
-#bootstrappedFeeds = [{
-#    feed: {title: "Engadget"}
-#    numUnread: 5
-#}]
-
-window.app = new NRApplication bootstrappedFeeds
-window.app.start()

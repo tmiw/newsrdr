@@ -86,7 +86,7 @@
 </script>
 
 <script type="text/template" id="template-newsFeed">
-<a href="#">{{feed.title}} <span class="badge">{{numUnread}}</span></a>
+<a href="#" class="feedEntry">{{feed.title}} <span class="badge">{{numUnread}}</span></a>
 </script>
 
 <script type="text/template" id="template-newsArticleListing">
@@ -123,3 +123,12 @@
 <script src="/js/NR.Models.js"></script>
 <script src="/js/NR.Views.js"></script>
 <script src="/js/main.js"></script>
+<script language="javascript">
+<!--
+$(document).ready(function() {
+    var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
+    window.app = new NR.Application(bootstrappedFeeds);
+    window.app.start();
+});
+// -->
+</script>
