@@ -54,7 +54,15 @@ class NRApplication extends SimpleMVC.Controller
         
         # Set up timer for feed updates (every 5min).
         setInterval this.updateFeeds, 1000*60*5
-        
+    
+    addFeed: (url) =>
+        NR.API.AddFeed url, (data) =>
+            feed = new NR.Models.NewsFeedInfo
+            for k,v of data
+                feed[k] = v
+            this.feedList.add feed
+        , this._apiError
+    
     updateFeeds: =>
         NR.API.GetFeeds (feeds) =>
             for i in feeds
@@ -76,11 +84,12 @@ class NRApplication extends SimpleMVC.Controller
             # Remove feeds that no longer exist.
             # TODO
         , () ->
-        
-bootstrappedFeeds = [{
-    feed: {title: "Engadget"}
-    numUnread: 5
-}]
 
-app = new NRApplication bootstrappedFeeds
-app.start()
+bootstrappedFeeds = []       
+#bootstrappedFeeds = [{
+#    feed: {title: "Engadget"}
+#    numUnread: 5
+#}]
+
+window.app = new NRApplication bootstrappedFeeds
+window.app.start()

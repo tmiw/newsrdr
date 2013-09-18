@@ -17,7 +17,7 @@
                       <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Feed <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                          <li><a href="#">Add new feed</a></li>
+                          <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
                           <li><a href="#">Mark all as read</a></li>
                           <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
                           <li><a href="#">Remove feed</a></li>
@@ -46,6 +46,30 @@
     </div>
 </div>
 
+<!-- Modal -->
+  <div class="modal fade" id="addFeed" tabindex="-1" role="dialog" aria-labelledby="addFeedLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Add Feed</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form" id="addFeedForm">
+              <div class="form-group">
+                <label for="addFeedUrl">URL of feed or website to subscribe to</label>
+                <input type="url" class="form-control" id="addFeedUrl" placeholder="Feed/website URL">
+              </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="app.addFeed($('#addFeedUrl').val()); $('#addFeed').modal('hide');">Add</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
 <script type="text/template" id="template-welcomeBlock">
 <div class="panel panel-default">
     <div class="panel-heading">

@@ -184,11 +184,11 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
 	      val today = new java.util.Date().getTime()
-	      NewsFeedInfo(
+	      FeedInfoApiResult(true, None, NewsFeedInfo(
 	    		  feed,
 	    		  feed.id.get,
 	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get),
-	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false })
+	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
 	    }
     }, {
       halt(401)

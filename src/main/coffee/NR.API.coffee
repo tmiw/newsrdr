@@ -19,7 +19,7 @@ else
 NR.API = {}
 
 NR.API._initialized = false
-NR.API._rootURL = "http://newsrdr.us"
+NR.API._rootURL = "" #"http://newsrdr.us"
 
 # Possible errors
 NR.API.AuthenticationFailed = "auth_failed"
@@ -61,23 +61,23 @@ class AsyncResult
         this._ajax = new XMLHttpRequest
         queryString = ""
         for k,v of data
-            queryString = queryString + encode(k) + "=" + encode(v) + "&"
+            queryString = queryString + encodeURI(k) + "=" + encodeURI(v) + "&"
         if url.indexOf("?") >= 0
             url = url + "&" + queryString
         else
             url = url + "?" + queryString
         
-        this._ajax.addEventListener 'readystatechange', ->
-            if req.readyState is 4 # complete
+        this._ajax.addEventListener 'readystatechange', =>
+            if this._ajax.readyState is 4 # complete
                 successResultCodes = [200, 304]
-                if req.status in successResultCodes
+                if this._ajax.status in successResultCodes
                     try
-                        jsonData = eval '(' + req.responseText + ')'
+                        jsonData = eval '(' + this._ajax.responseText + ')'
                     catch error
                         # Should never reach here.
                         jsonData = {
                             success: false
-                            errorString: req.responseText
+                            errorString: this._ajax.responseText
                         }
                     if jsonData.success
                         success.call(this, jsonData.data)
