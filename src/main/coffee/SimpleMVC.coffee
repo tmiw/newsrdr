@@ -75,14 +75,14 @@ class SimpleMVC.Collection extends SimpleMVC.Event
         this.triggerEvent "add", this, i
         
     removeAt: (i) =>
-        removed = this._coll.splice i, 1
-        this.triggerEvent "remove", this, removed[0]
-    
+        this.triggerEvent "remove", this, this._coll[i]
+        removed = this._coll.splice i, 1  
+          
     remove: (x) =>
         i = this._coll.indexOf x
         if i > -1
-            this._coll.splice i, 1
             this.triggerEvent "remove", this, x
+            this._coll.splice i, 1
     
     each: (fn) =>
         fn.call(this, i) for i in this._coll
@@ -195,7 +195,8 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
             v.destroy()
         this._childViews = []
         
-    _onRemove: (coll, index) =>
+    _onRemove: (coll, item) =>
+        index = this.model.any((i) => i == item)
         this._childViews[index].destroy()
         this._childViews.splice index, 1
         

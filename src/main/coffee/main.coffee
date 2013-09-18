@@ -17,6 +17,7 @@ class NR.Application extends SimpleMVC.Controller
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
         this._uid = uid
+        this._fid = fid
         
         # Specific feed listing.
         this.newsArticleView.show()
@@ -89,7 +90,14 @@ class NR.Application extends SimpleMVC.Controller
     
     deselectFeed: () =>
         this.navigate "/news/" + this._uid, true
-        
+    
+    removeCurrentFeed: () =>
+        currentFeed = this._fid
+        NR.API.RemoveFeed this._fid, () =>
+            index = this.feedList.any((i) -> i.id.toString() == currentFeed.toString())
+            this.feedList.removeAt index
+            this.navigate "/news/" + this._uid + "/feeds", true
+            
     addFeed: (url) =>
         NR.API.AddFeed url, (data) =>
             feed = new NR.Models.NewsFeedInfo
