@@ -156,7 +156,7 @@ NR.API.AddFeed = (feedUrl, successFn, failFn) ->
 NR.API.RemoveFeed = (feedId, successFn, failFn) ->
     NR.API.verifyInitialized()
     feedId = feedId.id if feedId.id?
-    feedId = feedId.feed.id if feedId.feed.id?
+    feedId = feedId.feed.id if feedId.feed?
     new AsyncResult "DELETE", "/feeds/" + feedId, {}, successFn, failFn
 
 #############################################################################
@@ -181,7 +181,7 @@ NR.API.RemoveFeed = (feedId, successFn, failFn) ->
 NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostDate = "", unreadOnly = true, successFn, failFn) ->
     NR.API.verifyInitialized()
     feedId = feedId.id if feedId.id?
-    feedId = feedId.feed.id if feedId.feed.id?
+    feedId = feedId.feed.id if feedId.feed?
     new AsyncResult "GET", "/feeds/" + feedId + "/posts", {
         offset: pageNumber,
         latest_post_date: newestPostDate,
@@ -237,7 +237,7 @@ NR.API.MarkPostAsRead = (postId, successFn, failFn) ->
 NR.API.MarkAllFeedPostsAsRead = (feedId, upTo = 0, from, successFn, failFn) ->
     NR.API.verifyInitialized()
     feedId = feedId.id if feedId.id?
-    feedId = feedId.feed.id if feedId.feed.id?
+    feedId = feedId.feed.id if feedId.feed?
     new AsyncResult "DELETE", "/feeds/ " + feedId + "/posts", {
         upTo: upTo
         from: from

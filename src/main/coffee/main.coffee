@@ -1,16 +1,16 @@
 class NRApplication extends SimpleMVC.Controller
-    _processFeedPosts: (data) ->
+    _processFeedPosts: (data) =>
         for i in data
             post = new NR.Models.NewsFeedArticleInfo
             for k,v of i
                 post[k] = v
             this.articleList.add post
     
-    _apiError: (type, desc) ->
+    _apiError: (type, desc) =>
         # TODO
         alert "Error: " + type + " " + desc
         
-    @route "/news/:uid/feeds/:fid", (uid, fid) ->
+    @route "news/:uid/feeds/:fid", (uid, fid) ->
         # Specific feed listing.
         this.newsArticleView.show()
         this.welcomeView.hide()
@@ -18,7 +18,7 @@ class NRApplication extends SimpleMVC.Controller
         # Get posts from server
         NR.API.GetPostsForFeed fid, 0, "", true, this._processFeedPosts, this._apiError
                 
-    @route "/news/:uid/feeds", (uid) ->
+    @route "news/:uid/feeds", (uid) ->
         # "All Feeds" listing.
         this.newsArticleView.show()
         this.welcomeView.hide()
@@ -26,7 +26,7 @@ class NRApplication extends SimpleMVC.Controller
         # Get posts from server
         NR.API.GetAllPosts 0, "", true, this._processFeedPosts, this._apiError
      
-    @route "/news/:uid", (uid) ->
+    @route "news/:uid", (uid) ->
         this._uid = uid
         
         # Hide articles.
@@ -61,6 +61,7 @@ class NRApplication extends SimpleMVC.Controller
             for k,v of data
                 feed[k] = v
             this.feedList.add feed
+            this.navigate "/news/" + this._uid + "/feeds/" + feed.id, true
         , this._apiError
     
     updateFeeds: =>

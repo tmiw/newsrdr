@@ -23,7 +23,8 @@ class SimpleMVC.Event
 
     triggerEvent: (name, args...) ->
         this.ensureInitialized(name)
-        fn.apply(this, args) for idx, fn of this.eventHandlers[name]
+        for idx, fn of this.eventHandlers[name]
+            fn.apply(this, args) if fn?
 
 class SimpleMVC.Model extends SimpleMVC.Event
     constructor: () -> 
@@ -49,7 +50,7 @@ class SimpleMVC.Collection extends SimpleMVC.Event
         get: () -> this._coll.length
     })
     
-    any: (fn) ->
+    any: (fn) =>
         v = -1
         index = 0
         for i in this._coll
@@ -60,40 +61,40 @@ class SimpleMVC.Collection extends SimpleMVC.Event
             index = index + 1
         v
         
-    reset: (x) ->
+    reset: (x = []) =>
         this._coll = []
         this.triggerEvent "reset", this
         this.add(i) for i in x
         
-    add: (x) ->
+    add: (x) =>
         this._coll.push x
         this.triggerEvent "add", this, this._coll.length - 1
     
-    insert: (x, i) ->
+    insert: (x, i) =>
         this._coll.splice i, 0, x
         this.triggerEvent "add", this, i
         
-    removeAt: (i) ->
+    removeAt: (i) =>
         removed = this._coll.splice i, 1
         this.triggerEvent "remove", this, removed[0]
     
-    remove: (x) ->
+    remove: (x) =>
         i = this._coll.indexOf x
         if i > -1
             this._coll.splice i, 1
             this.triggerEvent "remove", this, x
     
-    each: (fn) ->
+    each: (fn) =>
         fn.call(this, i) for i in this._coll
     
-    at: (i) ->
+    at: (i) =>
         this._coll[i]
     
-    replace: (i, v) ->
+    replace: (i, v) =>
         this.removeAt i
         this.insert v, i
     
-    sort: (fn) ->
+    sort: (fn) =>
         this.reset(this._coll.sort fn)
         
 class SimpleMVC.View extends SimpleMVC.Event
@@ -234,7 +235,7 @@ class SimpleMVC.Controller extends SimpleMVC.Event
         # First, escape regexp characters, then replace :[A-Za-z] with ([^/]+)
         # for :name entries.
         escapedPath = @escapeRegex(path)
-        escapedPath = escapedPath.replace(/:[A-Za-z]+/, "([^/]+)")
+        escapedPath = escapedPath.replace(/:[A-Za-z]+/g, "([^/]+)")
         this.prototype.routes = {} if not this.prototype.routes?
         this.prototype.routes[escapedPath] = fn
 
