@@ -8,7 +8,11 @@ class NRApplication extends SimpleMVC.Controller
         NR.API.Initialize()
         
         this.feedList = new SimpleMVC.Collection
-        this.view = new NR.Views.NewsFeedListing this.feedList
+        this.articleList = new SimpleMVC.Collection
+        
+        this.welcomeView = new NR.Views.WelcomeBlock
+        this.newsArticleView = new NR.Views.NewsArticleListing this.articleList
+        this.newsFeedView = new NR.Views.NewsFeedListing this.feedList
                 
         for i in bootstrappedFeeds
             feed = new NR.Models.NewsFeedInfo
@@ -17,7 +21,7 @@ class NRApplication extends SimpleMVC.Controller
             this.feedList.add feed
         
         # Set up timer for feed updates (every 5min).
-        setInterval updateFeeds, 1000*60*5
+        setInterval this.updateFeeds, 1000*60*5
         
     updateFeeds: =>
         NR.API.GetFeeds (feeds) =>

@@ -130,6 +130,7 @@ class SimpleMVC.View extends SimpleMVC.Event
             this.domObject = $("<" + this.outerTag + ">", {class: this.outerClass})
                 
         this.delegateEvents()
+        this.render()
         this.hide() if this.hideOnStart
     
     destroy: () ->
@@ -168,16 +169,21 @@ class SimpleMVC.View extends SimpleMVC.Event
 
 class SimpleMVC.CollectionView extends SimpleMVC.View
     @viewType: (v) -> this.prototype._viewType = v
-
+    @listClass: (v) -> this.prototype._listClass = v
+    
     constructor: (coll) ->
         super()
         this._childViews = []
         this.model = coll
+        if this._listClass
+            this.listDomObject = this.domObject.find("." + this._listClass)
+        else
+            this.listDomObject = this.domObject 
     
     _appendModel: (x) =>
         v = new this._viewType
         v.model = x
-        this.domObject.append v.domObject
+        this.listDomObject.append v.domObject
         this._childViews.push v
     
     _onRemove: (coll, index) =>
@@ -190,7 +196,7 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
         else
             v = new this._viewType
             v.model = this.model
-            this._childViews[index].domObject.append v.domObject
+            this._childViews[index].domObject.insertBefore v.domObject
             this._childViews.splice index, 0, v
             
     # Use JS getters/setters for this.model. This will allow us to clean up 

@@ -19,7 +19,7 @@ else
 NR.API = {}
 
 NR.API._initialized = false
-NR.API._rootURL = "//newsrdr.us"
+NR.API._rootURL = "http://newsrdr.us"
 
 # Possible errors
 NR.API.AuthenticationFailed = "auth_failed"
@@ -85,7 +85,7 @@ class AsyncResult
                         fail.call(this, NR.API.ServerError, jsonData.errorString)
                 else
                     fail.call(this, NR.API.httpErrorCodeList[req.status], "")
-        this._ajax.open method, url, true
+        this._ajax.open method, NR.API._rootURL + url, true
         this._ajax.send()
     
     #############################################################################
