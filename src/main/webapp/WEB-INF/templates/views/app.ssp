@@ -46,6 +46,24 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
   
+  <div class="modal fade" id="removeFeedConfirm" tabindex="-1" role="dialog" aria-labelledby="addFeedLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Remove Feed</h4>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to unsubscribe? This cannot be undone.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+          <button type="button" class="btn btn-primary" onclick="">Yes</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
 <script type="text/template" id="template-topNavBar">
 <div class="collapse navbar-collapse navbar-ex1-collapse">
     <ul class="nav navbar-nav">
@@ -55,7 +73,7 @@
           <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
           <li><a href="#">Mark all as read</a></li>
           <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
-          <li><a href="#">Remove feed</a></li>
+          <li class="disabled"><a href="#" id="removeFeedLink">Remove feed</a></li>
           <li class="disabled"><a href="#" target="_blank" id="feedLink">Visit feed's site</a></li>
         </ul>
       </li>

@@ -41,25 +41,37 @@ class NR.Views.TopNavBar extends SimpleMVC.View
     @id "top-nav-bar"
     this.prototype.template = Mustache.compile $("#template-topNavBar").html()
     
+    @event "click", "#removeFeedLink", (e) ->
+        if $("#removeFeedLink").parent().hasClass("disabled")
+            e.preventDefault()
+        else
+            $("#removeFeedConfirm").modal()
+            
     @event "click", "#feedLink", (e) ->
         if $("#feedLink").parent().hasClass("disabled")
             e.preventDefault()
             
-    _disableFeedLink: () ->
-        e = $("#feedLink")
+    _disableLink: (id) ->
+        e = $(id)
         e.attr "href", "#"
         e.parent().addClass "disabled"
     
+    _enableLink: (id) ->
+        e = $(id)
+        e.parent().removeClass "disabled"
+        e
+        
     homeSelected: () ->
-        this._disableFeedLink()
+        this._disableLink("#feedLink")
+        this._disableLink("#removeFeedLink")
             
     allFeedsSelected: () ->
-        this._disableFeedLink()
+        this._disableLink("#feedLink")
+        this._disableLink("#removeFeedLink")
         
     feedSelected: (feed) ->
-        e = $("#feedLink")
-        e.attr "href", feed.feed.link
-        e.parent().removeClass "disabled"
+        this._enableLink("#feedLink").attr "href", feed.feed.link
+        this._enableLink("#removeFeedLink")
           
 class NR.Views.WelcomeBlock extends SimpleMVC.View
     @id "welcome-block"
