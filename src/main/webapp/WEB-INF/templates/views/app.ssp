@@ -140,9 +140,9 @@
 </script>
 
 <script type="text/template" id="template-newsArticleListing">
-<ul class="post-list">
+<div class="post-list">
     
-</ul>
+</div>
 <div class="panel panel-default">
     <div class="panel-heading">No more posts.</div>
 </div>
@@ -151,8 +151,9 @@
 <script type="text/template" id="template-newsArticle">
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title">{{{article.title}}}</h3>
-        <div>{{article.pubDate}}</div>
+        <h3 class="panel-title"><a href="{{{article.link}}}" target="_blank">{{{article.title}}}</a></h3>
+        {{#article.author}}<div><em>by {{article.author}}</em></div>{{/article.author}}
+        <div>Posted {{friendlyArticlePubDate}} by <a href="{{{feed.link}}}" target="_blank">{{{feed.title}}}</a></div>
     </div>
     <div class="panel-body">
         {{{article.description}}}

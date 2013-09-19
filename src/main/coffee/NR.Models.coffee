@@ -19,6 +19,19 @@ class NR.Models.NewsFeedInfo extends SimpleMVC.Model
 class NR.Models.NewsFeedArticleInfo extends SimpleMVC.Model
     @fields "article", "unread", "saved"
     
+    Object.defineProperty(this.prototype, "friendlyArticlePubDate", {
+        get: () -> new Date(this.article.pubDate).toLocaleString()
+    })
+    
+    # Hack to provide feed information to per-article template.
+    Object.defineProperty(this.prototype, "feed", {
+        get: () -> 
+            index = window.app.feedList.any((i) => i.id == this.article.feedId)
+            if index >= -1
+                f = window.app.feedList.at index
+                f.feed
+    })
+    
 class NR.Models.LocalSettings extends SimpleMVC.Model
     @fields "showOnlyUnread", "optedOut", "importQueue", "feedsImported"
     

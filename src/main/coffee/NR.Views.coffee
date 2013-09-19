@@ -145,7 +145,7 @@ class NR.Views.WelcomeBlock extends SimpleMVC.View
     this.prototype.template = Mustache.compile $("#template-welcomeBlock").html()
     
 class NR.Views.NewsArticle extends SimpleMVC.View
-    @tag "li"
+    @tag "div"
     @class "newsArticle"
     this.prototype.template = Mustache.compile $("#template-newsArticle").html()
     
