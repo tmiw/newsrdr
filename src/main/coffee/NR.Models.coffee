@@ -20,7 +20,15 @@ class NR.Models.NewsFeedArticleInfo extends SimpleMVC.Model
     @fields "article", "unread", "saved"
     
 class NR.Models.LocalSettings extends SimpleMVC.Model
-    @fields "showOnlyUnread", "optedOut"
+    @fields "showOnlyUnread", "optedOut", "importQueue", "feedsImported"
+    
+    Object.defineProperty(this.prototype, "isImporting", {
+        get: () -> this.importQueue? && this.importQueue.length > 0
+    })
+    
+    Object.defineProperty(this.prototype, "totalFeeds", {
+        get: () -> this.importQueue.length + this.feedsImported
+    })
     
 class NR.Models.HtmlLocalStorage extends NR.Models.LocalSettings
     _loadFromStorage: () =>

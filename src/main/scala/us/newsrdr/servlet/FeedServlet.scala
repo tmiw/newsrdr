@@ -145,7 +145,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case None => compact(render(("success" -> false) ~ ("reason" -> "forgot_file")))
           }
           <script language="javascript">
-            window.top.window.AppController.UploadForm.done({xml.Unparsed(jsonResult)});
+            window.top.window.app.finishedUploadingFeedList({xml.Unparsed(jsonResult)});
           </script>
 	    }
     }, {

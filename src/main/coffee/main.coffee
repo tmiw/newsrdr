@@ -86,6 +86,11 @@ class NR.Application extends SimpleMVC.Controller
         # Set up timer for feed updates (every 5min).
         setInterval this.updateFeeds, 1000*60*5
     
+        # Restart feed import as needed
+        this.localSettings.importQueue = []
+        #if this.localSettings.importQueue? && this.localSettings.importQueue.length > 0
+        #    this._beginFeedImport()
+            
     selectAllFeeds: () =>
         this.navigate "/news/" + this._uid + "/feeds", true
         
@@ -107,7 +112,8 @@ class NR.Application extends SimpleMVC.Controller
             feed = new NR.Models.NewsFeedInfo
             for k,v of data
                 feed[k] = v
-            this.feedList.add feed
+            if this.feedList.any((i) -> i.id == feed.id) == -1
+                this.feedList.add feed
             this.selectFeed feed
         , this._apiError
     
@@ -125,6 +131,55 @@ class NR.Application extends SimpleMVC.Controller
                 NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
             , this._apiError
     
+    importSingleFeed: () =>
+        nextImport = () =>
+            this.localSettings.importQueue.shift()
+            this.localSettings.feedsImported = this.localSettings.feedsImported + 1
+            
+            if this.localSettings.importQueue.length > 0
+                # import next feed
+                window.setTimeout this.importSingleFeed, 0
+            else
+                # all done
+                # TODO: alert user that it's complete.
+                this.localSettings.importQueue = []
+                
+        # Unlike addFeed above, we're ignoring errors from the server.
+        NR.API.AddFeed this.localSettings.importQueue[0], (data) =>
+            feed = new NR.Models.NewsFeedInfo
+            for k,v of data
+                feed[k] = v
+            if this.feedList.any((i) -> i.id == feed.id) == -1
+                this.feedList.add feed         
+            nextImport.call(this)
+        , nextImport.bind(this)
+        
+    _beginFeedImport: () =>
+        # TODO: let user know import's begun
+        window.setTimeout this.importSingleFeed, 0
+    
+    finishedUploadingFeedList: (result) =>
+        if (!result.success)
+            errorText = "Error encountered while uploading file."
+            if (result.reason == "forgot_file")
+                errorText = "Please select a file and try again."
+            else if (result.reason == "cant_parse")
+                errorText = "The file provided is not a valid OPML file. Select another file and try again."
+            else if (result.reason == "not_authorized")
+                # Force user to login screen.
+                location.reload();
+            else if (result.reason == "too_big")
+                errorText = "The file provided is too big to be parsed. Select another file and try again."
+
+            # TODO: display alert
+        else
+            $('#importFeeds').modal('hide')
+            
+            # Queue up feeds for processing.
+            this.localSettings.importQueue = result.feeds
+            this.localSettings.feedsImported = 0
+            this._beginFeedImport()
+
     toggleShowUnread: () =>
         this.localSettings.showOnlyUnread = !this.localSettings.showOnlyUnread
         this.articleList.reset()

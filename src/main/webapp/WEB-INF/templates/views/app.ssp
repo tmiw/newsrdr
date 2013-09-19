@@ -46,7 +46,7 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
   
-  <div class="modal fade" id="removeFeedConfirm" tabindex="-1" role="dialog" aria-labelledby="addFeedLabel" aria-hidden="true">
+  <div class="modal fade" id="removeFeedConfirm" tabindex="-1" role="dialog" aria-labelledby="removeFeedConfirm" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -60,6 +60,30 @@
           <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
           <button type="button" class="btn btn-primary" onclick="app.removeCurrentFeed(); $('#removeFeedConfirm').modal('hide');">Yes</button>
         </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+  <div class="modal fade" id="importFeeds" tabindex="-1" role="dialog" aria-labelledby="importFeeds" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="/feeds/import.opml" enctype="multipart/form-data" target="upload_target">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Import Feeds</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="feedFile">File to upload (in OPML format)</label>
+            <input id="feedFile" name="feedFile" type="file" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" name="submitBtn">Import</button>
+        </div>
+        </form>
+        <iframe id="upload_target" name="upload_target" src="#" style="width:0;height:0;border:0px solid #fff;"></iframe>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
@@ -80,7 +104,12 @@
       <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
           <ul class="dropdown-menu">
-              <li><a href="#">Import new feeds</a></li>
+              {{^isImporting}}
+              <li><a data-toggle="modal" href="#importFeeds">Import new feeds</a></li>
+              {{/isImporting}}
+              {{#isImporting}}
+              <li class="disabled" id="feedImportProgress">{{feedsImported}}/{{totalFeeds}} imported</li>
+              {{/isImporting}}
               <li><a href="/feeds/export.opml" target="_blank">Export all feeds</a></li>
               <li><a href="#" id="optOutSharingLink">{{#optedOut}}<span class="glyphicon glyphicon-ok"></span>{{/optedOut}} Opt-out of sharing (front page)</a></li>
           </ul>
