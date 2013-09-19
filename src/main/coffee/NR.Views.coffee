@@ -155,3 +155,25 @@ class NR.Views.NewsArticleListing extends SimpleMVC.CollectionView
     @viewType NR.Views.NewsArticle
     @hideOnStart true
     this.prototype.template = Mustache.compile $("#template-newsArticleListing").html()
+    
+    _isScrolledTo: (item) =>
+        docViewTop = $(window).scrollTop()
+        docViewBottom = docViewTop + $(window).height()
+        elemTop = item.offset().top
+        elemTop < docViewBottom
+        
+    _onScroll: () =>
+        bottomView = this._childViews[this._childViews.length - 1]
+        if this._isScrolledTo bottomView.domObject
+            window.app.fetchMorePosts()
+            
+    constructor: (model) ->
+        super model
+        
+        # Set up infinite scroll handler
+        $(document).scroll(() =>
+            if not this._debouncing
+                this._debouncing = true
+                fn = () => this._debouncing = false
+                setTimeout(fn, 1000)
+                this._onScroll())

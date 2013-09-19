@@ -14,10 +14,12 @@ class NR.Application extends SimpleMVC.Controller
     _apiError: (type, desc) =>
         # TODO
         alert "Error: " + type + " " + desc
-        
+            
     @route "news/:uid/feeds/:fid", (uid, fid) ->
         this._uid = uid
         this._fid = fid
+        this._postPage = 1
+        this._enableFetch = true
         
         # Specific feed listing.
         this.newsArticleView.show()
@@ -36,6 +38,8 @@ class NR.Application extends SimpleMVC.Controller
     @route "news/:uid/feeds", (uid) ->
         this._uid = uid
         this._fid = 0
+        this._postPage = 1
+        this._enableFetch = true
         
         # "All Feeds" listing.
         this.newsArticleView.show()
@@ -157,6 +161,25 @@ class NR.Application extends SimpleMVC.Controller
         # TODO: let user know import's begun
         window.setTimeout this.importSingleFeed, 0
     
+    fetchMorePosts: =>
+        if this._enableFetch
+            if this._fid > 0
+                NR.API.GetPostsForFeed this._fid, this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, this.localSettings.showOnlyUnread, (data) =>
+                    if data.length == 0
+                        this._enableFetch = false
+                    else
+                        this._postPage = this._postPage + 1
+                        this._processFeedPosts data
+                , this._apiError
+            else
+                NR.API.GetAllPosts this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, this.localSettings.showOnlyUnread, (data) =>
+                    if data.length == 0
+                        this._enableFetch = false
+                    else
+                        this._postPage = this._postPage + 1
+                        this._processFeedPosts data
+                , this._apiError
+            
     finishedUploadingFeedList: (result) =>
         if (!result.success)
             errorText = "Error encountered while uploading file."

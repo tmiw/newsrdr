@@ -183,7 +183,7 @@ NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostDate = "", unreadOnl
     feedId = feedId.id if feedId.id?
     feedId = feedId.feed.id if feedId.feed?
     new AsyncResult "GET", "/feeds/" + feedId + "/posts", {
-        offset: pageNumber,
+        page: pageNumber,
         latest_post_date: newestPostDate,
         unread_only: unreadOnly
     }, successFn, failFn
@@ -209,7 +209,7 @@ NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostDate = "", unreadOnl
 NR.API.GetAllPosts = (pageNumber = 0, newestPostDate = "", unreadOnly = true, successFn, failFn) ->
     NR.API.verifyInitialized()
     new AsyncResult "GET", "/posts", {
-        offset: pageNumber,
+        page: pageNumber,
         latest_post_date: newestPostDate,
         unread_only: unreadOnly
     }, successFn, failFn
