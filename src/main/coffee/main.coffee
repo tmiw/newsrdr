@@ -61,7 +61,7 @@ class NR.Application extends SimpleMVC.Controller
         this.newsFeedView.homeSelected()
         this.topNavView.homeSelected()
         
-    constructor: (bootstrappedFeeds) ->
+    constructor: (bootstrappedFeeds, optedOut) ->
         super()
 
         NR.API.Initialize()
@@ -69,6 +69,7 @@ class NR.Application extends SimpleMVC.Controller
         this.feedList = new SimpleMVC.Collection
         this.articleList = new SimpleMVC.Collection
         this.localSettings = new NR.Models.HtmlLocalStorage
+        this.localSettings.optedOut = optedOut
         
         this.topNavView = new NR.Views.TopNavBar
         this.topNavView.model = this.localSettings
@@ -135,6 +136,11 @@ class NR.Application extends SimpleMVC.Controller
         else
             NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
             this.topNavView.allFeedsSelected
+
+    toggleOptOut: =>
+        NR.API.OptOutSharing (not this.localSettings.optedOut), () =>
+            this.localSettings.optedOut = not this.localSettings.optedOut
+        , this._apiError
 
     updateFeeds: =>
         NR.API.GetFeeds (feeds) =>

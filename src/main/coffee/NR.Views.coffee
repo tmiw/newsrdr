@@ -88,12 +88,16 @@ class NR.Views.TopNavBar extends SimpleMVC.View
             e.preventDefault()
         else
             window.app.markAllRead()
+            
     @event "click", "#showOnlyUnreadLink", (e) ->
         if $("#showOnlyUnreadLink").parent().hasClass("disabled")
             e.preventDefault()
         else
             window.app.toggleShowUnread()
-            
+    
+    @event "click", "#optOutSharingLink", (e) ->
+        window.app.toggleOptOut()
+        
     _disableLink: (id) ->
         e = $(id)
         e.attr "href", "#"

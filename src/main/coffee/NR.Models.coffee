@@ -20,7 +20,7 @@ class NR.Models.NewsFeedArticleInfo extends SimpleMVC.Model
     @fields "article", "unread", "saved"
     
 class NR.Models.LocalSettings extends SimpleMVC.Model
-    @fields "showOnlyUnread"
+    @fields "showOnlyUnread", "optedOut"
     
 class NR.Models.HtmlLocalStorage extends NR.Models.LocalSettings
     _loadFromStorage: () =>

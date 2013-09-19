@@ -82,7 +82,7 @@
           <ul class="dropdown-menu">
               <li><a href="#">Import new feeds</a></li>
               <li><a href="/feeds/export.opml" target="_blank">Export all feeds</a></li>
-              <li><a href="#">Opt-out of sharing (front page)</a></li>
+              <li><a href="#" id="optOutSharingLink">{{#optedOut}}<span class="glyphicon glyphicon-ok"></span>{{/optedOut}} Opt-out of sharing (front page)</a></li>
           </ul>
       </li>
       <li><a href="/saved/<%= uid %>">Saved posts</a></li>
@@ -148,7 +148,7 @@
 <!--
 $(document).ready(function() {
     var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
-    window.app = new NR.Application(bootstrappedFeeds);
+    window.app = new NR.Application(bootstrappedFeeds, <%= optOut %>);
     window.app.start();
 });
 // -->
