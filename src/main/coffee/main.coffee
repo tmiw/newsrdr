@@ -25,7 +25,7 @@ class NR.Application extends SimpleMVC.Controller
         this.welcomeView.hide()
         
         # Get posts from server
-        NR.API.GetPostsForFeed fid, 0, "", true, this._processFeedPosts, this._apiError
+        NR.API.GetPostsForFeed fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
         
         # Update nav elements.
         index = this.feedList.any((i) -> i.id.toString() == fid.toString())
@@ -43,7 +43,7 @@ class NR.Application extends SimpleMVC.Controller
         this.welcomeView.hide()
         
         # Get posts from server
-        NR.API.GetAllPosts 0, "", true, this._processFeedPosts, this._apiError
+        NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
      
         # Update nav elements.
         this.newsFeedView.allFeedsSelected()
@@ -115,15 +115,27 @@ class NR.Application extends SimpleMVC.Controller
             NR.API.MarkAllFeedPostsAsRead this._fid, 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
                 this.articleList.reset()
                 this.updateFeeds()
-                NR.API.GetPostsForFeed this._fid, 0, "", true, this._processFeedPosts, this._apiError
+                NR.API.GetPostsForFeed this._fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
             , this._apiError
         else
             NR.API.MarkAllPostsAsRead 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
                 this.articleList.reset()
                 this.updateFeeds()
-                NR.API.GetPostsForFeed this._fid, 0, "", true, this._processFeedPosts, this._apiError
+                NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
             , this._apiError
-            
+    
+    toggleShowUnread: () =>
+        this.localSettings.showOnlyUnread = !this.localSettings.showOnlyUnread
+        this.articleList.reset()
+        if this._fid > 0
+            NR.API.GetPostsForFeed this._fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+            index = this.feedList.any((i) => i.id.toString() == this._fid.toString())
+            feed = this.feedList.at index
+            this.topNavView.feedSelected feed
+        else
+            NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+            this.topNavView.allFeedsSelected
+
     updateFeeds: =>
         NR.API.GetFeeds (feeds) =>
             for i in feeds

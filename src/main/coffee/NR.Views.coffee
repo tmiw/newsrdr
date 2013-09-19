@@ -88,6 +88,11 @@ class NR.Views.TopNavBar extends SimpleMVC.View
             e.preventDefault()
         else
             window.app.markAllRead()
+    @event "click", "#showOnlyUnreadLink", (e) ->
+        if $("#feedLink").parent().hasClass("disabled")
+            e.preventDefault()
+        else
+            window.app.toggleShowUnread()
             
     _disableLink: (id) ->
         e = $(id)
@@ -103,16 +108,19 @@ class NR.Views.TopNavBar extends SimpleMVC.View
         this._disableLink("#feedLink")
         this._disableLink("#removeFeedLink")
         this._disableLink("#markAllReadLink")
+        this._disableLink("#showOnlyUnreadLink")
             
     allFeedsSelected: () ->
         this._disableLink("#feedLink")
         this._disableLink("#removeFeedLink")
         this._enableLink("#markAllReadLink")
+        this._enableLink("#showOnlyUnreadLink")
         
     feedSelected: (feed) ->
         this._enableLink("#feedLink").attr "href", feed.feed.link
         this._enableLink("#removeFeedLink")
         this._enableLink("#markAllReadLink")
+        this._enableLink("#showOnlyUnreadLink")
           
 class NR.Views.WelcomeBlock extends SimpleMVC.View
     @id "welcome-block"
