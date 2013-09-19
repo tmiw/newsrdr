@@ -87,9 +87,8 @@ class NR.Application extends SimpleMVC.Controller
         setInterval this.updateFeeds, 1000*60*5
     
         # Restart feed import as needed
-        this.localSettings.importQueue = []
-        #if this.localSettings.importQueue? && this.localSettings.importQueue.length > 0
-        #    this._beginFeedImport()
+        if this.localSettings.importQueue? && this.localSettings.importQueue.length > 0
+            this._beginFeedImport()
             
     selectAllFeeds: () =>
         this.navigate "/news/" + this._uid + "/feeds", true

@@ -35,7 +35,7 @@ class NR.Models.HtmlLocalStorage extends NR.Models.LocalSettings
         try
             if localStorage?
                 for k,v of localStorage
-                    this._props[k] = v
+                    this._props[k] = JSON.parse(v)
         catch error
             # Most likely Safari in private browsing mode. Or old browser.
             
@@ -43,7 +43,7 @@ class NR.Models.HtmlLocalStorage extends NR.Models.LocalSettings
         try
             if localStorage?
                 for k,v of this._props
-                    localStorage[k] = v
+                    localStorage[k] = JSON.stringify(v)
         catch error
             # Most likely Safari in private browsing mode. Or old browser.
     
