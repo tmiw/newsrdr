@@ -18,3 +18,28 @@ class NR.Models.NewsFeedInfo extends SimpleMVC.Model
     
 class NR.Models.NewsFeedArticleInfo extends SimpleMVC.Model
     @fields "article", "unread", "saved"
+    
+class NR.Models.LocalSettings extends SimpleMVC.Model
+    @fields "showOnlyUnread"
+    
+class NR.Models.HtmlLocalStorage extends NR.Models.LocalSettings
+    _loadFromStorage: () =>
+        try
+            if localStorage?
+                for k,v of localStorage
+                    this._props[k] = v
+        catch error
+            # Most likely Safari in private browsing mode. Or old browser.
+            
+    _saveChanges: () =>
+        try
+            if localStorage?
+                for k,v of this._props
+                    localStorage[k] = v
+        catch error
+            # Most likely Safari in private browsing mode. Or old browser.
+    
+    constructor: () ->
+        super()
+        this._loadFromStorage()
+        this.registerEvent "change", this._saveChanges

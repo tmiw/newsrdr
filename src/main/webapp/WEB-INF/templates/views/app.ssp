@@ -72,7 +72,7 @@
         <ul class="dropdown-menu">
           <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
           <li><a href="#" id="markAllReadLink">Mark all as read</a></li>
-          <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
+          <li><a href="#">{{^showOnlyUnread}}<span class="glyphicon glyphicon-ok"></span>{{/showOnlyUnread}} Show read posts</a></li>
           <li class="disabled"><a href="#" id="removeFeedLink">Remove feed</a></li>
           <li class="disabled"><a href="#" target="_blank" id="feedLink">Visit feed's site</a></li>
         </ul>

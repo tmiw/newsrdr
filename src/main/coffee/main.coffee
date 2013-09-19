@@ -68,8 +68,10 @@ class NR.Application extends SimpleMVC.Controller
         
         this.feedList = new SimpleMVC.Collection
         this.articleList = new SimpleMVC.Collection
+        this.localSettings = new NR.Models.HtmlLocalStorage
         
         this.topNavView = new NR.Views.TopNavBar
+        this.topNavView.model = this.localSettings
         this.welcomeView = new NR.Views.WelcomeBlock
         this.newsArticleView = new NR.Views.NewsArticleListing this.articleList
         this.newsFeedView = new NR.Views.NewsFeedListing this.feedList
