@@ -17,6 +17,38 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     @viewType NR.Views.NewsFeed
     this.prototype.template = Mustache.compile $("#template-newsFeedListing").html()
     
+    constructor: (coll) ->
+        super(coll)
+        this._totalUnread = 0
+        
+    _updateAllUnread: () =>
+        text = this._totalUnread.toString()
+        if text == "0"
+            text = ""
+        $("#totalUnread").text(text)
+    
+    _onUnreadChange: (newVal, oldVal) =>
+        this._totalUnread = this._totalUnread - oldVal + newVal
+        this._updateAllUnread()
+        
+    _onAdd: (coll, index) =>
+        super coll, index
+        item = coll.at(index)
+        item.registerEvent "change:numUnread", this._onUnreadChange
+        this._totalUnread = this._totalUnread + item.numUnread
+        this._updateAllUnread()
+        
+    _onRemove: (coll, index) =>
+        index.unregisterEvent "change:numUnread", this._onUnreadChange
+        this._totalUnread = this._totalUnread - index.numUnread
+        super coll, index
+        this._updateAllUnread()
+        
+    _onReset: (coll) =>
+        super coll
+        this._totalUnread = 0
+        this._updateAllUnread()
+        
     homeSelected: () ->
         this.domObject.children().removeClass("active")
         this.$("#homeLink").addClass("active")

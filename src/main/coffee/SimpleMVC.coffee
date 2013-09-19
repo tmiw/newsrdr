@@ -60,6 +60,14 @@ class SimpleMVC.Collection extends SimpleMVC.Event
                     v = index
             index = index + 1
         v
+    
+    find: (x) =>
+        ret = index = -1
+        for i in this._coll
+            index = index + 1
+            if i == x && ret == -1
+                ret = index
+        ret
         
     reset: (x = []) =>
         this._coll = []
