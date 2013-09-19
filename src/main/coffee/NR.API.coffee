@@ -61,7 +61,7 @@ class AsyncResult
         this._ajax = new XMLHttpRequest
         queryString = ""
         for k,v of data
-            queryString = queryString + encodeURI(k) + "=" + encodeURI(v) + "&"
+            queryString = queryString + encodeURI(k.toString()) + "=" + encodeURI(v.toString()) + "&"
         if url.indexOf("?") >= 0
             url = url + "&" + queryString
         else
@@ -238,7 +238,7 @@ NR.API.MarkAllFeedPostsAsRead = (feedId, upTo = 0, from, successFn, failFn) ->
     NR.API.verifyInitialized()
     feedId = feedId.id if feedId.id?
     feedId = feedId.feed.id if feedId.feed?
-    new AsyncResult "DELETE", "/feeds/ " + feedId + "/posts", {
+    new AsyncResult "DELETE", "/feeds/" + feedId + "/posts", {
         upTo: upTo
         from: from
     }, successFn, failFn

@@ -34,8 +34,9 @@ class SimpleMVC.Model extends SimpleMVC.Event
         Object.defineProperty(this.prototype, name, {
             get: () -> this._props[name],
             set: (val) -> 
+                oldVal = this._props[name]
                 this._props[name] = val
-                this.triggerEvent("change:" + name, val)
+                this.triggerEvent("change:" + name, val, oldVal)
                 this.triggerEvent("change", this)
         })
 

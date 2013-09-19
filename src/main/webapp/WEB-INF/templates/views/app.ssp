@@ -71,7 +71,7 @@
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Feed <b class="caret"></b></a>
         <ul class="dropdown-menu">
           <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
-          <li><a href="#">Mark all as read</a></li>
+          <li><a href="#" id="markAllReadLink">Mark all as read</a></li>
           <li><a href="#"><input type="checkbox" /> Show read posts</a></li>
           <li class="disabled"><a href="#" id="removeFeedLink">Remove feed</a></li>
           <li class="disabled"><a href="#" target="_blank" id="feedLink">Visit feed's site</a></li>
@@ -107,7 +107,7 @@
 </script>
 
 <script type="text/template" id="template-newsFeed">
-<a href="#" class="feedEntry">{{feed.title}} <span class="badge">{{numUnread}}</span></a>
+<a href="#" class="feedEntry">{{feed.title}} <span class="badge">{{friendlyNumUnread}}</span></a>
 </script>
 
 <script type="text/template" id="template-newsArticleListing">

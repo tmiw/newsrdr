@@ -35,7 +35,8 @@ class NR.Application extends SimpleMVC.Controller
         
     @route "news/:uid/feeds", (uid) ->
         this._uid = uid
-    
+        this._fid = 0
+        
         # "All Feeds" listing.
         this.newsArticleView.show()
         this.articleList.reset()
@@ -107,6 +108,20 @@ class NR.Application extends SimpleMVC.Controller
             this.selectFeed feed
         , this._apiError
     
+    markAllRead: () =>
+        if this._fid > 0
+            NR.API.MarkAllFeedPostsAsRead this._fid, 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
+                this.articleList.reset()
+                this.updateFeeds()
+                NR.API.GetPostsForFeed this._fid, 0, "", true, this._processFeedPosts, this._apiError
+            , this._apiError
+        else
+            NR.API.MarkAllPostsAsRead 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
+                this.articleList.reset()
+                this.updateFeeds()
+                NR.API.GetPostsForFeed this._fid, 0, "", true, this._processFeedPosts, this._apiError
+            , this._apiError
+            
     updateFeeds: =>
         NR.API.GetFeeds (feeds) =>
             for i in feeds
