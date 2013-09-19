@@ -108,7 +108,7 @@
               <li><a data-toggle="modal" href="#importFeeds">Import new feeds</a></li>
               {{/isImporting}}
               {{#isImporting}}
-              <li class="disabled" id="feedImportProgress">{{feedsImported}}/{{totalFeeds}} imported</li>
+              <li class="disabled" id="feedImportProgress"><a href="#"><span id="feedsImportedCount">{{feedsImported}}</span>/<span id="totalFeedsCount">{{totalFeeds}}</span> imported</a></li>
               {{/isImporting}}
               <li><a href="/feeds/export.opml" target="_blank">Export all feeds</a></li>
               <li><a href="#" id="optOutSharingLink">{{#optedOut}}<span class="glyphicon glyphicon-ok"></span>{{/optedOut}} Opt-out of sharing (front page)</a></li>

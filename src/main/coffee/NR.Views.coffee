@@ -97,7 +97,7 @@ class NR.Views.TopNavBar extends SimpleMVC.View
     
     @event "click", "#optOutSharingLink", (e) ->
         window.app.toggleOptOut()
-        
+    
     _disableLink: (id) ->
         e = $(id)
         e.attr "href", "#"
@@ -125,6 +125,20 @@ class NR.Views.TopNavBar extends SimpleMVC.View
         this._enableLink("#removeFeedLink")
         this._enableLink("#markAllReadLink")
         this._enableLink("#showOnlyUnreadLink")
+    
+    _updateFeedsImported: (newVal, oldVal) =>
+        $("#feedsImportedCount").text(this.model.feedsImported.toString())
+        $("#totalFeedsCount").text(this.model.totalFeeds.toString())
+        this._suppressRender = true
+        
+    render: () =>
+        if not this.model? || (this.model? && not this._suppressRender)
+            super()
+            if this.model?
+                this.model.unregisterEvent("change:feedsImported", this._updateFeedsImported)
+                this.model.registerEvent("change:feedsImported", this._updateFeedsImported)
+        else
+            this._suppressRender = false
           
 class NR.Views.WelcomeBlock extends SimpleMVC.View
     @id "welcome-block"
