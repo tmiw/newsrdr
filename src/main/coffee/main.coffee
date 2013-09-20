@@ -194,11 +194,11 @@ class NR.Application extends SimpleMVC.Controller
     
     toggleSavePost: (article) =>
         if article.saved
-            NR.API.UnsavePost article.article.id, (data) =>
+            NR.API.UnsavePost article.feed.id, article.article.id, (data) =>
                 article.saved = false
             , this._apiError
         else
-            NR.API.SavePost article.article.id, (data) =>
+            NR.API.SavePost article.feed.id, article.article.id, (data) =>
                 article.saved = true
             , this._apiError
             

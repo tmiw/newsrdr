@@ -271,25 +271,29 @@ NR.API.MarkPostAsUnread = (postId, successFn, failFn) ->
 
 #############################################################################
 # Save post to "Saved Posts" page.
-# Input: post ID (article.id property in NewsFeedArticleInfo object) or a 
-#        NewsFeedArticleInfo object.
+# Input: 
+#     * feed ID
+#     * post ID (article.id property in NewsFeedArticleInfo object) or a 
+#       NewsFeedArticleInfo object.
 # Output: none.
 #############################################################################
-NR.API.SavePost = (postId, successFn, failFn) ->
+NR.API.SavePost = (feedId, postId, successFn, failFn) ->
     NR.API.verifyInitialized()
     postId = postId.article.id if postId.article? && postId.article.id?
-    new AsyncResult "PUT", "/posts/" + postId + "/saved", {}, successFn, failFn
+    new AsyncResult "PUT", "/posts/" + postId + "/saved", {feedId: feedId}, successFn, failFn
 
 #############################################################################
 # Unsave post from "Saved Posts" page.
-# Input: post ID (article.id property in NewsFeedArticleInfo object) or a 
-#        NewsFeedArticleInfo object.
+# Input: 
+#     * feed ID
+#     * post ID (article.id property in NewsFeedArticleInfo object) or a 
+#       NewsFeedArticleInfo object.
 # Output: none.
 #############################################################################
-NR.API.UnsavePost = (postId, successFn, failFn) ->
+NR.API.UnsavePost = (feedId, postId, successFn, failFn) ->
     NR.API.verifyInitialized()
     postId = postId.article.id if postId.article? && postId.article.id?
-    new AsyncResult "DELETE", "/posts/" + postId + "/saved", {}, successFn, failFn
+    new AsyncResult "DELETE", "/posts/" + postId + "/saved", {feedId: feedId}, successFn, failFn
 
 #############################################################################
 # Whether to opt-out of sharing a user's feeds with unregistered users.

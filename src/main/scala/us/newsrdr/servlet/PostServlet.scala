@@ -147,7 +147,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   put("/:pid/saved", operation(saveCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-        val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+        val id = Integer.parseInt(params.getOrElse("feedId", halt(422)))
         val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
         val userId = getUserId(dao, db, session.getId, request).get
         
@@ -170,9 +170,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         notes "Unsaves post"
         parameter pathParam[Int]("pid").description("The ID of the post."))
         
-  delete("/posts/:pid/saved", operation(saveCommand)) {
+  delete("/:pid/saved", operation(saveCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-        val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+        val id = Integer.parseInt(params.getOrElse("feedId", halt(422)))
         val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
         val userId = getUserId(dao, db, session.getId, request).get
         
