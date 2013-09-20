@@ -12,8 +12,13 @@ class NR.Application extends SimpleMVC.Controller
             this.articleList.add post
     
     _apiError: (type, desc) =>
-        # TODO
-        alert "Error: " + type + " " + desc
+        errorText = "Communications error with the server. Please try again."
+        
+        switch type
+            when NR.API.AuthenticationFailed then location.reload()
+            when NR.API.ServerError then errorText = "The server encountered an error while processing the request. Please try again."
+            
+        noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });
     
     @route "saved/:uid", (uid) ->
         this._uid = uid
@@ -205,7 +210,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 window.setTimeout this.importSingleFeed, 0
             else
                 # all done
-                # TODO: alert user that it's complete.
+                noty({ text: "Import complete.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "success" });
                 this.localSettings.importQueue = []
                 
         # Unlike addFeed above, we're ignoring errors from the server.
@@ -219,7 +224,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         , nextImport.bind(this)
         
     _beginFeedImport: () =>
-        # TODO: let user know import's begun
+        noty({ text: "Feed import has begun.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "information" });
         window.setTimeout this.importSingleFeed, 0
     
     fetchMorePosts: =>
@@ -284,7 +289,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             else if (result.reason == "too_big")
                 errorText = "The file provided is too big to be parsed. Select another file and try again."
 
-            # TODO: display alert
+            noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });
         else
             $('#importFeeds').modal('hide')
             
