@@ -207,36 +207,43 @@ var node = document.getElementsByTagName('script')[0];
 node.parentNode.insertBefore(gads, node);
 })();
 
+window.___gcfg = {
+  lang: 'en-US',
+  parsetags: 'explicit'
+};
+
+(function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = '//apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+})();
+
+!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+
+(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+
+var initialized = false;
 $(document).ready(function() {
-    window.___gcfg = {
-      lang: 'en-US',
-      parsetags: 'explicit'
-    };
-    
-    (function() {
-        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-        po.src = '//apis.google.com/js/plusone.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-    })();
-
-    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
-
-    (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
-        js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-    
-    var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
-    window.fbAsyncInit = function() {
+    if (!initialized)
+    {
+        initialized = true;
+        var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
         window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
-        if (!window.app.start())
-        {
-            window.app.navigate("/news/<%= uid %>", true);
-        }
-    };
+        window.fbAsyncInit = function() {
+            fbInitialized = true;
+            if (!window.app.start())
+            {
+                window.app.navigate("/news/<%= uid %>", true);
+            }
+        };
+    }
 });
+
 // -->
 </script>

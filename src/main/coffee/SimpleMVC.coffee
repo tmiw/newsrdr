@@ -194,10 +194,8 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
             this.listDomObject = this.domObject 
     
     _appendModel: (x) =>
-        v = new this._viewType
-        v.model = x
-        this.listDomObject.append v.domObject
-        this._childViews.push v
+        x.domObject.appendTo this.listDomObject
+        this._childViews.push x
     
     _onReset: (coll) =>
         for v in this._childViews
@@ -206,17 +204,44 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
         
     _onRemove: (coll, item) =>
         index = this.model.any((i) => i == item)
-        this._childViews[index].destroy()
-        this._childViews.splice index, 1
+        item.unregisterEvent "change", this._resort
         
+        for k,v of this._childViews
+            if this.eqFn.call(this, this._childViews[k].model, item)
+                this._childViews[k].destroy()
+                this._childViews.splice k, 1
+    
+    _resort: (item) =>
+        if this.sortFn?
+            this._childViews.sort this.sortFn
+            
+            i = 0
+            for k,v2 of this._childViews
+                v2.domObject.detach()
+            
+            for k,v2 of this._childViews
+                v2.domObject.appendTo this.listDomObject
+                    
     _onAdd: (coll, index) =>
-        if index >= coll.length - 1
-            this._appendModel coll.at(index)
+        v = new this._viewType
+        v.model = coll.at(index)
+        v.model.registerEvent "change", this._resort
+                            
+        if index >= this._childViews.length - 1
+            this._appendModel v
         else
-            v = new this._viewType
-            v.model = this.model
-            this._childViews[index].domObject.insertBefore v.domObject
+            this._childViews[index].domObject.before v.domObject
             this._childViews.splice index, 0, v
+            
+        if this.sortFn?
+            this._childViews.sort this.sortFn
+            
+            i = 0
+            for k,v2 of this._childViews
+                v2.domObject.detach()
+            
+            for k,v2 of this._childViews
+                v2.domObject.appendTo this.listDomObject
             
     # Use JS getters/setters for this.model. This will allow us to clean up 
     # event handlers as needed.

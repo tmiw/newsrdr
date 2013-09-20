@@ -18,6 +18,24 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     this.prototype.template = Mustache.compile $("#template-newsFeedListing").html()
     this.prototype.titleTemplate = Mustache.compile $("#template-title").html()
     
+    sortFn: (first, second) ->
+        fModel = first.model
+        sModel = second.model
+        
+        diff = -(fModel.numUnread - sModel.numUnread)
+        if diff == 0
+            diff = fModel.feed.title.localeCompare sModel.feed.title
+        
+        if diff < 0
+            -1
+        else if diff > 0
+            1
+        else
+            0
+    
+    eqFn: (first, second) ->
+        first.id == second.id
+        
     constructor: (coll) ->
         super(coll)
         this._totalUnread = 0
@@ -61,9 +79,9 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         
     feedSelected: (feed) ->
         this.domObject.children().removeClass("active")
-        index = this.model.any((i) -> i.id.toString() == feed.toString())
-        if index >= 0
-            this._childViews[index].domObject.addClass("active")
+        for k,v of this._childViews
+            if this._childViews[k].model.id.toString() == feed.toString()
+                this._childViews[k].domObject.addClass("active")
             
     @event "click", "#allFeedsLink", () ->
         window.app.selectAllFeeds()
