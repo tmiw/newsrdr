@@ -148,13 +148,14 @@ class NR.Views.NewsArticle extends SimpleMVC.View
     @tag "div"
     @class "newsArticle"
     this.prototype.template = Mustache.compile $("#template-newsArticle").html()
+    this.prototype.shareTemplate = Mustache.compile $("#template-shareArticle").html()
     
     @event "click", ".markReadButton", (e) ->
         window.app.togglePostAsRead this.model
     
     @event "click", ".saveButton", (e) ->
         window.app.toggleSavePost this.model
-    
+        
     _updateUnread: (newVal, oldVal) =>
         btn = this.domObject.find ".markReadButton"
         if not newVal
@@ -183,6 +184,21 @@ class NR.Views.NewsArticle extends SimpleMVC.View
                 this.model.registerEvent("change:unread", this._updateUnread)
                 this.model.unregisterEvent("change:saved", this._updateSaved)
                 this.model.registerEvent("change:saved", this._updateSaved)
+                
+                shareBtn = this.domObject.find(".shareButton")
+                shareBtn.popover({
+                    html: true
+                    container: 'body'
+                    placement: 'top'
+                    content: this.shareTemplate.call this, this.model
+                })
+                shareBtn.on("shown.bs.popover", () =>
+                    ele = $("#share-items-" + this.model.article.id)
+                    FB.XFBML.parse(ele[0]);
+                    gapi.plusone.go(ele[0]);
+                    twttr.widgets.load(ele[0]);
+                )
+                
                 if this.model.saved
                     btn = this.domObject.find ".saveButton"
                     btn.addClass "btn-primary"

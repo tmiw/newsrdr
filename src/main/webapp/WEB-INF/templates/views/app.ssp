@@ -2,6 +2,8 @@
 <%@ val realName: String %>
 <%@ val optOut: Boolean %>
 <%@ val uid : Integer %>
+<div id="fb-root"></div>
+
 <div class="container">
     <div class="row">
         <div class="col-md-3">
@@ -160,11 +162,19 @@
     </div>
     <div class="panel-footer">
         <div class="btn-group">
-          <button type="button" class="btn btn-default">Share</button>
+          <button type="button" class="btn btn-default shareButton" data-title="Share with friends">Share</button>
           <button type="button" class="btn btn-default markReadButton">Mark Read</button>
           <button type="button" class="btn btn-default saveButton">Save</button>
         </div>
     </div>
+</div>
+</script>
+
+<script type="text/template" id="template-shareArticle">
+<div id="share-items-{{article.id}}">
+<div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div>
+<a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a>
+<g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone>
 </div>
 </script>
 
@@ -177,12 +187,35 @@
 <script language="javascript">
 <!--
 $(document).ready(function() {
+    window.___gcfg = {
+      lang: 'en-US',
+      parsetags: 'explicit'
+    };
+    
+    (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = '//apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    
     var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
-    window.app = new NR.Application(bootstrappedFeeds, <%= optOut %>);
-    if (!window.app.start())
-    {
-        window.app.navigate("/news/<%= uid %>", true);
-    }
+    window.fbAsyncInit = function() {
+        window.app = new NR.Application(bootstrappedFeeds, <%= optOut %>);
+        if (!window.app.start())
+        {
+            window.app.navigate("/news/<%= uid %>", true);
+        }
+    };
 });
 // -->
 </script>
