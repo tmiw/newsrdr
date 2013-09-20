@@ -16,6 +16,7 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     @id "feedList"
     @viewType NR.Views.NewsFeed
     this.prototype.template = Mustache.compile $("#template-newsFeedListing").html()
+    this.prototype.titleTemplate = Mustache.compile $("#template-title").html()
     
     constructor: (coll) ->
         super(coll)
@@ -26,7 +27,8 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         if text == "0"
             text = ""
         $("#totalUnread").text(text)
-    
+        document.title = this.titleTemplate.call(this, {numUnread: text})
+        
     _onUnreadChange: (newVal, oldVal) =>
         this._totalUnread = this._totalUnread - oldVal + newVal
         this._updateAllUnread()

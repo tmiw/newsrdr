@@ -137,6 +137,10 @@
 <li id="allFeedsLink"><a href="#">All Feeds <span class="badge" id="totalUnread"></span></a></li>
 </script>
 
+<script type="text/template" id="template-title">
+{{#numUnread}}({{numUnread}}){{/numUnread}} newsrdr
+</script>
+
 <script type="text/template" id="template-newsFeed">
 <a href="#" class="feedEntry">{{feed.title}} <span class="badge">{{friendlyNumUnread}}</span></a>
 </script>
