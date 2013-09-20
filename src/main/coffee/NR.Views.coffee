@@ -149,6 +149,51 @@ class NR.Views.NewsArticle extends SimpleMVC.View
     @class "newsArticle"
     this.prototype.template = Mustache.compile $("#template-newsArticle").html()
     
+    @event "click", ".markReadButton", (e) ->
+        window.app.togglePostAsRead this.model
+    
+    @event "click", ".saveButton", (e) ->
+        window.app.toggleSavePost this.model
+    
+    _updateUnread: (newVal, oldVal) =>
+        btn = this.domObject.find ".markReadButton"
+        if not newVal
+            btn.addClass "btn-primary"
+            btn.removeClass "btn-default"
+        else
+            btn.removeClass "btn-primary"
+            btn.addClass "btn-default"
+        this._suppressRender = true
+    
+    _updateSaved: (newVal, oldVal) =>
+        btn = this.domObject.find ".saveButton"
+        if newVal
+            btn.addClass "btn-primary"
+            btn.removeClass "btn-default"
+        else
+            btn.removeClass "btn-primary"
+            btn.addClass "btn-default"
+        this._suppressRender = true
+              
+    render: () =>
+        if not this.model? || (this.model? && not this._suppressRender)
+            super()
+            if this.model?
+                this.model.unregisterEvent("change:unread", this._updateUnread)
+                this.model.registerEvent("change:unread", this._updateUnread)
+                this.model.unregisterEvent("change:saved", this._updateSaved)
+                this.model.registerEvent("change:saved", this._updateSaved)
+                if this.model.saved
+                    btn = this.domObject.find ".saveButton"
+                    btn.addClass "btn-primary"
+                    btn.removeClass "btn-default"
+                if not this.model.unread
+                    btn = this.domObject.find ".markReadButton"
+                    btn.addClass "btn-primary"
+                    btn.removeClass "btn-default"
+        else
+            this._suppressRender = false
+            
 class NR.Views.NewsArticleListing extends SimpleMVC.CollectionView
     @id "post-list-ui"
     @listClass "post-list"

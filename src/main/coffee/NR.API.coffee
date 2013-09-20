@@ -222,7 +222,7 @@ NR.API.GetAllPosts = (pageNumber = 0, newestPostDate = "", unreadOnly = true, su
 #############################################################################
 NR.API.MarkPostAsRead = (postId, successFn, failFn) ->
     NR.API.verifyInitialized()
-    postId = postId.article.id if postId.article.id?
+    postId = postId.article.id if postId.article? && postId.article.id?
     new AsyncResult "DELETE", "/posts/" + postId, {}, successFn, failFn
 
 #############################################################################
@@ -266,7 +266,7 @@ NR.API.MarkAllPostsAsRead = (upTo = 0, from, successFn, failFn) ->
 #############################################################################
 NR.API.MarkPostAsUnread = (postId, successFn, failFn) ->
     NR.API.verifyInitialized()
-    postId = postId.article.id if postId.article.id?
+    postId = postId.article.id if postId.article? && postId.article.id?
     new AsyncResult "PUT", "/posts/" + postId, {}, successFn, failFn
 
 #############################################################################
@@ -277,7 +277,7 @@ NR.API.MarkPostAsUnread = (postId, successFn, failFn) ->
 #############################################################################
 NR.API.SavePost = (postId, successFn, failFn) ->
     NR.API.verifyInitialized()
-    postId = postId.article.id if postId.article.id?
+    postId = postId.article.id if postId.article? && postId.article.id?
     new AsyncResult "PUT", "/posts/" + postId + "/saved", {}, successFn, failFn
 
 #############################################################################
@@ -288,7 +288,7 @@ NR.API.SavePost = (postId, successFn, failFn) ->
 #############################################################################
 NR.API.UnsavePost = (postId, successFn, failFn) ->
     NR.API.verifyInitialized()
-    postId = postId.article.id if postId.article.id?
+    postId = postId.article.id if postId.article? && postId.article.id?
     new AsyncResult "DELETE", "/posts/" + postId + "/saved", {}, successFn, failFn
 
 #############################################################################

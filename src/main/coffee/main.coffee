@@ -179,6 +179,28 @@ class NR.Application extends SimpleMVC.Controller
                         this._postPage = this._postPage + 1
                         this._processFeedPosts data
                 , this._apiError
+    
+    togglePostAsRead: (article) =>
+        if article.unread
+            NR.API.MarkPostAsRead article.article.id, (data) =>
+                article.unread = false
+                article.feed.numUnread = article.feed.numUnread - 1
+            , this._apiError
+        else
+            NR.API.MarkPostAsUnread article.article.id, (data) =>
+                article.unread = true
+                article.feed.numUnread = article.feed.numUnread + 1
+            , this._apiError
+    
+    toggleSavePost: (article) =>
+        if article.saved
+            NR.API.UnsavePost article.article.id, (data) =>
+                article.saved = false
+            , this._apiError
+        else
+            NR.API.SavePost article.article.id, (data) =>
+                article.saved = true
+            , this._apiError
             
     finishedUploadingFeedList: (result) =>
         if (!result.success)

@@ -29,7 +29,7 @@ class NR.Models.NewsFeedArticleInfo extends SimpleMVC.Model
             index = window.app.feedList.any((i) => i.id == this.article.feedId)
             if index >= -1
                 f = window.app.feedList.at index
-                f.feed
+                f
     })
     
 class NR.Models.LocalSettings extends SimpleMVC.Model
