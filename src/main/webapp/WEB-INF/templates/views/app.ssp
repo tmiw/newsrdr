@@ -117,7 +117,6 @@
           </ul>
       </li>
       <li><a href="/saved/<%= uid %>">Saved posts</a></li>
-      <li><a href="/auth/logout">Logout</a></li>
     </ul>
 </div>
 </script>
@@ -138,7 +137,7 @@
 </script>
 
 <script type="text/template" id="template-title">
-{{#numUnread}}({{numUnread}}){{/numUnread}} newsrdr
+{{#numUnread}}({{numUnread}}){{/numUnread}} newsrdr: a news reader without the extra fluff
 </script>
 
 <script type="text/template" id="template-newsFeed">
