@@ -22,6 +22,7 @@ class NR.Application extends SimpleMVC.Controller
         this.newsArticleView.show()
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
+        ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         index = this.feedList.any((i) -> i.id.toString() == fid.toString())
         if index >= 0
             this._uid = uid
@@ -46,6 +47,7 @@ class NR.Application extends SimpleMVC.Controller
             false
             
     @route "news/:uid/feeds", (uid) ->
+        ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         this._uid = uid
         this._fid = 0
         this._postPage = 1
@@ -64,6 +66,7 @@ class NR.Application extends SimpleMVC.Controller
         this.topNavView.allFeedsSelected()
         
     @route "news/:uid", (uid) ->
+        ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         this._uid = uid
         
         # Hide articles.
