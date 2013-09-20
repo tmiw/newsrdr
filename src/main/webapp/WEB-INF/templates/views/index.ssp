@@ -17,7 +17,7 @@
             <div class="carousel-caption">
               <h1>Your favorite websites. All in one place.</h1>
               <p>Follow all of your favorite websites in one convenient page. No more having to go to one website at a time to keep up with the latest news.</p>
-              <p><a class="btn btn-large btn-primary" href="/auth/login">Start reading today</a></p>
+              <p><a class="btn btn-large btn-primary" href="/auth/login/google">Start reading today</a></p>
             </div>
           </div>
         </div>
@@ -27,7 +27,7 @@
             <div class="carousel-caption">
               <h1>Share your favorite posts with friends.</h1>
               <p>Easily share your favorite posts with friends, even if they're not newsrdr users.</p>
-              <p><a class="btn btn-large btn-primary" href="/auth/login">Start sharing today</a></p>
+              <p><a class="btn btn-large btn-primary" href="/auth/login/google">Start sharing today</a></p>
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@
       <div class="row">
         <div class="col-md-6 col-md-offset-3">
           <h2 class="featurette-heading text-center">Convinced?</h2>
-          <p class="text-center"><a class="btn btn-large btn-primary" href="/auth/login">Start reading today</a></p>
+          <p class="text-center"><a class="btn btn-large btn-primary" href="/auth/login/google">Start reading today</a></p>
         </div>
       </div>
     </div><!-- /.container -->
