@@ -68,6 +68,7 @@ class NR.Application extends SimpleMVC.Controller
     @route "news/:uid", (uid) ->
         ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         this._uid = uid
+        this._fid = null
         
         # Hide articles.
         this.newsArticleView.hide()
@@ -295,14 +296,15 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
     toggleShowUnread: () =>
         this.localSettings.showOnlyUnread = !this.localSettings.showOnlyUnread
         this.articleList.reset()
-        if this._fid > 0
-            NR.API.GetPostsForFeed this._fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
-            index = this.feedList.any((i) => i.id.toString() == this._fid.toString())
-            feed = this.feedList.at index
-            this.topNavView.feedSelected feed
-        else
-            NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
-            this.topNavView.allFeedsSelected
+        if this._fid?
+            if this._fid > 0
+                NR.API.GetPostsForFeed this._fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+                index = this.feedList.any((i) => i.id.toString() == this._fid.toString())
+                feed = this.feedList.at index
+                this.topNavView.feedSelected feed
+            else
+                NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+                this.topNavView.allFeedsSelected
 
     toggleOptOut: =>
         NR.API.OptOutSharing (not this.localSettings.optedOut), () =>
