@@ -1,0 +1,24 @@
+<div class="container">
+<div class="jumbotron">
+      <div class="container">
+        <h1>About newsrdr</h1>
+      </div>
+</div>
+
+	<div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <p class="lead">
+		  There was once Google Reader, but it soon became no more. People started looking for alternatives.
+		  newsrdr stepped up to the plate.
+	    </p>
+	    <p class="lead">
+		  Created in the middle of 2013, newsrdr set out to be the clean, simple news reader we all desire.
+		  We stay out of your way so you can read what's most important in the world.
+	    </p>
+	    <p class="lead">
+		  Best of all, it's easy to get started. <a href="/auth/login/g+">Log in</a> with your Google account today.
+		  Or if you like, you can use <a href="/auth/login/fb">Facebook</a> or <a href="/auth/login/twitter">Twitter</a>.
+		</p>
+      </div>
+    </div>
+</div>

@@ -1,62 +1,96 @@
 <%@ val randomPost: Option[us.newsrdr.models.NewsFeedArticleInfo] %>
 <%@ val randomPostFeed: Option[us.newsrdr.models.NewsFeed] %>
 
-<div class="rightcol">
-			<ul class="feedmenu">
-				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
-				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/google">login via Google</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/fb">login via Facebook</a></li>
-				<li class="feedmenuoption"><a href="/auth/login/twitter">login via Twitter</a></li>
-			</ul>
-			<div class="sponsor">
-				<div id="div-gpt-ad-1378477224990-0">
-					<script type='text/javascript'>
-						googletag.cmd.push(function() {
-						var slot1 = googletag.defineSlot('/70574502/newsrdr_lower_right', [200, 200], 'div-gpt-ad-1378477224990-0').addService(googletag.pubads());
-						googletag.enableServices();
-						googletag.display("div-gpt-ad-1378477224990-0");
-						});
-					</script>
-				</div>
-			</div>
-			<div class="textblock">
-				<h1>newsrdr is a news reader without the extra fluff.</h1>
-				<p>
-					There was once Google Reader, but it soon became no more. People started looking for alternatives.
-					newsrdr stepped up to the plate.
-				</p>
-				<p>
-					Created in the middle of 2013, newsrdr set out to be the clean, simple news reader we all desire.
-					We stay out of your way so you can read what's most important in the world.
-				</p>
-				<p>
-					Best of all, it's easy to get started. <a href="/auth/login/google">Log in</a> with your Google account today.
-					Or if you like, you can use <a href="/auth/login/fb">Facebook</a> or <a href="/auth/login/twitter">Twitter</a>.
-				</p>
-			</div>
-			#if (randomPost != None)
-			<div class="randompost">
-				<div class="randompostcontainer">
-					<h2>Latest news others are reading</h2>
-					<div class="feedpost">
-						<div class="pubdate">
-							<%= randomPost.get.article.pubDate %>
-						</div>
-						<div class="title">
-							<a href="<%= randomPost.get.article.link %>" target="_blank" class="postlink"><%= unescape(randomPost.get.article.title) %></a>
-						</div>
-						<div class="author">
-							<%= randomPost.get.article.author %>
-						</div>
-						<div class="fromfeed">
-							from <a href="<%= randomPostFeed.get.link %>" target="_blank" class="feedlink"><%= randomPostFeed.get.title %></a>
-						</div>
-						<div class="body">
-							<%= unescape(randomPost.get.article.description) %>
-						</div>
-					</div>
-				</div>
-			</div>
-			#end
-		</div>
+<!-- Carousel
+    ================================================== -->
+    <div class="container">
+    <div id="myCarousel" class="carousel slide">
+      <!-- Indicators -->
+      <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#myCarousel" data-slide-to="1"></li>
+      </ol>
+      <div class="carousel-inner">
+        <div class="item active">
+          <img src="/static/img/carousel-1.jpg" alt="First slide">
+          <div class="container">
+            <div class="carousel-caption">
+              <h1>Your favorite websites. All in one place.</h1>
+              <p>Follow all of your favorite websites in one convenient page. No more having to go to one website at a time to keep up with the latest news.</p>
+              <p><a class="btn btn-large btn-primary" href="/auth/login">Start reading today</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="item">
+          <img src="/static/img/carousel-2.jpg" alt="Second slide">
+          <div class="container">
+            <div class="carousel-caption">
+              <h1>Share your favorite posts with friends.</h1>
+              <p>Easily share your favorite posts with friends, even if they're not newsrdr users.</p>
+              <p><a class="btn btn-large btn-primary" href="/auth/login">Start sharing today</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a class="left carousel-control" href="#myCarousel" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span></a>
+      <a class="right carousel-control" href="#myCarousel" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span></a>
+    </div><!-- /.carousel -->
+
+
+
+    <!-- Marketing messaging and featurettes
+    ================================================== -->
+    <!-- Wrap the rest of the page in another container to center all the content. -->
+
+    <div class="container marketing">
+
+      <!-- START THE FEATURETTES -->
+
+      <hr class="featurette-divider">
+
+      <div class="row featurette">
+        <div class="col-md-7">
+          <h2 class="featurette-heading">Your time is important. <span class="text-muted">Why not make the most of it?</span></h2>
+          <p class="lead">Begin following your favorite websites with a click of a button. The site's feed then displays in an easy to read format, ideal for quickly reading the latest updates.</p>
+        </div>
+        <div class="col-md-5">
+          <img class="featurette-image img-responsive" src="/static/img/front-promo-1.jpg" alt="Import feeds">
+        </div>
+      </div>
+
+      <hr class="featurette-divider">
+
+      <div class="row featurette">
+        <div class="col-md-5">
+          <img class="featurette-image img-responsive" src="/static/img/front-promo-2.jpg" alt="Feed list">
+        </div>
+        <div class="col-md-7">
+          <h2 class="featurette-heading">It's just like reading a bunch of newspapers at once. <span class="text-muted">Except online.</span></h2>
+          <p class="lead">Add as many sites as you want, any time. Don't like one of them any more? Simply unsubscribe and the site no longer appears in your list. It's that simple.</p>
+        </div>
+      </div>
+
+      <hr class="featurette-divider">
+
+      <div class="row featurette">
+        <div class="col-md-7">
+          <h2 class="featurette-heading">Easily share your favorite posts with friends. <span class="text-muted">No assembly required.</span></h2>
+          <p class="lead">Share posts that you like on Facebook or Google+. Or if you want, you can post them on your own public page that others can add on newsrdr or elsewhere.</p>
+        </div>
+        <div class="col-md-5">
+          <img class="featurette-image img-responsive" src="/static/img/front-promo-3.jpg" alt="Share posts">
+        </div>
+      </div>
+
+      <hr class="featurette-divider">
+
+      <!-- /END THE FEATURETTES -->
+      
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h2 class="featurette-heading text-center">Convinced?</h2>
+          <p class="text-center"><a class="btn btn-large btn-primary" href="/auth/login">Start reading today</a></p>
+        </div>
+      </div>
+    </div><!-- /.container -->
+    </div>

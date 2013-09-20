@@ -2,164 +2,242 @@
 <%@ val postList : List[us.newsrdr.models.NewsFeedArticleInfoWithFeed] %>
 <%@ val uid : Integer %>
 		<link rel="alternate" type="application/rss+xml" title="RSS" href="/saved/${uid}/feed" />
-		<div class="leftcol overthrow noresize">
-			<div class="leftcolcontent">
-			</div>
-		</div>
-		<div class="rightcol overthrow">
-			<ul class="feedmenu">
-				<li class="feedmenuoption"><a href="/">about newsrdr</a></li>
-				<li class="feedmenuoption"><a href="https://github.com/tmiw/newsrdr/issues/new">help</a></li>
-			</ul>
-			<div class="sponsor">
-				<div id="div-gpt-ad-1378477224990-0">
-					<script type='text/javascript'>
-						googletag.cmd.push(function() {
-						var slot1 = googletag.defineSlot('/70574502/newsrdr_lower_right', [200, 200], 'div-gpt-ad-1378477224990-0').addService(googletag.pubads());
-						googletag.enableServices();
-						googletag.display("div-gpt-ad-1378477224990-0");
-						setInterval(function(){googletag.pubads().refresh([slot1]);}, 30000);
-						});
-					</script>
-				</div>
-			</div>
-			<ul class="feedpostlist" id="postlist">
-#for (i <- postList)
-				<li class="feedpost">
-					<div class="feedpostcontainer">
-						<a name="article<%= i.article.id %>" id="article_<%= i.article.id %>">
-						<div class="pubdate">
-							<%= i.article.pubDate %>
-						</div>
-						<div class="title">
-							<a href="<%= i.article.link %>" target="_blank" class="postlink"><%= unescape(i.article.title) %></a>
-						</div>
-						<div class="author">
-							<%= i.article.author %>
-						</div>
-						<div class="fromfeed">
-							from <a href="<%= i.feed.link %>" target="_blank" class="feedlink"><%= i.feed.title %></a>
-						</div>
-						<div class="body">
-							<%= unescape(i.article.description) %>
-						</div>
-						<ul class="postoptions">
-							<li class="postoptionshare"><a class="sharelink">share</a></li>
-							<li class="postoptionshare shareoption hide-element"><div class="fb-like" data-href="<%= unescape(i.article.link) %>" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
-							<li class="postoptionshare shareoption hide-element"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="<%= unescape(i.article.title) %>" data-via="newsrdr_dot_us" data-count="none" data-url="<%= unescape(i.article.link) %>">Tweet</a></li>
-							<li class="postoptionshare shareoption hide-element"><g:plusone href="<%= unescape(i.article.link) %>" action="share" size="medium" annotation="none" /></g:plusone></li>
-						</ul>
-						</a>
-					</div>
-				</li>
-#end
-			</ul>
-			<ul class="feedpostlistend">
-				<li class="nomoreposts">
-					no more posts.
-				</li>
-				<li class="loadingposts hide-element">
-					loading <img src="/static/img/ajax-loader.gif" />
-				</li>
-			</ul>
-		</div>
+		<div id="fb-root"></div>
 
-<script type="text/template" id="news-article-template">
-<div class="feedpostcontainer">
-	<a name="article{{article.id}}" id="article_{{article.id}}">
-	<div class="pubdate">
-		{{article.friendlyPubDate}}
-	</div>
-	<div class="title">
-		<a href="{{article.link}}" target="_blank" class="postlink">{{{article.title}}}</a>
-	</div>
-	<div class="author">
-		{{article.author}}
-	</div>
-	{{#feed}}
-	<div class="fromfeed">
-		from <a href="{{feed.link}}" target="_blank" class="feedlink">{{feed.title}}</a>
-	</div>
-	{{/feed}}
-	<div class="body">
-		{{{article.description}}}
-	</div>
-	<ul class="postoptions">
-		<li class="postoptionshare"><a class="sharelink">share</a></li>
-		<li class="postoptionshare shareoption hide-element"><div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div></li>
-		<li class="postoptionshare shareoption hide-element"><a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a></li>
-		<li class="postoptionshare shareoption hide-element"><g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone></li>
-	</ul>
-	</a>
+<div class="container">
+<div class="jumbotron">
+      <div class="container">
+        <h2>Hi there!</h2>
+        <p>newsrdr is the social news reader everyone's talking about.</p>
+        <p><a class="btn btn-primary btn-lg" href="/">Learn more &raquo;</a></p>
+      </div>
+</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="post-list-ui">
+#for (i <- postList)
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="<%= i.article.link %>" target="_blank"><%= unescape(i.article.title) %></a></h3>
+        <% if (i.article.author.getOrElse("").length() > 0) { %>
+        <div><em>by <%= i.article.author %></em></div>
+        <% } %>
+        <div>Posted <%= i.article.pubDate %> by <a href="<%= i.feed.link %>" target="_blank" class="feedlink"><%= i.feed.title %></a></div>
+    </div>
+    <div class="panel-body">
+        <%= unescape(i.article.description) %>
+    </div>
+    <div class="panel-footer">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default shareButton" data-title="Share with friends">Share</button>
+        </div>
+    </div>
+</div>
+#end
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+  <div class="modal fade" id="addFeed" tabindex="-1" role="dialog" aria-labelledby="addFeedLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Add Feed</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form" id="addFeedForm">
+              <div class="form-group">
+                <label for="addFeedUrl">URL of feed or website to subscribe to</label>
+                <input type="url" class="form-control" id="addFeedUrl" placeholder="Feed/website URL">
+              </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="app.addFeed($('#addFeedUrl').val()); $('#addFeed').modal('hide');">Add</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+  <div class="modal fade" id="removeFeedConfirm" tabindex="-1" role="dialog" aria-labelledby="removeFeedConfirm" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Remove Feed</h4>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to unsubscribe? This cannot be undone.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+          <button type="button" class="btn btn-primary" onclick="app.removeCurrentFeed(); $('#removeFeedConfirm').modal('hide');">Yes</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+  <div class="modal fade" id="importFeeds" tabindex="-1" role="dialog" aria-labelledby="importFeeds" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="/feeds/import.opml" enctype="multipart/form-data" target="upload_target">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Import Feeds</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="feedFile">File to upload (in OPML format)</label>
+            <input id="feedFile" name="feedFile" type="file" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" name="submitBtn">Import</button>
+        </div>
+        </form>
+        <iframe id="upload_target" name="upload_target" src="#" style="width:0;height:0;border:0px solid #fff;"></iframe>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+<script type="text/template" id="template-topNavBar">
+<div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav">
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Feed <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          <li><a data-toggle="modal" href="#addFeed">Add new feed</a></li>
+          <li><a href="#" id="markAllReadLink">Mark all as read</a></li>
+          <li><a href="#" id="showOnlyUnreadLink">{{^showOnlyUnread}}<span class="glyphicon glyphicon-ok"></span>{{/showOnlyUnread}} Show read posts</a></li>
+          <li class="disabled"><a href="#" id="removeFeedLink">Remove feed</a></li>
+          <li class="disabled"><a href="#" target="_blank" id="feedLink">Visit feed's site</a></li>
+        </ul>
+      </li>
+      <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+              {{^isImporting}}
+              <li><a data-toggle="modal" href="#importFeeds">Import new feeds</a></li>
+              {{/isImporting}}
+              {{#isImporting}}
+              <li class="disabled" id="feedImportProgress"><a href="#"><span id="feedsImportedCount">{{feedsImported}}</span>/<span id="totalFeedsCount">{{totalFeeds}}</span> imported</a></li>
+              {{/isImporting}}
+              <li><a href="/feeds/export.opml" target="_blank">Export all feeds</a></li>
+              <li><a href="#" id="optOutSharingLink">{{#optedOut}}<span class="glyphicon glyphicon-ok"></span>{{/optedOut}} Opt-out of sharing (front page)</a></li>
+          </ul>
+      </li>
+      <li><a href="/saved/<%= uid %>">Saved posts</a></li>
+    </ul>
 </div>
 </script>
 
-<!-- load scripts -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/jquery.noty.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/topRight.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/themes/default.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.0.3/layouts/inline.min.js" type="text/javascript"></script>
+<script type="text/template" id="template-newsFeedListing">
+<li id="homeLink"><a href="#">Home</a></li>
+<li id="allFeedsLink"><a href="#">All Feeds <span class="badge" id="totalUnread"></span></a></li>
+</script>
 
-<script src="/static/js/models/NewsFeed.js" type="text/javascript"></script>
-<script src="/static/js/models/NewsArticle.js" type="text/javascript"></script>
-<script src="/static/js/collections/NewsFeedCollection.js" type="text/javascript"></script>
-<script src="/static/js/collections/NewsArticleCollection.js" type="text/javascript"></script>
-<script src="/static/js/views/NewsFeedView.js" type="text/javascript"></script>
-<script src="/static/js/views/NewsArticleView.js" type="text/javascript"></script>
-<script src="/static/js/views/FileUploadForm.js" type="text/javascript"></script>
-<script src="/static/js/controllers/NewsFeedController.js" type="text/javascript"></script>
-<script src="/static/js/controllers/NewsFeedRouter.js" type="text/javascript"></script>
+<script type="text/template" id="template-title">
+{{#numUnread}}({{numUnread}}){{/numUnread}} newsrdr: a news reader without the extra fluff
+</script>
 
-<!-- start app once everything's loaded -->
+<script type="text/template" id="template-newsFeed">
+<a href="#" class="feedEntry">{{feed.title}} <span class="badge">{{friendlyNumUnread}}</span></a>
+</script>
+
+<script type="text/template" id="template-newsArticleListing">
+<div class="panel panel-default">
+    <div class="panel-heading">Advertisement</div>
+    <div class="panel-body" id="ad-body">
+    </div>
+</div>
+<div class="post-list">
+    
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">No more posts.</div>
+</div>
+</script>
+
+<script type="text/template" id="template-newsArticle">
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="{{{article.link}}}" target="_blank">{{{article.title}}}</a></h3>
+        {{#article.author}}<div><em>by {{article.author}}</em></div>{{/article.author}}
+        <div>Posted {{friendlyArticlePubDate}} by <a href="{{{feed.link}}}" target="_blank">{{{feed.title}}}</a></div>
+    </div>
+    <div class="panel-body">
+        {{{article.description}}}
+    </div>
+    <div class="panel-footer">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default shareButton" data-title="Share with friends">Share</button>
+        </div>
+    </div>
+</div>
+</script>
+
+<script type="text/template" id="template-shareArticle">
+<div id="share-items-{{article.id}}">
+<div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div>
+<a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a>
+<g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone>
+</div>
+</script>
+
+<script src="/static/js/mustache.js"></script>
+<script src="/js/NR.API.js"></script>
+<script src="/js/SimpleMVC.js"></script>
+<script src="/js/NR.Models.js"></script>
+<script src="/js/NR.Views.js"></script>
+<script src="/js/main.js"></script>
 <script language="javascript">
 <!--
-var bootstrappedPosts = ${unescape(bootstrappedPosts)};
-var bootstrappedUid = "${uid}";
+$(document).ready(function() {
+    window.___gcfg = {
+      lang: 'en-US',
+      parsetags: 'explicit'
+    };
+    
+    var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+(function() {
+var gads = document.createElement('script');
+gads.async = true;
+gads.type = 'text/javascript';
+var useSSL = 'https:' == document.location.protocol;
+gads.src = (useSSL ? 'https:' : 'http:') +
+'//www.googletagservices.com/tag/js/gpt.js';
+var node = document.getElementsByTagName('script')[0];
+node.parentNode.insertBefore(gads, node);
+})();
 
-$(function(){
-	window.___gcfg = {
-	  lang: 'en-US',
-	  parsetags: 'explicit'
-	};
+    (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = '//apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
 
-	(function() {
-    	var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-		po.src = '//apis.google.com/js/plusone.js';
-		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-	})();
-	
-	!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
 
-	(function(d, s, id) {
-		var js, fjs = d.getElementsByTagName(s)[0];
-		if (d.getElementById(id)) return;
-		js = d.createElement(s); js.id = id;
-		js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
-		fjs.parentNode.insertBefore(js, fjs);
-	}(document, 'script', 'facebook-jssdk'));
-	
-	AppController = new NewsFeedController();
-	
-	// only show feed menu button if mobile device
-	var mql = window.matchMedia("(min-width: 961px)");
-	if (!mql.matches) {
-		AppController.useMobileUi();
-	} else {
-		AppController.restoreFullUi();
-	}
-		
-	mql.addListener(function(m) {
-		if(!m.matches) {
-			$(".main-menu-mobile").css("display", "block");
-			AppController.useMobileUi();
-		} else {
-			$(".main-menu-mobile").css("display", "none");
-			AppController.restoreFullUi();
-		}
-	});
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/all.js#xfbml=0&appId=1375893982640236";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    
+    var bootstrappedPosts = <%= unescape(bootstrappedPosts) %>;
+    window.fbAsyncInit = function() {
+        window.app = new NR.Application([], bootstrappedPosts, false, true);
+        window.app.start();
+    };
 });
 // -->
 </script>

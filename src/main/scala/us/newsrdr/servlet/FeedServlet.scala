@@ -51,8 +51,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   val getFeeds = 
     (apiOperation[FeedListApiResult]("getFeeds")
         summary "Shows all feeds"
-        notes "Returns the list of all feeds the currently logged-in user is subscribed to."
-        parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve."))
+        notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
         
   get("/", operation(getFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
@@ -146,7 +145,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case None => compact(render(("success" -> false) ~ ("reason" -> "forgot_file")))
           }
           <script language="javascript">
-            window.top.window.AppController.UploadForm.done({xml.Unparsed(jsonResult)});
+            window.top.window.app.finishedUploadingFeedList({xml.Unparsed(jsonResult)});
           </script>
 	    }
     }, {
@@ -185,11 +184,11 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
 	      val today = new java.util.Date().getTime()
-	      NewsFeedInfo(
+	      FeedInfoApiResult(true, None, NewsFeedInfo(
 	    		  feed,
 	    		  feed.id.get,
 	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get),
-	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false })
+	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
 	    }
     }, {
       halt(401)
@@ -240,92 +239,14 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case _ => new java.util.Date().getTime()
           }
 	      
-	      db withSession { implicit session: Session =>
+	      ArticleListApiResult(true, None, db withSession { implicit session: Session =>
 	        params.get("unread_only") match {
 	          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
 	            dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
 	          case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostDate)
 	        }
-	      }
+	      })
       }, {
-      halt(401)
-    })
-  }
-  
-  val markReadCommand =
-    (apiOperation[Unit]("markRead")
-        summary "Marks the given post as read."
-        notes "Marks the given post as read."
-        parameter pathParam[Int]("id").description("The ID of the feed.")
-        parameter pathParam[Int]("pid").description("The ID of the post."))
-        
-  delete("/:id/posts/:pid", operation(markReadCommand)) {
-    authenticationRequired(dao, session.getId, db, request, {
-	    var id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setPostStatus(session, userId, id, pid, false) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
-    }, {
-      halt(401)
-    })
-  }
-  
-  val saveCommand =
-    (apiOperation[Unit]("save")
-        summary "Saves post."
-        notes "Saves post"
-        parameter pathParam[Int]("id").description("The ID of the feed.")
-        parameter pathParam[Int]("pid").description("The ID of the post."))
-        
-  put("/:id/posts/:pid/saved", operation(saveCommand)) {
-    authenticationRequired(dao, session.getId, db, request, {
-	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	    val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.savePost(session, userId, id, pid) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
-    }, {
-      halt(401)
-    })
-  }
-  
-  val unsaveCommand =
-    (apiOperation[Unit]("unsave")
-        summary "Unsaves post."
-        notes "Unsaves post"
-        parameter pathParam[Int]("id").description("The ID of the feed.")
-        parameter pathParam[Int]("pid").description("The ID of the post."))
-        
-  delete("/:id/posts/:pid/saved", operation(saveCommand)) {
-    authenticationRequired(dao, session.getId, db, request, {
-	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	    val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.unsavePost(session, userId, id, pid) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
-    }, {
       halt(401)
     })
   }
@@ -347,32 +268,6 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    
 	    db withTransaction { implicit session: Session =>
 	      dao.setPostStatusForAllPosts(session, userId, id, from, upTo, false) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
-    }, {
-      halt(401)
-    })
-  }
-  
-  val markUnreadCommand =
-    (apiOperation[Unit]("markUnread")
-        summary "Marks the given post as unread."
-        notes "Marks the given post as unread."
-        parameter pathParam[Int]("id").description("The ID of the feed.")
-        parameter pathParam[Int]("pid").description("The ID of the post."))
-        
-  put("/:id/posts/:pid", operation(markUnreadCommand)) {
-    authenticationRequired(dao, session.getId, db, request, {
-	    var id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setPostStatus(session, userId, id, pid, true) match {
 	        case true => ()
 	        case _ => halt(404)
 	      }
