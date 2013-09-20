@@ -213,6 +213,32 @@ NR.API.GetAllPosts = (pageNumber = 0, newestPostDate = "", unreadOnly = true, su
         latest_post_date: newestPostDate,
         unread_only: unreadOnly
     }, successFn, failFn
+
+#############################################################################
+# Retrieves saved posts for the given user.
+# Input: 
+#     * uid: the user's ID
+#     * pageNumber: page number of posts to retrieve (default: first page)
+#     * newestPostDate: the date (in seconds since 01 January 1970 UTC+00:00)
+#                       of the newest post to show.
+# Output: on success, a list of NewsFeedArticleInfo objects:
+#     {
+#         'article': {
+#             'id': ...,
+#             'feedId': ...,
+#             'title': ...,
+#         },
+#         'unread': ...,
+#         'saved': ...
+#     }
+#############################################################################
+NR.API.GetSavedPosts = (uid, pageNumber = 0, newestPostDate = "", successFn, failFn) ->
+    NR.API.verifyInitialized()
+    new AsyncResult "GET", "/saved/" + uid + "/posts", {
+        page: pageNumber,
+        latest_post_date: newestPostDate,
+        unread_only: unreadOnly
+    }, successFn, failFn
     
 #############################################################################
 # Marks post as read.

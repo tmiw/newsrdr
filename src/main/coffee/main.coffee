@@ -16,6 +16,9 @@ class NR.Application extends SimpleMVC.Controller
         alert "Error: " + type + " " + desc
     
     @route "saved/:uid", (uid) ->
+        this._uid = uid
+        this._savedPostsMode = true
+        this._postPage = 1
         this.newsArticleView.show()
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
@@ -179,6 +182,14 @@ class NR.Application extends SimpleMVC.Controller
         if this._enableFetch
             if this._fid > 0
                 NR.API.GetPostsForFeed this._fid, this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, this.localSettings.showOnlyUnread, (data) =>
+                    if data.length == 0
+                        this._enableFetch = false
+                    else
+                        this._postPage = this._postPage + 1
+                        this._processFeedPosts data
+                , this._apiError
+            else if this._savedPostsMode
+                NR.API.GetSavedPosts this._uid, this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
                     if data.length == 0
                         this._enableFetch = false
                     else
