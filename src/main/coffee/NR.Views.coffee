@@ -227,7 +227,7 @@ class NR.Views.NewsArticleListing extends SimpleMVC.CollectionView
         
     _onScroll: () =>
         bottomView = this._childViews[this._childViews.length - 1]
-        if this._isScrolledTo bottomView.domObject
+        if bottomView? && this._isScrolledTo bottomView.domObject
             window.app.fetchMorePosts()
             
     constructor: (model) ->

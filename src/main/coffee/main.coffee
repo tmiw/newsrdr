@@ -77,6 +77,46 @@ class NR.Application extends SimpleMVC.Controller
         # Update nav elements.
         this.newsFeedView.homeSelected()
         this.topNavView.homeSelected()
+    
+    _adblocked: () ->
+        $("#ad-body").html('<div class="sponsor_content"> 
+           <center>
+           <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"> 
+           <span>newsrdr relies on your support.</span>
+ <input type="hidden" name="cmd" value="_donations" /> 
+ <input type="hidden" name="business" value="mooneer@gmail.com" /> 
+ <input type="hidden" name="lc" value="US" /> 
+ <input type="hidden" name="no_note" value="0" /> 
+ <input type="hidden" name="currency_code" value="USD" /> 
+ <input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest" />
+ <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" valign="center" style="display: inline;" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!" />
+ <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+           </form>
+           </center>
+         </div>')
+    
+
+    navigate: (uri, executeFn) =>
+        ret = super uri, executeFn
+        if ret
+            $("#ad-body").html("<!-- newsrdr-new-site -->
+<div id='div-gpt-ad-1379655552510-0' style='width:728px; height:90px;'>
+<script type='text/javascript'>
+googletag.cmd.push(function() {
+    googletag.defineSlot('/70574502/newsrdr-new-site', [728, 90], 'div-gpt-ad-1379655552510-0').addService(googletag.pubads());
+    googletag.pubads().enableSingleRequest();
+    googletag.enableServices();
+    });
+googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0'); });
+</script>
+</div>")
+
+            # Detect adblock and perform countermeasures
+            setTimeout(() =>
+                if ($("#ad-body div iframe").length == 0)
+                    this._adblocked();
+            , 1000);
+        ret
         
     constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
         super()
