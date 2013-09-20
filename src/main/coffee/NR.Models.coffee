@@ -26,10 +26,14 @@ class NR.Models.NewsFeedArticleInfo extends SimpleMVC.Model
     # Hack to provide feed information to per-article template.
     Object.defineProperty(this.prototype, "feed", {
         get: () -> 
-            index = window.app.feedList.any((i) => i.id == this.article.feedId)
-            if index >= -1
-                f = window.app.feedList.at index
-                f
+            if this._props["feed"]?
+                this._props["feed"] # for saved posts page
+            else
+                index = window.app.feedList.any((i) => i.id == this.article.feedId)
+                if index >= -1
+                    f = window.app.feedList.at index
+                    f
+        set: (v) -> this._props["feed"] = v
     })
     
 class NR.Models.LocalSettings extends SimpleMVC.Model

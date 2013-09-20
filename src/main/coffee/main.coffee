@@ -14,7 +14,10 @@ class NR.Application extends SimpleMVC.Controller
     _apiError: (type, desc) =>
         # TODO
         alert "Error: " + type + " " + desc
-            
+    
+    @route "saved/:uid", (uid) ->
+        this.newsArticleView.show()
+        
     @route "news/:uid/feeds/:fid", (uid, fid) ->
         index = this.feedList.any((i) -> i.id.toString() == fid.toString())
         if index >= 0
@@ -69,7 +72,7 @@ class NR.Application extends SimpleMVC.Controller
         this.newsFeedView.homeSelected()
         this.topNavView.homeSelected()
         
-    constructor: (bootstrappedFeeds, optedOut) ->
+    constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
         super()
 
         NR.API.Initialize()
@@ -79,25 +82,32 @@ class NR.Application extends SimpleMVC.Controller
         this.localSettings = new NR.Models.HtmlLocalStorage
         this.localSettings.optedOut = optedOut
         
-        this.topNavView = new NR.Views.TopNavBar
-        this.topNavView.model = this.localSettings
-        this.welcomeView = new NR.Views.WelcomeBlock
-        this.newsArticleView = new NR.Views.NewsArticleListing this.articleList
-        this.newsFeedView = new NR.Views.NewsFeedListing this.feedList
-                
-        for i in bootstrappedFeeds
-            feed = new NR.Models.NewsFeedInfo
-            for k,v of i
-                feed[k] = v
-            this.feedList.add feed
-        
-        # Set up timer for feed updates (every 5min).
-        setInterval this.updateFeeds, 1000*60*5
-    
-        # Restart feed import as needed
-        if this.localSettings.importQueue? && this.localSettings.importQueue.length > 0
-            this._beginFeedImport()
+        if not suppressLeftAndTop
+            this.topNavView = new NR.Views.TopNavBar
+            this.topNavView.model = this.localSettings
+            this.welcomeView = new NR.Views.WelcomeBlock
+            this.newsFeedView = new NR.Views.NewsFeedListing this.feedList
             
+            for i in bootstrappedFeeds
+                feed = new NR.Models.NewsFeedInfo
+                for k,v of i
+                    feed[k] = v
+                this.feedList.add feed
+                
+            # Set up timer for feed updates (every 5min).
+            setInterval this.updateFeeds, 1000*60*5
+        
+            # Restart feed import as needed
+            if this.localSettings.importQueue? && this.localSettings.importQueue.length > 0
+                this._beginFeedImport()
+                
+        this.newsArticleView = new NR.Views.NewsArticleListing this.articleList
+        for i in bootstrappedPosts
+            post = new NR.Models.NewsFeedArticleInfo
+            for k,v of i
+                post[k] = v
+            this.articleList.add post
+        
     selectAllFeeds: () =>
         this.navigate "/news/" + this._uid + "/feeds", true
         

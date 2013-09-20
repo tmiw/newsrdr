@@ -213,7 +213,7 @@ $(document).ready(function() {
     
     var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
     window.fbAsyncInit = function() {
-        window.app = new NR.Application(bootstrappedFeeds, <%= optOut %>);
+        window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
         if (!window.app.start())
         {
             window.app.navigate("/news/<%= uid %>", true);
