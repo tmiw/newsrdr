@@ -116,7 +116,7 @@
               <li><a href="#" id="optOutSharingLink">{{#optedOut}}<span class="glyphicon glyphicon-ok"></span>{{/optedOut}} Opt-out of sharing (front page)</a></li>
           </ul>
       </li>
-      <li><a href="/saved/<%= uid %>">Saved posts</a></li>
+      <li><a href="/saved/<%= uid %>" target="_blank">Saved posts</a></li>
     </ul>
 </div>
 </script>
