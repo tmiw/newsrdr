@@ -1,9 +1,7 @@
 <div class="container">
 <div class="jumbotron">
       <div class="container">
-        <h2>Hi there!</h2>
-        <p>newsrdr is the social news reader everyone's talking about.</p>
-        <p><a class="btn btn-primary btn-lg" href="/">Learn more &raquo;</a></p>
+        <h1>About newsrdr</h1>
       </div>
 </div>
 
