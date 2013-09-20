@@ -268,9 +268,11 @@ class SimpleMVC.Controller extends SimpleMVC.Event
     navigate: (uri, callRouteFn = false) ->
         shortUri = uri.replace(new RegExp("^" + this.baseUrl), "")
         ret = false
+        foundMatch = false
         for k,v of this.routes
             matches = new RegExp(k).exec shortUri
-            if not ret
+            if not foundMatch
+                foundMatch = matches?
                 ret = v.apply(this, matches.slice(1)) if matches? && callRouteFn
                 ret = matches? && !callRouteFn if !callRouteFn
         this.addNewState(uri) if ret

@@ -16,25 +16,29 @@ class NR.Application extends SimpleMVC.Controller
         alert "Error: " + type + " " + desc
             
     @route "news/:uid/feeds/:fid", (uid, fid) ->
-        this._uid = uid
-        this._fid = fid
-        this._postPage = 1
-        this._enableFetch = true
-        
-        # Specific feed listing.
-        this.newsArticleView.show()
-        this.articleList.reset()
-        this.welcomeView.hide()
-        
-        # Get posts from server
-        NR.API.GetPostsForFeed fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
-        
-        # Update nav elements.
         index = this.feedList.any((i) -> i.id.toString() == fid.toString())
-        feed = this.feedList.at index
-        this.newsFeedView.feedSelected fid
-        this.topNavView.feedSelected feed
-        
+        if index >= 0
+            this._uid = uid
+            this._fid = fid
+            this._postPage = 1
+            this._enableFetch = true
+            
+            # Specific feed listing.
+            this.newsArticleView.show()
+            this.articleList.reset()
+            this.welcomeView.hide()
+            
+            # Get posts from server
+            NR.API.GetPostsForFeed fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+            
+            # Update nav elements.        
+            feed = this.feedList.at index
+            this.newsFeedView.feedSelected fid
+            this.topNavView.feedSelected feed
+            true
+        else
+            false
+            
     @route "news/:uid/feeds", (uid) ->
         this._uid = uid
         this._fid = 0

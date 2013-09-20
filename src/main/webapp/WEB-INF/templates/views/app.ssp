@@ -179,7 +179,10 @@
 $(document).ready(function() {
     var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
     window.app = new NR.Application(bootstrappedFeeds, <%= optOut %>);
-    window.app.start();
+    if (!window.app.start())
+    {
+        window.app.navigate("/news/<%= uid %>", true);
+    }
 });
 // -->
 </script>
