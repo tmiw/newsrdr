@@ -290,7 +290,7 @@ class SimpleMVC.Controller extends SimpleMVC.Event
             location.replace(urlWithoutBase + "#" + uri)
         this.triggerEvent("navigated", uri)
 
-    navigate: (uri, callRouteFn = false) ->
+    navigate: (uri, callRouteFn = false, addState = true) ->
         shortUri = uri.replace(new RegExp("^" + this.baseUrl), "")
         ret = false
         foundMatch = false
@@ -300,8 +300,8 @@ class SimpleMVC.Controller extends SimpleMVC.Event
                 foundMatch = matches?
                 ret = v.apply(this, matches.slice(1)) if matches? && callRouteFn
                 ret = matches? && !callRouteFn if !callRouteFn
-        this.addNewState(uri) if ret
+        this.addNewState(uri) if ret && addState
         ret
         
-    start: (callRouteFn = true) =>
-        this.navigate(location.pathname, callRouteFn)
+    start: () =>
+        this.navigate(location.pathname, true, false)
