@@ -161,9 +161,12 @@ class SimpleMVC.View extends SimpleMVC.Event
         # function that takes the model object as its sole parameter and 
         # returns HTML.
         if @template?
-            this.domObject.html(@template(this.model))
+            text = @template(this.model)
         else
-            this.domObject.html(this.model?.toString())
+            text = this.model?.toString()
+        
+        # We need to remove <script> tags for security reasons.
+        this.domObject.html($.parseHTML text)
     
     # Use JS getters/setters for this.model. This will allow us to clean up 
     # event handlers as needed.
