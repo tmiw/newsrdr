@@ -165,7 +165,7 @@
 </script>
 
 <script type="text/template" id="template-newsArticle">
-<div class="panel panel-default">
+<div class="panel panel-default article-panel unread">
     <div class="panel-heading">
         <h3 class="panel-title"><a href="{{{article.link}}}" target="_blank">{{{article.title}}}</a></h3>
         {{#article.author}}<div><em>by {{article.author}}</em></div>{{/article.author}}

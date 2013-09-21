@@ -175,12 +175,15 @@ class NR.Views.NewsArticle extends SimpleMVC.View
         
     _updateUnread: (newVal, oldVal) =>
         btn = this.domObject.find ".markReadButton"
+        panel = this.domObject.find ".article-panel"
         if not newVal
             btn.addClass "btn-primary"
             btn.removeClass "btn-default"
+            panel.removeClass "unread"
         else
             btn.removeClass "btn-primary"
             btn.addClass "btn-default"
+            panel.addClass "unread"
         this._suppressRender = true
     
     _updateSaved: (newVal, oldVal) =>
@@ -224,6 +227,8 @@ class NR.Views.NewsArticle extends SimpleMVC.View
                     btn = this.domObject.find ".markReadButton"
                     btn.addClass "btn-primary"
                     btn.removeClass "btn-default"
+                    panel = this.domObject.find ".article-panel"
+                    panel.removeClass "unread"
         else
             this._suppressRender = false
             
