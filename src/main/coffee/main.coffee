@@ -123,12 +123,48 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this._adblocked();
             , 1000);
         ret
+    
+    _initializeKeyboardNavigation: ->
+        # Set up keyboard navigation
+        $(window).keypress (e) =>
+            if (e.keyCode == 74 || e.keyCode == 75 || e.keyCode == 106 || e.keyCode == 107)
+            
+                # Scroll up/down one article.
+                if this.articleList? && this.articleList.length > 0
+                    if ((e.keyCode == 75 || e.keyCode == 107) && this.currentArticle?)
+                        # Mark current article as read before proceeding.
+                        article = this.articleList.at this.currentArticle
+                        if this.authedUser && article.unread
+                            this.togglePostAsRead article
+                        this.currentArticle = this.currentArticle - 1
+                    else if ((e.keyCode == 74 || e.keyCode == 106) && this.currentArticle < this.articleList.length - 1)
+                        article = this.articleList.at this.currentArticle
+                        if this.authedUser && article.unread
+                            # Mark current article as read before proceeding.
+                            this.togglePostAsRead article
+                        this.currentArticle = this.currentArticle + 1
+
+                    if not this.currentArticle || this.currentArticle < 0
+                        this.currentArticle = 0
+                    else if this.currentArticle > this.articleList.length - 1
+                        this.currentArticle = this.articleList.length - 1
+                        
+                    newArticle = this.articleList.at this.currentArticle
+                    newArticleId = newArticle.article.id;
+                    newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
+                    $('html, body').animate({
+                        scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
+                    }, 500)
+                    e.preventDefault()
         
     constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
         super()
 
         NR.API.Initialize()
         
+        this._initializeKeyboardNavigation()
+        
+        this.authedUser = not suppressLeftAndTop
         this.feedList = new SimpleMVC.Collection
         this.articleList = new SimpleMVC.Collection
         this.localSettings = new NR.Models.HtmlLocalStorage

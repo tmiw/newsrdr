@@ -151,7 +151,7 @@
 </script>
 
 <script type="text/template" id="template-newsArticleListing">
-<div class="panel panel-default">
+<div class="panel panel-default" id="ad-block">
     <div class="panel-heading">Advertisement</div>
     <div class="panel-body" id="ad-body">
     </div>
@@ -167,7 +167,7 @@
 <script type="text/template" id="template-newsArticle">
 <div class="panel panel-default article-panel unread">
     <div class="panel-heading">
-        <h3 class="panel-title"><a href="{{{article.link}}}" target="_blank">{{{article.title}}}</a></h3>
+        <h3 class="panel-title"><a name="article{{article.id}}"></a><a href="{{{article.link}}}" target="_blank">{{{article.title}}}</a></h3>
         {{#article.author}}<div><em>by {{article.author}}</em></div>{{/article.author}}
         <div>Posted {{friendlyArticlePubDate}} by <a href="{{{feed.feed.link}}}" target="_blank">{{{feed.feed.title}}}</a></div>
     </div>
