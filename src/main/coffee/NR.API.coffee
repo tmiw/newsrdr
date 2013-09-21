@@ -69,22 +69,42 @@ class AsyncResult
         
         this._ajax.addEventListener 'readystatechange', =>
             if this._ajax.readyState is 4 # complete
-                successResultCodes = [200, 304]
-                if this._ajax.status in successResultCodes
-                    try
-                        jsonData = eval '(' + this._ajax.responseText + ')'
-                    catch error
-                        # Should never reach here.
-                        jsonData = {
-                            success: false
-                            errorString: this._ajax.responseText
-                        }
-                    if jsonData.success
-                        success.call(this, jsonData.data)
+                try
+                    successResultCodes = [200, 304]
+                    if this._ajax.status in successResultCodes
+                        try
+                            jsonData = eval '(' + this._ajax.responseText + ')'
+                        catch error
+                            # Should never reach here.
+                            jsonData = {
+                                success: false
+                                errorString: this._ajax.responseText
+                            }
+                            
+                        
+                        if jsonData.success
+                            success.call(this, jsonData.data)
+                        else
+                            fail.call(this, NR.API.ServerError, jsonData.errorString)
                     else
-                        fail.call(this, NR.API.ServerError, jsonData.errorString)
-                else
-                    fail.call(this, NR.API.httpErrorCodeList[this._ajax.status], "")
+                        fail.call(this, NR.API.httpErrorCodeList[this._ajax.status], "")
+                    
+                    # Event triggered after request has completed.
+                    if document?
+                        event = new Event "NR.API.afterXHR"
+                        document.dispatchEvent event
+                catch error
+                    if document?
+                        event = new Event "NR.API.afterXHR"
+                        document.dispatchEvent event
+                    
+                    throw error
+        
+        # Event triggered before request is sent.
+        if document?
+            event = new Event "NR.API.beforeXHR"
+            document.dispatchEvent event
+        
         this._ajax.open method, NR.API._rootURL + url, true
         this._ajax.send()
     

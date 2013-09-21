@@ -154,9 +154,40 @@ class NR.Views.TopNavBar extends SimpleMVC.View
             if this.model?
                 this.model.unregisterEvent("change:feedsImported", this._updateFeedsImported)
                 this.model.registerEvent("change:feedsImported", this._updateFeedsImported)
+            
+            if this._ajaxReferenceCount == 0
+                this.$(".spinner").hide()
+                this.$(".spinner-inv").hide()
+            else
+                if this.domObject.hasClass("affix")
+                    this.$(".spinner-inv").show()
+                else
+                    this.$(".spinner").show()
         else
             this._suppressRender = false
-          
+
+    _beforeAjax: () =>
+        this._ajaxReferenceCount = this._ajaxReferenceCount + 1
+        if this._ajaxReferenceCount == 1
+            if this.domObject.hasClass("affix")
+                this.$(".spinner-inv").show()
+            else
+                this.$(".spinner").show()
+    
+    _afterAjax: () =>
+        this._ajaxReferenceCount = this._ajaxReferenceCount - 1
+        if this._ajaxReferenceCount == 0
+            this.$(".spinner").hide()
+            this.$(".spinner-inv").hide()
+            
+    constructor: () ->
+        super()
+        
+        # Spinner control
+        this._ajaxReferenceCount = 0
+        document.addEventListener "NR.API.beforeXHR", this._beforeAjax
+        document.addEventListener "NR.API.afterXHR", this._afterAjax
+        
 class NR.Views.WelcomeBlock extends SimpleMVC.View
     @id "welcome-block"
     this.prototype.template = Mustache.compile $("#template-welcomeBlock").html()
