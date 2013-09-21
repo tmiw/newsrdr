@@ -65,7 +65,6 @@ newsrdr: a news reader without the extra fluff</title>
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
       ga('create', 'UA-43458631-1', 'newsrdr.us');
-      ga('send', 'pageview');
     // -->
     </script>
 </body>
