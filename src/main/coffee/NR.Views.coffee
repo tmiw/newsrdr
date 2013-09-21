@@ -9,8 +9,9 @@ class NR.Views.NewsFeed extends SimpleMVC.View
     @class "newsFeed"
     this.prototype.template = Mustache.compile $("#template-newsFeed").html()
     
-    @event "click", ".feedEntry", () ->
+    @event "click", ".feedEntry", (e) ->
         window.app.selectFeed this.model
+        e.preventDefault()
     
 class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     @id "feedList"
@@ -83,20 +84,21 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
             if this._childViews[k].model.id.toString() == feed.toString()
                 this._childViews[k].domObject.addClass("active")
             
-    @event "click", "#allFeedsLink", () ->
+    @event "click", "#allFeedsLink", (e) ->
         window.app.selectAllFeeds()
+        e.preventDefault()
 
-    @event "click", "#homeLink", () ->
+    @event "click", "#homeLink", (e) ->
         window.app.deselectFeed()
+        e.preventDefault()
 
 class NR.Views.TopNavBar extends SimpleMVC.View
     @id "top-nav-bar"
     this.prototype.template = Mustache.compile $("#template-topNavBar").html()
     
     @event "click", "#removeFeedLink", (e) ->
-        if $("#removeFeedLink").parent().hasClass("disabled")
-            e.preventDefault()
-        else
+        e.preventDefault()
+        if not $("#removeFeedLink").parent().hasClass("disabled")
             $("#removeFeedConfirm").modal()
             
     @event "click", "#feedLink", (e) ->
@@ -104,19 +106,22 @@ class NR.Views.TopNavBar extends SimpleMVC.View
             e.preventDefault()
     
     @event "click", "#markAllReadLink", (e) ->
-        if $("#markAllReadLink").parent().hasClass("disabled")
-            e.preventDefault()
-        else
+        e.preventDefault()
+        if not $("#markAllReadLink").parent().hasClass("disabled")
             window.app.markAllRead()
             
     @event "click", "#showOnlyUnreadLink", (e) ->
-        if $("#showOnlyUnreadLink").parent().hasClass("disabled")
-            e.preventDefault()
-        else
+        e.preventDefault()
+        if not $("#showOnlyUnreadLink").parent().hasClass("disabled")
             window.app.toggleShowUnread()
     
     @event "click", "#optOutSharingLink", (e) ->
         window.app.toggleOptOut()
+        e.preventDefault()
+        
+    @event "click", "#addFeedLink", (e) ->
+        e.preventDefault()
+        $("#addFeed").modal()
     
     _disableLink: (id) ->
         e = $(id)
