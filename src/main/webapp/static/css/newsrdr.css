@@ -36,7 +36,7 @@
     
     #feedList {
         overflow-y: auto;
-        max-height: 700px;
+        max-height: 350px;
     }
 }
 
