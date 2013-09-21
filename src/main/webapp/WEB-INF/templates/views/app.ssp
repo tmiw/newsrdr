@@ -13,13 +13,13 @@
 </div>
     <div class="row">
         <div class="col-md-3">
-            <div class="panel panel-default">
+            <div class="panel panel-default" data-spy="affix" data-offset-top="200" id="feedPanel">
                 <ul class="nav nav-pills nav-stacked" id="feedList">
                 </ul>
             </div>
         </div>
         <div class="col-md-9">
-            <nav class="navbar navbar-default" role="navigation" id="top-nav-bar">
+            <nav class="navbar navbar-default" role="navigation" id="top-nav-bar" data-spy="affix" data-offset-top="200">
             </nav>
             <div id="post-list-ui">
             </div>

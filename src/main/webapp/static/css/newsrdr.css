@@ -1,0 +1,42 @@
+@media (min-width: 768px) {
+
+    #top-nav-bar.affix {
+        position: fixed;
+        top: 5px;
+        width: 847px;
+        background-color: #000;
+        border-color: #080808;
+    }
+    
+    #top-nav-bar.affix .navbar-nav > li > a {
+        color: #999;
+    }
+    
+    #top-nav-bar.affix-top {
+        
+    }
+    
+    #top-nav-bar.affix-bottom {
+        position: absolute;
+    }
+    
+    #feedPanel.affix {
+        position: fixed;
+        top: 5px;
+        width: 263px;
+    }
+    
+    #feedPanel.affix-top {
+        
+    }
+    
+    #feedPanel.affix-bottom {
+        position: absolute;
+    }
+    
+    #feedList {
+        overflow-y: auto;
+        max-height: 700px;
+    }
+    
+}
