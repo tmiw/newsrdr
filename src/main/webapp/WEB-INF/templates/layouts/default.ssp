@@ -17,6 +17,7 @@ newsrdr: a news reader without the extra fluff</title>
 	<link rel="shortcut icon" href="/static/img/favicon.ico" />
 	<link href='//fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href="/static/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="/static/css/newsrdr.css" rel="stylesheet" />
 	<script src="/static/js/jquery-2.0.3.min.js"></script> <!-- yes, this should be on the bottom. -->
 </head>
 <body>

@@ -43,3 +43,9 @@
 .unread {
     border-color: #f00;
 }
+
+/* Override Bootstrap's style for the front page. */
+.carousel-caption {
+    background-color: rgba(50, 50, 50, 0.5);
+    text-shadow: none;
+}
