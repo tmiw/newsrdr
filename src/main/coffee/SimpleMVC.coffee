@@ -109,7 +109,7 @@ class SimpleMVC.Collection extends SimpleMVC.Event
 class SimpleMVC.View extends SimpleMVC.Event
     # Default properties
     hideOnStart: false
-    $: window.jQuery
+    $: (p) => this.domObject.find p
     
     @tag: (name) -> this.prototype.outerTag = name
     @class: (name) -> this.prototype.outerClass = name

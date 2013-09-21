@@ -219,6 +219,12 @@ class NR.Views.NewsArticle extends SimpleMVC.View
                     twttr.widgets.load(ele[0]);
                 )
                 
+                # Make all <a> links in feed open a new window.
+                this.$("a").each((i) ->
+                    if (this.href)
+                        this.target = "_blank"
+                )
+        
                 if this.model.saved
                     btn = this.domObject.find ".saveButton"
                     btn.addClass "btn-primary"
