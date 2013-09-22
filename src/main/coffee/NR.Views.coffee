@@ -231,9 +231,18 @@ class NR.Views.NewsArticle extends SimpleMVC.View
             btn.removeClass "btn-primary"
             btn.addClass "btn-default"
         this._suppressRender = true
-              
+    
+    _leakCleanup: () ->
+        # We need to navigate all iframes inside the article to about:blank first.
+        # Failure to do so results in memory leaks.
+        frameList = this.$('iframe')
+        for i in frameList
+            i.contentWindow.location.href = "about:blank"
+        frameList.remove()
+        
     render: () =>
         if not this.model? || (this.model? && not this._suppressRender)
+            this._leakCleanup()
             super()
             if this.model?
                 this.model.unregisterEvent("change:unread", this._updateUnread)
@@ -274,6 +283,12 @@ class NR.Views.NewsArticle extends SimpleMVC.View
         else
             this._suppressRender = false
             
+    destroy: () =>
+        # We need to navigate all iframes inside the article to about:blank first.
+        # Failure to do so results in memory leaks.
+        this._leakCleanup()
+        super()
+        
 class NR.Views.NewsArticleListing extends SimpleMVC.CollectionView
     @id "post-list-ui"
     @listClass "post-list"
