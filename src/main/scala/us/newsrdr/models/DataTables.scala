@@ -6,6 +6,8 @@ import scala.slick.jdbc.meta.{MTable}
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 import java.sql.Timestamp
 
+case class SiteStatistics(numUsers: Int, numFeeds: Int)
+
 class DataTables(val driver: ExtendedProfile) {
 	import driver.simple._
 	
@@ -123,8 +125,9 @@ class DataTables(val driver: ExtendedProfile) {
 	  def email = column[String]("email")
 	  def friendlyName = column[String]("friendlyName")
 	  def optOutSharing = column[Boolean]("optOutSharing")
+	  def isAdmin = column[Boolean]("isAdmin")
 	  
-	  def * = id.? ~ username ~ password ~ email ~ friendlyName ~ optOutSharing <> (User, User.unapply _)
+	  def * = id.? ~ username ~ password ~ email ~ friendlyName ~ optOutSharing ~ isAdmin <> (User, User.unapply _)
 	}
 	
 	object UserSessions extends Table[UserSession]("UserSessions") {
@@ -162,7 +165,7 @@ class DataTables(val driver: ExtendedProfile) {
 	  def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
 	  def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
 	}
-
+	
 	def create(implicit session: Session) = {
       if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == NewsFeeds.tableName)) NewsFeeds.ddl.create
@@ -176,6 +179,10 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == FeedFailureLogs.tableName)) FeedFailureLogs.ddl.create
 	}
 
+	def getSiteStatistics(implicit session: Session) : SiteStatistics = {
+	  SiteStatistics((for{t <- Users} yield t.count).first, (for{t <- NewsFeeds} yield t.count).first)
+	}
+	
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
 	  val queryString = if (driver.isInstanceOf[H2Driver]) {
 	    """
@@ -622,6 +629,10 @@ class DataTables(val driver: ExtendedProfile) {
 	  }
 	}
 	
+	def getUserSessionById(implicit session: Session, sessionId: String) : UserSession = {
+	  (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess).first
+	}
+	
 	def getUserSession(implicit session: Session, sessionId: String, ip: String) : Option[UserSession] = {
 	  val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
 	  q.firstOption match {
@@ -646,7 +657,7 @@ class DataTables(val driver: ExtendedProfile) {
 	def setOptOut(implicit session: Session, userId: Int, optOut: Boolean) {
 	  val user = getUserInfo(session, userId)
 	  val q = for { u <- Users if u.id === userId } yield u
-	  q.update(User(user.id, user.username, user.password, user.email, user.friendlyName, optOut))
+	  q.update(User(user.id, user.username, user.password, user.email, user.friendlyName, optOut, user.isAdmin))
 	}
 	
 	def invalidateSession(implicit session: Session, sessionId: String) {
@@ -665,11 +676,11 @@ class DataTables(val driver: ExtendedProfile) {
 	  val q = for { u <- Users if u.username === username } yield u
       val userId = q.firstOption match {
         case Some(u) => {
-          q.update(User(u.id, u.username, u.password, email, friendlyName, false))
+          q.update(User(u.id, u.username, u.password, email, friendlyName, false, u.isAdmin))
           u.id.get
         }
         case None => {
-          Users returning Users.id insert User(None, username, "", email, friendlyName, false)
+          Users returning Users.id insert User(None, username, "", email, friendlyName, false, false)
         }
       }
       UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))

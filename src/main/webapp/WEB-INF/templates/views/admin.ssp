@@ -1,0 +1,27 @@
+<%@ val siteStats : us.newsrdr.models.SiteStatistics %>
+
+<div class="container">
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Site administration</h1>
+      </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <table class="table">
+                <tr>
+                    <th>Statistic</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Number of users</td>
+                    <td><%= siteStats.numUsers %></td>
+                </tr>
+                <tr>
+                    <td>Number of feeds</td>
+                    <td><%= siteStats.numFeeds %></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
