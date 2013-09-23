@@ -208,7 +208,11 @@ class NR.Views.NewsArticle extends SimpleMVC.View
     
     @event "click", ".saveButton", (e) ->
         window.app.toggleSavePost this.model
-        
+    
+    @event "click", ".panel-title", (e) ->
+        if this.model.unread
+            window.app.togglePostAsRead this.model
+            
     _updateUnread: (newVal, oldVal) =>
         btn = this.domObject.find ".markReadButton"
         panel = this.domObject.find ".article-panel"
