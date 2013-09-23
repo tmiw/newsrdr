@@ -180,7 +180,7 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 
 	def getSiteStatistics(implicit session: Session) : SiteStatistics = {
-	  SiteStatistics((for{t <- Users} yield t.count).first, (for{t <- NewsFeeds} yield t.count).first)
+	  SiteStatistics((for{t <- Users} yield t).list.count(_ => true), (for{t <- NewsFeeds} yield t).list.count(_ => true))
 	}
 	
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
