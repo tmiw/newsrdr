@@ -13,9 +13,19 @@
 </div>
     <div class="row">
         <div class="col-md-3">
-            <div class="panel panel-default" data-spy="affix" data-offset-top="200" id="feedPanel">
-                <ul class="nav nav-pills nav-stacked" id="feedList">
-                </ul>
+            <div class="navbar navbar-default" data-spy="affix" data-offset-top="200" id="feedPanel">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navCollapse">
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                    </button>  
+                    <a class="navbar-brand" href="#">Feeds</a>
+                </div>
+                <div class="collapse navbar-collapse navCollapse">
+                    <ul class="nav nav-pills nav-stacked" id="feedList">
+                    </ul>
+                </div>
             </div>
         </div>
         <div class="col-md-9">
@@ -97,6 +107,14 @@
   </div><!-- /.modal -->
   
 <script type="text/template" id="template-topNavBar">
+<div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">Actions</a>
+            </div>
 <div class="collapse navbar-collapse navbar-ex1-collapse">
     <ul class="nav navbar-nav">
       <li class="dropdown">

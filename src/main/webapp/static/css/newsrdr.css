@@ -1,5 +1,25 @@
-@media (min-width: 768px) {
+@media(max-width:767px){
+   .affix {
+     position: static;
+     width: auto;
+     top: 0;
+    }
+}
 
+@media (min-width: 768px) {
+    .navCollapse {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    #top-nav-bar > .navbar-header > .navbar-brand {
+        display: none;
+    }
+    
+    #feedPanel > .navbar-header {
+        display: none;
+    }
+    
     #top-nav-bar.affix {
         position: fixed;
         top: 5px;
