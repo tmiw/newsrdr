@@ -104,8 +104,8 @@ class NR.Application extends SimpleMVC.Controller
 
     navigate: (uri, executeFn) =>
         ret = super uri, executeFn
-        if ret
-            $("#ad-body").html("<!-- newsrdr-new-site -->
+        #if ret
+        $("#ad-body").html("<!-- newsrdr-new-site -->
 <div id='div-gpt-ad-1379655552510-0' style='width:728px; height:90px;'>
 <script type='text/javascript'>
 googletag.cmd.push(function() {
@@ -117,11 +117,11 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
 </script>
 </div>")
 
-            # Detect adblock and perform countermeasures
-            setTimeout(() =>
-                if ($("#ad-body div iframe").length == 0)
-                    this._adblocked();
-            , 1000);
+        # Detect adblock and perform countermeasures
+        setTimeout(() =>
+            if ($("#ad-body div iframe").length == 0)
+                this._adblocked();
+        , 1000);
         ret
     
     _initializeKeyboardNavigation: ->

@@ -92,5 +92,80 @@
           <p class="text-center"><a class="btn btn-large btn-primary" href="/auth/login/google">Start reading today</a></p>
         </div>
       </div>
+
+<% if (!randomPost.isEmpty) { %>
+      <hr class="featurette-divider">
+      
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h2 class="featurette-heading text-center">Still need convincing? <span class="text-muted">Check out what our users are reading right now.</span></h2>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-9 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><a href="<%= randomPost.get.article.link %>" target="_blank"><%= unescape(randomPost.get.article.title) %></a></h3>
+                    <% if (randomPost.get.article.author.getOrElse("").length() > 0) { %>
+                    <div><em>by <%= randomPost.get.article.author %></em></div>
+                    <% } %>
+                    <div>Posted <%= randomPost.get.article.pubDate %> by <a href="<%= randomPostFeed.get.link %>" target="_blank" class="feedlink"><%= randomPostFeed.get.title %></a></div>
+                </div>
+                <div class="panel-body">
+                    <%= unescape(randomPost.get.article.description) %>
+                </div>
+            </div>
+        </div>
+      </div>
+      
+      <hr class="featurette-divider">
+      
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h2 class="featurette-heading text-center">Look at all that content.</h2>
+          <p class="text-center"><a class="btn btn-large btn-primary" href="/auth/login/google">Let's do this</a></p>
+        </div>
+      </div>
+<% } %>
+
+    <div class="row">
+        <div class="col-md-offset-2 col-md-9">
+            <div class="panel panel-default" id="ad-block">
+                <div class="panel-heading">Advertisement</div>
+                <div class="panel-body" id="ad-body">
+                </div>
+            </div>
+        </div>
+    </div>
+          
     </div><!-- /.container -->
     </div>
+    
+    <script src="/static/js/mustache.js"></script>
+<script src="/js/NR.API.js"></script>
+<script src="/js/SimpleMVC.js"></script>
+<script src="/js/NR.Models.js"></script>
+<script src="/js/NR.Views.js"></script>
+<script src="/js/main.js"></script>
+    <script language="javascript">
+<!--
+    var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+(function() {
+var gads = document.createElement('script');
+gads.async = true;
+gads.type = 'text/javascript';
+var useSSL = 'https:' == document.location.protocol;
+gads.src = (useSSL ? 'https:' : 'http:') +
+'//www.googletagservices.com/tag/js/gpt.js';
+var node = document.getElementsByTagName('script')[0];
+node.parentNode.insertBefore(gads, node);
+})();
+
+$(function() {
+window.app = new NR.Application([], [], false, true);
+window.app.start();
+});
+// -->
+</script>
