@@ -46,7 +46,7 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         if text == "0"
             text = ""
         $("#totalUnread").text(text)
-        document.title = this.titleTemplate.call(this, {numUnread: text})
+        document.title = this.titleTemplate.call(this, {numUnread: text, allSelected: this._isAllFeedsSelected, feedSelected: this._isFeedSelected, feedTitle: this._feedTitle})
         
     _onUnreadChange: (newVal, oldVal) =>
         this._totalUnread = this._totalUnread - oldVal + newVal
@@ -73,17 +73,28 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     homeSelected: () ->
         this.domObject.children().removeClass("active")
         this.$("#homeLink").addClass("active")
-    
+        this._isAllFeedsSelected = false
+        this._isFeedSelected = false
+        this._updateAllUnread()
+        
     allFeedsSelected: () ->
         this.domObject.children().removeClass("active")
         this.$("#allFeedsLink").addClass("active")
+        this._isAllFeedsSelected = true
+        this._isFeedSelected = false
+        this._updateAllUnread()
         
     feedSelected: (feed) ->
+        this._isAllFeedsSelected = false
+        this._isFeedSelected = true
+        
         this.domObject.children().removeClass("active")
         for k,v of this._childViews
             if this._childViews[k].model.id.toString() == feed.toString()
                 this._childViews[k].domObject.addClass("active")
-            
+                this._feedTitle = this._childViews[k].model.feed.title
+        this._updateAllUnread()
+
     @event "click", "#allFeedsLink", (e) ->
         window.app.selectAllFeeds()
         e.preventDefault()
