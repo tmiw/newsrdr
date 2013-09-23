@@ -294,7 +294,8 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         if article.unread
             NR.API.MarkPostAsRead article.article.id, (data) =>
                 article.unread = false
-                article.feed.numUnread = article.feed.numUnread - 1
+                if article.feed.numUnread > 0
+                    article.feed.numUnread = article.feed.numUnread - 1
             , this._apiError
         else
             NR.API.MarkPostAsUnread article.article.id, (data) =>
