@@ -66,7 +66,7 @@
     }
     
     #feedPanel.affix > .navCollapse > #feedList {
-        max-height: 650px
+        max-height: 650px;
     }
     
     #feedPanel.affix > .navCollapse {
