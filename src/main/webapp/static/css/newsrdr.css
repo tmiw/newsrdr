@@ -10,6 +10,7 @@
     .navCollapse {
         padding-left: 0;
         padding-right: 0;
+        max-height: 450px;
     }
     
     .item-padding {
@@ -61,7 +62,15 @@
     
     #feedList {
         overflow-y: auto;
-        max-height: 350px;
+        max-height: 450px;
+    }
+    
+    #feedPanel.affix > .navCollapse > #feedList {
+        max-height: 650px
+    }
+    
+    #feedPanel.affix > .navCollapse {
+        max-height: 650px;
     }
 }
 
