@@ -484,59 +484,74 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def setPostStatusForAllPosts(implicit session: Session, userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
-	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
-	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
-      my_feed.firstOption match {
-        case Some(_) => {
-	      val feed_posts = for {
-	        uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId
-	        (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on ((x,y) => x.id === y.articleId && y.userId === userId)
-	            	     if nfa.feedId === feedId && (unixTimestampFn(nfa.pubDate.get) >= upTo) &&
-	            	        (unixTimestampFn(nfa.pubDate.get) <= from) &&
-	            	        unixTimestampFn(nfa.pubDate.get) >= (unixTimestampFn(uf.addedDate) - 60*60*24*14) &&
-	            	        (ua.articleRead.isNull || ua.articleRead === false)
-	      } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
-	      feed_posts.list.foreach(x => {
-	        x._2 match {
-	          case (id, Some(uid), Some(aid)) => {
-	            val single_feed_post = for { 
-	              ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
-	            } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
-	            single_feed_post.update(uid, aid, !unread)
-	          }
-	          case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread, false))
-	        }
-	      })
-	      true
-        }
-	    case _ => false
+	  val feedPostsQuery = if (driver.isInstanceOf[H2Driver]) {
+	    Q.query[(Int, Int, Long, Long), (Int, Option[Boolean])]("""
+            select "nfa"."id", "ua"."articleRead"
+            from "NewsFeedArticles" "nfa"
+            inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+            left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
+                where "uf"."userId" = ? and 
+                      "uf"."feedId" = ? and
+                      unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                      unix_timestamp("nfa"."pubDate") <= ? and
+	                  unix_timestamp("nfa"."pubDate") >= ? and
+                      ("ua"."articleRead" is null or "ua"."articleRead" = 0)""")
+	  } else {
+	    Q.query[(Int, Int, Long, Long), (Int, Option[Boolean])]("""
+            select nfa.id, ua.articleRead
+            from NewsFeedArticles nfa
+            inner join UserFeeds uf on uf.feedId = nfa.feedId
+            left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+                where uf.userId = ? and 
+                      uf.feedId = ? and
+                      unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                      unix_timestamp(nfa.pubDate) <= ? and
+                      unix_timestamp(nfa.pubDate) >= ? and
+                      (ua.articleRead is null or ua.articleRead = 0)""")
 	  }
+	  val feedPosts = feedPostsQuery.list(userId, feedId, from, upTo)
+	  val feedPostsToAdd = feedPosts.filter(_._2.isEmpty).map(_._1)
+	  val feedPostsToUpdate = feedPosts.filter(!_._2.isEmpty).map(_._1)
+	  
+	  val updateQuery = for { ua <- UserArticles if ua.articleId inSetBind feedPostsToUpdate } yield ua.articleRead
+	  updateQuery.update(!unread)
+	  feedPostsToAdd.foreach((p: Int) => UserArticles.insert(UserArticle(None, userId, p, !unread, false)))
+	  true
 	}
 	
 	def setPostStatusForAllPosts(implicit session: Session, userId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
-	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
-      val feed_posts = for {
-	    uf <- UserFeeds if uf.userId === userId
-	    (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on 
-	                   ((x,y) => x.id === y.articleId && y.userId === userId)
-	                 if unixTimestampFn(nfa.pubDate.get) >= upTo && unixTimestampFn(nfa.pubDate.get) <= from &&
-	            	    unixTimestampFn(nfa.pubDate.get) >= (unixTimestampFn(uf.addedDate) - 60*60*24*14) &&
-	            	    (ua.articleRead.isNull || ua.articleRead === false) &&
-	            	    nfa.feedId === uf.feedId
-	  } yield (nfa, (ua.id.?, ua.userId.?, ua.articleId.?))
-	  feed_posts.list.foreach(x => {
-	    x._2 match {
-	      case (id, Some(uid), Some(aid)) => {
-	        val single_feed_post = for { 
-	          ua <- UserArticles if ua.userId === uid && ua.articleId === aid 
-	        } yield (ua.userId ~ ua.articleId ~ ua.articleRead)
-	        single_feed_post.update(uid, aid, !unread)
-	      }
-	      case _ => UserArticles.insert(UserArticle(None, userId, x._1.id.get, !unread, false))
-	    }
-	  })
-	  true
-	}
+      val feedPostsQuery = if (driver.isInstanceOf[H2Driver]) {
+        Q.query[(Int, Long, Long), (Int, Option[Boolean])]("""
+            select "nfa"."id", "ua"."articleRead"
+            from "NewsFeedArticles" "nfa"
+            inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+            left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
+                where "uf"."userId" = ? and 
+                      unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                      unix_timestamp("nfa"."pubDate") <= ? and
+                      unix_timestamp("nfa"."pubDate") >= ? and
+                      ("ua"."articleRead" is null or "ua"."articleRead" = 0)""")
+      } else {
+        Q.query[(Int, Long, Long), (Int, Option[Boolean])]("""
+            select nfa.id, ua.articleRead
+            from NewsFeedArticles nfa
+            inner join UserFeeds uf on uf.feedId = nfa.feedId
+            left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+                where uf.userId = ? and 
+                      unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                      unix_timestamp(nfa.pubDate) <= ? and
+                      unix_timestamp(nfa.pubDate) >= ? and
+                      (ua.articleRead is null or ua.articleRead = 0)""")
+      }
+      val feedPosts = feedPostsQuery.list(userId, from, upTo)
+      val feedPostsToAdd = feedPosts.filter(_._2.isEmpty).map(_._1)
+      val feedPostsToUpdate = feedPosts.filter(!_._2.isEmpty).map(_._1)
+      
+      val updateQuery = for { ua <- UserArticles if ua.articleId inSetBind feedPostsToUpdate } yield ua.articleRead
+      updateQuery.update(!unread)
+      feedPostsToAdd.foreach((p: Int) => UserArticles.insert(UserArticle(None, userId, p, !unread, false)))
+      true
+    }
 	
 	def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
 	  val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
