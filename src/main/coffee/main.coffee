@@ -137,19 +137,22 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     if ((e.keyCode == 75 || e.keyCode == 107) && this.currentArticle?)
                         # Mark current article as read before proceeding.
                         article = this.articleList.at this.currentArticle
-                        if this.authedUser && article.unread
+                        if this.authedUser && article? && article.unread
                             this.togglePostAsRead article
                         this.currentArticle = this.currentArticle - 1
                     else if ((e.keyCode == 74 || e.keyCode == 106) && this.currentArticle <= this.articleList.length - 1)
                         article = this.articleList.at this.currentArticle
-                        if this.authedUser && article.unread
+                        if this.authedUser && article? && article.unread
                             # Mark current article as read before proceeding.
                             this.togglePostAsRead article
                         this.currentArticle = this.currentArticle + 1
 
                     if not this.currentArticle || this.currentArticle < 0
                         this.currentArticle = 0
+                    else if this.currentArticle == this.articleList.length - 1
+                        this.fetchMorePosts()   
                     else if this.currentArticle > this.articleList.length - 1
+             
                         this.currentArticle = this.articleList.length - 1
                         
                     newArticle = this.articleList.at this.currentArticle
