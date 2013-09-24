@@ -34,6 +34,7 @@ class NR.Application extends SimpleMVC.Controller
             this._fid = fid
             this._postPage = 1
             this._enableFetch = true
+            this.currentArticle = -1
             
             # Specific feed listing.
             this.newsArticleView.show()
@@ -57,6 +58,7 @@ class NR.Application extends SimpleMVC.Controller
         this._fid = 0
         this._postPage = 1
         this._enableFetch = true
+        this.currentArticle = -1
         
         # "All Feeds" listing.
         this.newsArticleView.show()
@@ -74,6 +76,7 @@ class NR.Application extends SimpleMVC.Controller
         ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         this._uid = uid
         this._fid = null
+        this.currentArticle = -1
         
         # Hide articles.
         this.newsArticleView.hide()
@@ -137,7 +140,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                         if this.authedUser && article.unread
                             this.togglePostAsRead article
                         this.currentArticle = this.currentArticle - 1
-                    else if ((e.keyCode == 74 || e.keyCode == 106) && this.currentArticle < this.articleList.length - 1)
+                    else if ((e.keyCode == 74 || e.keyCode == 106) && this.currentArticle <= this.articleList.length - 1)
                         article = this.articleList.at this.currentArticle
                         if this.authedUser && article.unread
                             # Mark current article as read before proceeding.
