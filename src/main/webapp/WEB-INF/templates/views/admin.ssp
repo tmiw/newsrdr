@@ -24,4 +24,21 @@
             </table>
         </div>
     </div>
+    
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <h3>New blog post</h3>
+            <form method="POST" action="/admin/blog/post">
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject">
+                </div>
+                <div class="form-group">
+                    <label for="body">Body</label>
+                    <textarea rows="10" cols="80" class="form-control" id="body" name="body"></textarea>
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+        </div>
+    </div>
 </div>

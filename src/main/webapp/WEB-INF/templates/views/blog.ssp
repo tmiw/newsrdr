@@ -1,0 +1,83 @@
+<%@ val postList : List[us.newsrdr.models.BlogEntry] %>
+<%@ val offset : Int %>
+		<link rel="alternate" type="application/rss+xml" title="RSS" href="/blog/feed" />
+		<div id="fb-root"></div>
+
+<div class="container">
+<div class="jumbotron">
+      <div class="container">
+        <h2>The newsrdr blog</h2>
+      </div>
+</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">Advertisement</div>
+                <div class="panel-body" id="ad-body">
+                </div>
+            </div>
+            <div>
+#for (i <- postList)
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="/blog/post/<%= i.id %>"><%= unescape(i.subject) %></a></h3>
+        <div>Posted <%= i.postDate.toLocaleString() %></div>
+    </div>
+    <div class="panel-body">
+        <%= unescape(i.body) %>
+        <div><a href="/blog/post/<%= i.id %>#comments">see comments</a></div>
+    </div>
+</div>
+#end
+            </div>
+        </div>
+    </div>
+    <ul class="pager">
+<% if (postList.length < 10) { %>
+  <li class="previous disabled"><a href="#">&larr; Older</a></li>
+<% } else { %>
+  <li class="previous"><a href="/blog/page/<%= offset + 1 %>">&larr; Older</a></li>
+<% } %>
+<% if (offset == 0) { %>
+  <li class="next disabled"><a href="#">Newer &rarr;</a></li>
+<% } else { %>
+  <li class="next"><a href="/blog/page/<%= offset - 1 %>">Newer &rarr;</a></li>
+<% } %>
+</ul>
+</div>
+
+<script src="/static/js/mustache.js"></script>
+<script src="/js/NR.API.js"></script>
+<script src="/js/SimpleMVC.js"></script>
+<script src="/js/NR.Models.js"></script>
+<script src="/js/NR.Views.js"></script>
+<script src="/js/main.js"></script>
+<script language="javascript">
+<!--
+$(document).ready(function() {
+    window.___gcfg = {
+      lang: 'en-US',
+      parsetags: 'explicit'
+    };
+    
+    var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+(function() {
+var gads = document.createElement('script');
+gads.async = true;
+gads.type = 'text/javascript';
+var useSSL = 'https:' == document.location.protocol;
+gads.src = (useSSL ? 'https:' : 'http:') +
+'//www.googletagservices.com/tag/js/gpt.js';
+var node = document.getElementsByTagName('script')[0];
+node.parentNode.insertBefore(gads, node);
+})();
+    
+    window.fbAsyncInit = function() {
+        window.app = new NR.Application([], [], false, true);
+        window.app.start();
+        if (window.nextFbAsyncInit) { window.nextFbAsyncInit(); }
+    };
+});
+// -->
+</script>

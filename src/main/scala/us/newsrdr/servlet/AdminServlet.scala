@@ -56,4 +56,36 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
       redirect(Constants.LOGIN_URI + "/" + authService)
     })
   }
+  
+  post("/blog/post") {
+    val subject = params.get("subject").get
+    val body = params.get("body").get
+    
+    val authService = if (session.getAttribute("authService") != null) {
+      session.getAttribute("authService")
+    } else {
+      "google"
+    }
+    
+    authenticationRequired(dao, session.getId, db, request, { 
+      val userSession = session
+      db withTransaction { implicit session: Session =>
+        val sess = dao.getUserSessionById(session, userSession.getId())
+        val userInfo = dao.getUserInfo(session, sess.userId)
+        
+        if (!userInfo.isAdmin && userInfo.id.get != 1)
+        {
+          redirect("/news")
+        }
+        else
+        {
+          dao.insertBlogPost(session, userInfo.id.get, subject, body)
+        }
+      }
+      redirect("/admin")
+    }, {
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+      redirect(Constants.LOGIN_URI + "/" + authService)
+    })
+  }
 }

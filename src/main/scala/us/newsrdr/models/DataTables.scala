@@ -7,6 +7,7 @@ import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 import java.sql.Timestamp
 
 case class SiteStatistics(numUsers: Int, numFeeds: Int)
+case class BlogEntry(id: Option[Int], authorId: Int, postDate: Timestamp, subject: String, body: String)
 
 class DataTables(val driver: ExtendedProfile) {
 	import driver.simple._
@@ -165,6 +166,17 @@ class DataTables(val driver: ExtendedProfile) {
 	  def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
 	  def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
 	}
+		
+	object BlogEntries extends Table[BlogEntry]("BlogEntries") {
+	  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+      def authorId = column[Int]("authorId")
+      def postDate = column[Timestamp]("postDate")
+      def subject = column[String]("subject")
+      def body = column[String]("body")
+      
+      def * = id.? ~ authorId ~ postDate ~ subject ~ body <> (BlogEntry, BlogEntry.unapply _)
+      def user = foreignKey("blogEntryUserIdKey", authorId, Users)(_.id)
+	}
 	
 	def create(implicit session: Session) = {
       if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
@@ -177,10 +189,23 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == UserFeeds.tableName)) UserFeeds.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == FeedFailureLogs.tableName)) FeedFailureLogs.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == BlogEntries.tableName)) BlogEntries.ddl.create
 	}
 
 	def getSiteStatistics(implicit session: Session) : SiteStatistics = {
 	  SiteStatistics((for{t <- Users} yield t).list.count(_ => true), (for{t <- NewsFeeds} yield t).list.count(_ => true))
+	}
+	
+	def getBlogPosts(implicit session: Session, offset: Int) : List[BlogEntry] = {
+	  Query(BlogEntries).sortBy(_.postDate.desc).drop(offset).take(Constants.ITEMS_PER_PAGE).list
+	}
+	
+	def getBlogPostById(implicit session: Session, id: Int) : BlogEntry = {
+      Query(BlogEntries).filter(_.id === id).first
+    }
+	
+	def insertBlogPost(implicit session: Session, uid: Int, subject: String, body: String) {
+	  BlogEntries.insert(BlogEntry(None, uid, new java.sql.Timestamp(new java.util.Date().getTime()), subject, body))
 	}
 	
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
