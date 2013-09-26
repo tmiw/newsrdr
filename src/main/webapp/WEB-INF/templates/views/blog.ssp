@@ -59,11 +59,6 @@
 <script language="javascript">
 <!--
 $(document).ready(function() {
-    window.___gcfg = {
-      lang: 'en-US',
-      parsetags: 'explicit'
-    };
-    
     var googletag = googletag || {};
 googletag.cmd = googletag.cmd || [];
 (function() {
