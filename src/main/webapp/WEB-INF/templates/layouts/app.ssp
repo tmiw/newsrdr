@@ -40,6 +40,7 @@ newsrdr: a news reader without the extra fluff</title>
                 <li><a href="/about">About</a></li>
                 <li><a href="/blog">Blog</a></li>
                 <li><a href="https://github.com/tmiw/newsrdr/issues/new">Contact</a></li>
+                <li><a href="/news/">Your News</a></li>
                 <li><a href="/auth/logout">Logout</a></li>
               </ul>
             </div>
