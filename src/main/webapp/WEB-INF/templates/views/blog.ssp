@@ -17,6 +17,9 @@
                 </div>
             </div>
             <div>
+            <% if (postList.length == 0) { %>
+            No posts.
+            <% } else { %>
 #for (i <- postList)
 <div class="panel panel-default">
     <div class="panel-heading">
@@ -29,6 +32,7 @@
     </div>
 </div>
 #end
+            <% } %>
             </div>
         </div>
     </div>
