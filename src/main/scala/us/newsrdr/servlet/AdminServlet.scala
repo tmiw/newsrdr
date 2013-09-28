@@ -65,6 +65,13 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   
   get("/blog") {
     adminWrapper((session: Session, userInfo: User) => {
+        val postList = dao.getBlogPosts(session, 0)
+        ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> 0)
+    })
+  }
+  
+  get("/blog/page/:page") {
+    adminWrapper((session: Session, userInfo: User) => {
         val offset = Integer.parseInt(params.get("page").getOrElse("0"))
         val postList = dao.getBlogPosts(session, offset * Constants.ITEMS_PER_PAGE)
         ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> offset)

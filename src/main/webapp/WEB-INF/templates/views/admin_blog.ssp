@@ -27,16 +27,18 @@
             <table class="table">
                 <tr>
                     <th>Title</th>
+                    <th>Post date</th>
                     <th>Actions</th>
                 </tr>
                 <% if (postList.length == 0) { %>
                 <tr>
-                    <td colspan="2">No posts.</td>
+                    <td colspan="3">No posts.</td>
                 </tr>
                 <% } else { %>
 #for (i <- postList)
                 <tr>
                     <td><a href="/blog/post/<%= i.id %>" target="_blank"><%= unescape(i.subject) %></a></td>
+                    <td><%= i.postDate.toLocaleString() %></td>
                     <td>
                         <a href="/admin/blog/post/<%= i.id %>/edit" class="btn btn-default">Edit</a>
                         <a href="/admin/blog/post/<%= i.id %>/delete" class="btn btn-default">Delete</a>
@@ -49,12 +51,12 @@
 <% if (postList.length < 10) { %>
   <li class="previous disabled"><a href="#">&larr; Older</a></li>
 <% } else { %>
-  <li class="previous"><a href="/blog/page/<%= offset + 1 %>">&larr; Older</a></li>
+  <li class="previous"><a href="/admin/blog/page/<%= offset + 1 %>">&larr; Older</a></li>
 <% } %>
 <% if (offset == 0) { %>
   <li class="next disabled"><a href="#">Newer &rarr;</a></li>
 <% } else { %>
-  <li class="next"><a href="/blog/page/<%= offset - 1 %>">Newer &rarr;</a></li>
+  <li class="next"><a href="/admin/blog/page/<%= offset - 1 %>">Newer &rarr;</a></li>
 <% } %>
             </ul>
         </div>
