@@ -37,7 +37,7 @@ trait AuthOpenId {
     }
   }
     
-  def authenticationRequired(dao: DataTables, id: String, db: Database, http: javax.servlet.ServletRequest, f: => Any, g: => Any) = {
+  def authenticationRequired[T](dao: DataTables, id: String, db: Database, http: javax.servlet.ServletRequest, f: => T, g: => T) : T = {
     db withSession { implicit session: Session =>
       dao.getUserSession(session, id, http.getRemoteAddr()) match {
         case Some(sess) => f

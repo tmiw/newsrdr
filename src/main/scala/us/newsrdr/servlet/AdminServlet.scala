@@ -26,7 +26,7 @@ import org.scalatra.swagger._
 class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
   
-  get("/") {
+  def adminWrapper[T](f: (Session, User) => T) : Any = {
     contentType="text/html"
     val sess = session;
     val authService = if (session.getAttribute("authService") != null) {
@@ -47,8 +47,7 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
         }
         else
         {
-            val statistics = dao.getSiteStatistics(session)
-            ssp("/admin",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "site admin", "siteStats" -> statistics)
+          f(session, userInfo)
         }
       }
     }, {
@@ -57,35 +56,29 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
     })
   }
   
+  get("/") {
+    adminWrapper((session: Session, userInfo: User) => {
+        val statistics = dao.getSiteStatistics(session)
+        ssp("/admin",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "site admin", "siteStats" -> statistics)
+    })
+  }
+  
+  get("/blog") {
+    adminWrapper((session: Session, userInfo: User) => {
+        val offset = Integer.parseInt(params.get("page").getOrElse("0"))
+        val postList = dao.getBlogPosts(session, offset * Constants.ITEMS_PER_PAGE)
+        ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> offset)
+    })
+  }
+  
   post("/blog/post") {
-    val subject = params.get("subject").get
-    val body = params.get("body").get
-    
-    val authService = if (session.getAttribute("authService") != null) {
-      session.getAttribute("authService")
-    } else {
-      "google"
-    }
-    
-    authenticationRequired(dao, session.getId, db, request, { 
-      val userSession = session
-      db withTransaction { implicit session: Session =>
-        val sess = dao.getUserSessionById(session, userSession.getId())
-        val userInfo = dao.getUserInfo(session, sess.userId)
-        
-        if (!userInfo.isAdmin && userInfo.id.get != 1)
-        {
-          redirect("/news")
+    adminWrapper((session: Session, userInfo: User) => {
+        val subject = params.get("subject").get
+        val body = params.get("body").get
+        db withTransaction {
+            dao.insertBlogPost(session, userInfo.id.get, subject, body)
         }
-        else
-        {
-          dao.insertBlogPost(session, userInfo.id.get, subject, body)
-        }
-      }
-      redirect("/admin")
-    }, {
-      session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
-      redirect(Constants.LOGIN_URI + "/" + authService)
+        redirect("/admin/blog")
     })
   }
 }

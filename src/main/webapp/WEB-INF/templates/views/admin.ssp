@@ -7,6 +7,22 @@
       </div>
     </div>
     <div class="row">
+        <nav class="navbar navbar-default" role="navigation" id="top-nav-bar" data-spy="affix" data-offset-top="200">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Actions</a>
+            </div>
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                  <li><a href="/admin">Statistics</a></li>
+                  <li><a href="/admin/blog">Blog</a></li>
+                </ul>
+            </div>
+        </nav>
         <div class="col-md-8 col-md-offset-2">
             <table class="table">
                 <tr>
@@ -22,34 +38,6 @@
                     <td><%= siteStats.numFeeds %></td>
                 </tr>
             </table>
-        </div>
-    </div>
-    
-    <script type="text/javascript" src="//tinymce.cachefly.net/4.0/tinymce.min.js"></script>
-    <script type="text/javascript">
-            tinymce.init({
-                selector: 'textarea',
-                plugins: [
-                 "advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker",
-                 "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
-                 "save table contextmenu directionality emoticons template paste textcolor"
-                ],
-                toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons"});
-    </script>
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <h3>New blog post</h3>
-            <form method="POST" action="/admin/blog/post">
-                <div class="form-group">
-                    <label for="subject">Subject</label>
-                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject">
-                </div>
-                <div class="form-group">
-                    <label for="body">Body</label>
-                    <textarea rows="10" cols="80" class="form-control" id="body" name="body"></textarea>
-                </div>
-                <button type="submit" class="btn btn-default">Submit</button>
-            </form>
         </div>
     </div>
 </div>
