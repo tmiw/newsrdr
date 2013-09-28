@@ -233,12 +233,12 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   
   get("/privacy_policy") {
       contentType="text/html"
-      ssp("/about", "title" -> "Privacy Policy" )
+      ssp("/privacy_policy", "title" -> "Privacy Policy" )
   }
   
   get("/developers/button") {
       contentType="text/html"
-      ssp("/about", "title" -> "Get the Button" )
+      ssp("/developers/button", "title" -> "Get the Button" )
   }
   
   get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
