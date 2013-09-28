@@ -154,7 +154,7 @@
         <h3 class="panel-title">Welcome, <%= realName %>.</h3>
     </div>
     <div class="panel-body">
-        <p>Select a feed from the left to read its content, or select one of the options above.</p>
+        <p>Select a feed from the left to read its content, or select Add New Feed from the Feed menu above to subscribe to a Web site.</p>
     </div>
 </script>
 
