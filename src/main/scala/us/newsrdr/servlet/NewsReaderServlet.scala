@@ -227,15 +227,16 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       "google"
     }
     
+    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }    
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
       db withSession { implicit session: Session =>
         val userId = getUserId(dao, db, sid, request).get
         val tail = if (multiParams("captures") == null) { "" } else { multiParams("captures").head }
-        redirect("/news/" + userId.toString + tail)
+        redirect("/news/" + userId.toString + tail + qs)
       }
     }, {
-      session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
       redirect(Constants.LOGIN_URI + "/" + authService)
     })
   }
@@ -252,6 +253,8 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       "google"
     }
     val uidAsString = multiParams("captures").head
+    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
+
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
       db withSession { implicit session: Session =>
@@ -260,7 +263,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
         
         if (userId.toString != uidAsString)
         {
-          sess.setAttribute("redirectUrlOnLogin", "/news/" + userId.toString)
+          sess.setAttribute("redirectUrlOnLogin", "/news/" + userId.toString + qs)
           redirect(Constants.LOGIN_URI + "/" + authService)
         }
         else
@@ -294,7 +297,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
               "uid" -> userId)
         }
       } else {
-        session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
+        session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
         redirect(Constants.LOGIN_URI + "/" + authService)
       }
     })
