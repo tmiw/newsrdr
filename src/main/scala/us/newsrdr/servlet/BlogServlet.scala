@@ -91,7 +91,7 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
               <item>
                 <title>{p.subject}</title>
                 <link>{Constants.getURL(request, "/blog/post/" + p.id.toString)}</link>
-                <description>{p.body}</description>
+                <description>{scala.xml.PCData(p.body)}</description>
                 <pubDate>{dateFormatter.format(p.postDate)}</pubDate>
                 <guid isPermaLink="false">{p.id}</guid>
               </item>

@@ -103,7 +103,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
               <item>
                 <title>{p.article.title}</title>
                 <link>{p.article.link}</link>
-                <description>{p.article.description}</description>
+                <description>{scala.xml.PCData(p.article.description)}</description>
                 <pubDate>{dateFormatter.format(p.article.pubDate.getOrElse(new java.sql.Timestamp(new java.util.Date().getTime())))}</pubDate>
                 <guid isPermaLink={permalink}>{p.article.guid.getOrElse("")}</guid>
               </item>
