@@ -48,6 +48,12 @@ newsrdr: a news reader without the extra fluff</title>
                     <li><a href="/auth/login/twitter">via Twitter</a></li>
                   </ul>
                 </li>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Developers <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="/developers/button">Get Button</a></li>
+                  </ul>
+                </li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
                 <li id="top-twitter" class="item-padding">

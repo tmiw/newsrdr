@@ -1,0 +1,71 @@
+<div class="container">
+<div class="jumbotron">
+      <div class="container">
+        <h1>Get the newsrdr button</h1>
+      </div>
+</div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <h2>Attract more visitors</h2>
+        <p>
+            Adding the newsrdr button makes it easy for your visitors to subscribe to your Web site or blog,
+            resulting in more repeat visitors.
+        </p>
+      </div>
+      <div class="col-md-4">
+        <h2>Promote your content</h2>
+        <p>
+            With newsrdr's excellent sharing features, your subscribers will be able to share your content
+            on social media, increasing your brand awareness.
+        </p>
+      </div>
+      <div class="col-md-4">
+        <h2>No assembly required</h2>
+        <p>
+            Simply generate the required HTML code using the form below and include it on your site. It's that simple.
+        </p>
+      </div>
+    </div>
+    
+    <hr class="featurette-divider">
+    
+    <script type="text/javascript">
+    <!--
+        function generateButtonHtml()
+        {
+            var html = 
+                "<a href='http://newsrdr.us/news/feeds/add?url=" + encodeURI($("#feedUrl").val()) + "'>\r\n" +
+                "<img src='http://newsrdr.us/static/img/button-32x32.png' height='32' width='32' alt='Subscribe with newsrdr' /> Subscribe\r\n" +
+                "</a>";
+            $("#btn-html").text(html);
+            $("#btn-preview").html(html);
+        }
+    // -->
+    </script>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <p class="lead">Fill out the form below and choose Generate to produce the HTML code for the button:</p>
+            <form role="form">
+                <div class="form-group">
+                    <label for="feedUrl">RSS/Atom feed URL</label>
+                    <input type="url" class="form-control" id="feedUrl" placeholder="Feed URL">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="generateButtonHtml();">Generate</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <p class="lead">Button HTML:</p>
+            <textarea id="btn-html" rows="8" cols="60"></textarea>
+            <hr class="featurette-divider">
+            <p class="lead">Preview:</p>
+            <div class="panel panel-default">
+                <div id="btn-preview" class="panel-body">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="featurette-divider">
+</div>
