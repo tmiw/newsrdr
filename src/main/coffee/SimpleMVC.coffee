@@ -285,6 +285,20 @@ class SimpleMVC.Controller extends SimpleMVC.Event
         this.prototype.routes = {} if not this.prototype.routes?
         this.prototype.routes[escapedPath] = fn
 
+    _parseQueryString: () =>
+        match  = null
+        pl     = /\+/g   # Regex for replacing addition symbol with a space
+        search = /([^&=]+)=?([^&]*)/g
+        decode = (s) -> decodeURIComponent(s.replace(pl, " "))
+        query  = window.location.search.substring(1)
+
+        this.urlParams = {};
+        while (match = search.exec(query))
+            this.urlParams[decode(match[1])] = decode(match[2])
+            
+    constructor: () ->
+        window.addEventListener "popstate", this._parseQueryString
+        
     addNewState: (uri) ->
         if history.pushState?
             history.pushState(null, "", uri)
@@ -307,4 +321,5 @@ class SimpleMVC.Controller extends SimpleMVC.Event
         ret
         
     start: () =>
+        this._parseQueryString()
         this.navigate(location.pathname, true, false)

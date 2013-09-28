@@ -132,7 +132,7 @@ class NR.Views.TopNavBar extends SimpleMVC.View
         
     @event "click", "#addFeedLink", (e) ->
         e.preventDefault()
-        $("#addFeed").modal()
+        window.app.showAddFeedWindow()
     
     _disableLink: (id) ->
         e = $(id)

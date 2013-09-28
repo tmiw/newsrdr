@@ -25,6 +25,11 @@ class NR.Application extends SimpleMVC.Controller
         this._savedPostsMode = true
         this._postPage = 1
         this.newsArticleView.show()
+
+    @route "news/:uid/feeds/add", (uid) ->
+        this._uid = uid
+        $("#addFeedUrl").val(this.urlParams["url"])
+        $("#addFeed").modal()
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
         ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
@@ -86,7 +91,7 @@ class NR.Application extends SimpleMVC.Controller
         # Update nav elements.
         this.newsFeedView.homeSelected()
         this.topNavView.homeSelected()
-    
+        
     _adblocked: () ->
         $("#ad-body").html('<div class="sponsor_content"> 
            <center>
@@ -211,6 +216,9 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
     deselectFeed: () =>
         this.navigate "/news/" + this._uid, true
     
+    showAddFeedWindow: () =>
+        this.navigate "/news/" + this._uid + "/feeds/add", true
+
     removeCurrentFeed: () =>
         currentFeed = this._fid
         NR.API.RemoveFeed this._fid, () =>
