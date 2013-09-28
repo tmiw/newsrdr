@@ -37,7 +37,10 @@
 #for (i <- postList)
                 <tr>
                     <td><a href="/blog/post/<%= i.id %>" target="_blank"><%= unescape(i.subject) %></a></td>
-                    <td>edit | delete</td>
+                    <td>
+                        <button type="button" class="btn btn-default">Edit</button> 
+                        <a href="/admin/blog/post/<%= i.id %>/delete" class="btn btn-default">Delete</a>
+                    </td>
                 </tr>
 #end
             <% } %>

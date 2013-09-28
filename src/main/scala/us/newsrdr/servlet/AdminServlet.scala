@@ -71,6 +71,16 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
     })
   }
   
+  get("/blog/post/:id/delete") {
+    val postId = Integer.parseInt(params.get("id").get)
+    adminWrapper((session: Session, userInfo: User) => {
+      db withTransaction {
+        dao.deleteBlogPost(session, postId)
+      }
+      redirect("/admin/blog")
+    })
+  }
+  
   post("/blog/post") {
     adminWrapper((session: Session, userInfo: User) => {
         val subject = params.get("subject").get

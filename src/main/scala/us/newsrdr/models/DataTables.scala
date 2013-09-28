@@ -208,6 +208,11 @@ class DataTables(val driver: ExtendedProfile) {
 	  BlogEntries.insert(BlogEntry(None, uid, new java.sql.Timestamp(new java.util.Date().getTime()), subject, body))
 	}
 	
+	def deleteBlogPost(implicit session: Session, id: Int) {
+	  val query = for { be <- BlogEntries if be.id === id } yield be
+	  query.delete
+	}
+	
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
 	  val queryString = if (driver.isInstanceOf[H2Driver]) {
 	    """
