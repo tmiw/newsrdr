@@ -272,12 +272,11 @@ class NR.Views.NewsArticle extends SimpleMVC.View
                 shareBtn = this.domObject.find(".shareButton")
                 shareBtn.popover({
                     html: true
-                    container: 'body'
                     placement: 'top'
                     content: this.shareTemplate.call this, this.model
                 })
                 shareBtn.on("shown.bs.popover", () =>
-                    ele = shareBtn[0]
+                    ele = $("#share-items-" + this.model.article.id)
                     FB.XFBML.parse(ele[0])
                     gapi.plusone.go(ele[0])
                     twttr.widgets.load(ele[0])
