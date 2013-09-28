@@ -81,6 +81,25 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
     })
   }
   
+  get("/blog/post/:id/edit") {
+    adminWrapper((session: Session, userInfo: User) => {
+      val post = dao.getBlogPostById(session, Integer.parseInt(params.get("id").get))
+      ssp("/admin_blog_edit",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "edit blog post", "post" -> post)
+    })
+  }
+  
+  post("/blog/post/:id/save") {
+    adminWrapper((session: Session, userInfo: User) => {
+        val subject = params.get("subject").get
+        val body = params.get("body").get
+        val postId = Integer.parseInt(params.get("id").get)
+        db withTransaction {
+            dao.editBlogPost(session, postId, subject, body)
+        }
+        redirect("/admin/blog")
+    })
+  }
+  
   post("/blog/post") {
     adminWrapper((session: Session, userInfo: User) => {
         val subject = params.get("subject").get

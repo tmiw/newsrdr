@@ -213,6 +213,11 @@ class DataTables(val driver: ExtendedProfile) {
 	  query.delete
 	}
 	
+	def editBlogPost(implicit session: Session, id: Int, subject: String, body: String) {
+      val query = for { be <- BlogEntries if be.id === id } yield be.subject ~ be.body
+      query.update(subject, body)
+    }
+	
 	def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
 	  val queryString = if (driver.isInstanceOf[H2Driver]) {
 	    """
