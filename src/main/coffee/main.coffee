@@ -280,7 +280,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
     fetchMorePosts: =>
         if this._enableFetch
             if this._fid > 0
-                NR.API.GetPostsForFeed this._fid, this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, this.localSettings.showOnlyUnread, (data) =>
+                NR.API.GetPostsForFeed this._fid, this._postPage, Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), this.localSettings.showOnlyUnread, (data) =>
                     if data.length == 0
                         this._enableFetch = false
                     else
@@ -288,7 +288,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                         this._processFeedPosts data
                 , this._apiError
             else if this._savedPostsMode
-                NR.API.GetSavedPosts this._uid, this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
+                NR.API.GetSavedPosts this._uid, this._postPage, Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), (data) =>
                     if data.length == 0
                         this._enableFetch = false
                     else
@@ -296,7 +296,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                         this._processFeedPosts data
                 , this._apiError
             else
-                NR.API.GetAllPosts this._postPage, Date.parse(this.articleList.at(0).article.pubDate) / 1000, this.localSettings.showOnlyUnread, (data) =>
+                NR.API.GetAllPosts this._postPage, Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), this.localSettings.showOnlyUnread, (data) =>
                     if data.length == 0
                         this._enableFetch = false
                     else

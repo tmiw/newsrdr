@@ -48,7 +48,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    val userId = getUserId(dao, db, session.getId, request).get
 	    
 	    val latestPostDate = params.get("latest_post_date") match {
-            case Some(x) if !x.isEmpty() => Integer.parseInt(x)
+            case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
             case _ => new java.util.Date().getTime()
         }
 	    
