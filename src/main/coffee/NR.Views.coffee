@@ -255,6 +255,10 @@ class NR.Views.NewsArticle extends SimpleMVC.View
             i.contentWindow.location.href = "about:blank"
         frameList.remove()
         
+        # Hide any visible popovers.
+        shareBtn = this.domObject.find(".shareButton")
+        shareBtn.popover("destroy")
+        
     render: () =>
         if not this.model? || (this.model? && not this._suppressRender)
             this._leakCleanup()
@@ -273,10 +277,10 @@ class NR.Views.NewsArticle extends SimpleMVC.View
                     content: this.shareTemplate.call this, this.model
                 })
                 shareBtn.on("shown.bs.popover", () =>
-                    ele = $("#share-items-" + this.model.article.id)
-                    FB.XFBML.parse(ele[0]);
-                    gapi.plusone.go(ele[0]);
-                    twttr.widgets.load(ele[0]);
+                    ele = shareBtn[0]
+                    FB.XFBML.parse(ele[0])
+                    gapi.plusone.go(ele[0])
+                    twttr.widgets.load(ele[0])
                 )
                 
                 # Make all <a> links in feed open a new window.
