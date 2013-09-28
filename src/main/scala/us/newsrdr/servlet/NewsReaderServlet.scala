@@ -220,14 +220,21 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
     }
   }
   
+  get("/auth/login") {
+      // Show list of login choices
+      contentType="text/html"
+      ssp("/login", "title" -> "login" )
+  }
+  
   get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
+    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
     val authService = if (session.getAttribute("authService") != null) {
       session.getAttribute("authService")
     } else {
-      "google"
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
+      redirect("/auth/login")
     }
     
-    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }    
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
       db withSession { implicit session: Session =>
@@ -247,13 +254,14 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   get("""^/news/([0-9]+)""".r) {
     contentType="text/html"
     val sess = session;
+    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
     val authService = if (session.getAttribute("authService") != null) {
       session.getAttribute("authService")
     } else {
-      "google"
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
+      redirect("/auth/login")
     }
     val uidAsString = multiParams("captures").head
-    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
 
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId

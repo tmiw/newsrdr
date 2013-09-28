@@ -29,10 +29,12 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   def adminWrapper[T](f: (Session, User) => T) : Any = {
     contentType="text/html"
     val sess = session;
+    val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
     val authService = if (session.getAttribute("authService") != null) {
       session.getAttribute("authService")
     } else {
-      "google"
+      session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
+      redirect("/auth/login")
     }
     
     authenticationRequired(dao, session.getId, db, request, { 
