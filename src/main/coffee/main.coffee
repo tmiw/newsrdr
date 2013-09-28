@@ -278,31 +278,40 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         window.setTimeout this.importSingleFeed, 0
     
     fetchMorePosts: =>
+        errorWrapper = (type, desc) =>
+            this._enableFetch = true
+            this._apiError type, desc
+        
+        successWrapper = (data) =>
+            if data.length > 0
+                this._enableFetch = true
+                this._postPage = this._postPage + 1
+                this._processFeedPosts data
+                
         if this._enableFetch
+            this._enableFetch = false
             if this._fid > 0
-                NR.API.GetPostsForFeed this._fid, this._postPage, Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), this.localSettings.showOnlyUnread, (data) =>
-                    if data.length == 0
-                        this._enableFetch = false
-                    else
-                        this._postPage = this._postPage + 1
-                        this._processFeedPosts data
-                , this._apiError
+                NR.API.GetPostsForFeed(
+                    this._fid, 
+                    this._postPage, 
+                    Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), 
+                    this.localSettings.showOnlyUnread, 
+                    successWrapper,
+                    errorWrapper)
             else if this._savedPostsMode
-                NR.API.GetSavedPosts this._uid, this._postPage, Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), (data) =>
-                    if data.length == 0
-                        this._enableFetch = false
-                    else
-                        this._postPage = this._postPage + 1
-                        this._processFeedPosts data
-                , this._apiError
+                NR.API.GetSavedPosts(
+                    this._uid,
+                    this._postPage,
+                    Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate),
+                    successWrapper,
+                    errorWrapper)
             else
-                NR.API.GetAllPosts this._postPage, Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), this.localSettings.showOnlyUnread, (data) =>
-                    if data.length == 0
-                        this._enableFetch = false
-                    else
-                        this._postPage = this._postPage + 1
-                        this._processFeedPosts data
-                , this._apiError
+                NR.API.GetAllPosts(
+                    this._postPage, 
+                    Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate), 
+                    this.localSettings.showOnlyUnread,
+                    successWrapper, 
+                    errorWrapper)
     
     togglePostAsRead: (article) =>
         if article.unread
