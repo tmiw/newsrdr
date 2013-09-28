@@ -226,6 +226,21 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       ssp("/login", "title" -> "login" )
   }
   
+  get("/about") {
+      contentType="text/html"
+      ssp("/about", "title" -> "About" )
+  }
+  
+  get("/privacy_policy") {
+      contentType="text/html"
+      ssp("/about", "title" -> "Privacy Policy" )
+  }
+  
+  get("/developers/button") {
+      contentType="text/html"
+      ssp("/about", "title" -> "Get the Button" )
+  }
+  
   get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
     val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
     val authService = if (session.getAttribute("authService") != null) {
