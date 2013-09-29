@@ -1,3 +1,6 @@
+/* auto-resized images */
+img { max-width: 100%; height: auto; }
+
 @media(max-width:767px){
    .affix {
      position: static;
