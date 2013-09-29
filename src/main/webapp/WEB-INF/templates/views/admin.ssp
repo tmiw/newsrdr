@@ -31,6 +31,18 @@
                 </tr>
                 <tr>
                     <td>Number of users</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;(logged in within the past 24 hours)</td>
+                    <td><%= siteStats.numUsersInLastDay %></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;(logged in within the past 7 days)</td>
+                    <td><%= siteStats.numUsersInLastWeek %></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;(who have ever logged in)</td>
                     <td><%= siteStats.numUsers %></td>
                 </tr>
                 <tr>

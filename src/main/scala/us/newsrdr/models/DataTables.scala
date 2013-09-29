@@ -6,7 +6,7 @@ import scala.slick.jdbc.meta.{MTable}
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 import java.sql.Timestamp
 
-case class SiteStatistics(numUsers: Int, numFeeds: Int)
+case class SiteStatistics(numUsers: Int, numFeeds: Int, numUsersInLastWeek: Int, numUsersInLastDay: Int)
 case class BlogEntry(id: Option[Int], authorId: Int, postDate: Timestamp, subject: String, body: String)
 
 class DataTables(val driver: ExtendedProfile) {
@@ -193,7 +193,15 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 
 	def getSiteStatistics(implicit session: Session) : SiteStatistics = {
-	  SiteStatistics((for{t <- Users} yield t).list.count(_ => true), (for{t <- NewsFeeds} yield t).list.count(_ => true))
+	  val today = new java.sql.Timestamp(new java.util.Date().getTime())
+      val lastWeek = new java.sql.Timestamp(today.getTime() - 60*60*24*7*1000)
+	  val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
+	  
+	  SiteStatistics(
+	      (for{t <- Users} yield t).list.count(_ => true), 
+	      (for{t <- NewsFeeds} yield t).list.count(_ => true),
+	      (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(lastWeek)} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true),
+	      (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(yesterday)} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true))
 	}
 	
 	def getBlogPosts(implicit session: Session, offset: Int) : List[BlogEntry] = {
