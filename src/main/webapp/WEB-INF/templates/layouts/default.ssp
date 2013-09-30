@@ -56,14 +56,19 @@ newsrdr: a news reader without the extra fluff</title>
                 </li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
+                <li id="top-newsrd" class="item-padding">
+                    <div class="btn btn-default" style="padding-left: 5px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; font-size: 12px;" onclick="window.open('http://newsrdr.us/news/feeds/add?url=http://newsrdr.us/blog/feed', '_blank');">
+                        <img src='http://newsrdr.us/static/img/button-32x32.png' height='16' width='16' alt='Subscribe with newsrdr' /> Subscribe
+                    </div>
+                </li>
                 <li id="top-twitter" class="item-padding">
-                    <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="Read all of your latest news in one place" data-via="newsrdr_dot_us" data-count="none" data-url="http://newsrdr.us/">Tweet</a>
+                    <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="Read all of your latest news in one place" data-via="newsrdr_dot_us" data-count="none">Tweet</a>
                 </li>
                 <li id="top-facebook" class="item-padding">
-                    <div class="fb-like" data-href="http://newsrdr.us/" data-width="450" data-layout="button_count" data-show-faces="false"></div>
+                    <div class="fb-like" data-width="450" data-layout="button_count" data-show-faces="false"></div>
                 </li>
                 <li id="top-plusone" class="item-padding">
-                  <g:plusone href="http://newsrdr.us/" action="share" size="medium" annotation="bubble"></g:plusone>
+                  <g:plusone action="share" size="medium" annotation="bubble"></g:plusone>
                 </li>
               </ul>
             </div>
