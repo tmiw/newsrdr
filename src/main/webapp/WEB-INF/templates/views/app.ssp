@@ -13,7 +13,7 @@
 </div>
     <div class="row">
         <div class="col-md-3">
-            <div class="navbar navbar-default" data-spy="affix" data-offset-top="200" id="feedPanel">
+            <div class="navbar navbar-default" data-spy="affix" data-offset-top="269" id="feedPanel">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navCollapse">
                       <span class="icon-bar"></span>
@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="col-md-9">
-            <nav class="navbar navbar-default" role="navigation" id="top-nav-bar" data-spy="affix" data-offset-top="200">
+            <nav class="navbar navbar-default" role="navigation" id="top-nav-bar" data-spy="affix" data-offset-top="269">
             </nav>
             <div id="post-list-ui">
             </div>

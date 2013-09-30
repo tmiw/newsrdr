@@ -7,7 +7,7 @@
       </div>
     </div>
     <div class="row">
-        <nav class="navbar navbar-default" role="navigation" id="top-nav-bar" data-spy="affix" data-offset-top="200">
+        <nav class="navbar navbar-default" role="navigation" id="top-nav-bar" data-spy="affix" data-offset-top="269">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
                     <span class="icon-bar"></span>
