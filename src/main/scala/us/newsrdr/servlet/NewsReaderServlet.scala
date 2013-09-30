@@ -241,6 +241,11 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
       ssp("/developers/button", "title" -> "Get the Button" )
   }
   
+  get("/_elb_health_check") {
+    contentType="text/html"
+    "it works"
+  }
+  
   get("""^/news(|/|/[A-Za-z]+.*)$""".r) {
     val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
     val authService = if (session.getAttribute("authService") != null) {
