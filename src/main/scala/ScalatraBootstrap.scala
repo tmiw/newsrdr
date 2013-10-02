@@ -28,6 +28,7 @@ class ScalatraBootstrap extends LifeCycle {
     }
     
     val environment = context.getInitParameter(org.scalatra.EnvironmentKey)
+    System.setProperty("scalate.mode", environment)
     var dao = environment match {
       case "production" => new DataTables(MySQLDriver)
       case _ => new DataTables(H2Driver)

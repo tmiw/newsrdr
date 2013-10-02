@@ -17,3 +17,5 @@ resolvers += Resolver.url("sbt-plugin-snapshots",
     Resolver.ivyStylePatterns)
 
 addSbtPlugin("me.lessis" % "coffeescripted-sbt" % "0.2.3")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
