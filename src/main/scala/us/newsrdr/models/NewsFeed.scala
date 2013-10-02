@@ -221,26 +221,28 @@ object XmlFeedFactory {
     }
     else
     {
-      var feed : XmlFeed = null
-      
-      if ((xmlDoc \\ "entry").count(x => true) > 0)
-      {
-        // Atom feed
-        feed = new AtomFeed
-      }
-      else if (
-          (xmlDoc \\ "rss").count(x => true) > 0 ||
-          (xmlDoc \\ "rdf").count(x => true) > 0 ||
-          (xmlDoc \\ "RDF").count(x => true) > 0)
-      {
-        feed = new RSSFeed
-      }
-      else
-      {
-        throw new RuntimeException("not an RSS or Atom feed!")
-      }
+      val feed = 
+        if ((xmlDoc \\ "entry").count(x => true) > 0)
+        {
+          // Atom feed
+          new AtomFeed
+        }
+        else if (
+            (xmlDoc \\ "rss").count(x => true) > 0 ||
+            (xmlDoc \\ "rdf").count(x => true) > 0 ||
+            (xmlDoc \\ "RDF").count(x => true) > 0)
+        {
+          new RSSFeed
+        }
+        else
+        {
+          throw new RuntimeException("not an RSS or Atom feed!")
+        }
     
       feed.fillFeedProperties(xmlDoc, url)
+      val now = new java.sql.Timestamp(new java.util.Date().getTime())
+      feed.entries = 
+        feed.entries.sortBy(_._1.pubDate.getOrElse(now).getTime())
       feed
     }
   }
