@@ -16,7 +16,7 @@ trait NewsrdrStack extends ScalatraServlet with GZipSupport with ScalateSupport 
     engine.layoutStrategy = new DefaultLayoutStrategy(engine,
       TemplateEngine.templateTypes.map("/WEB-INF/templates/layouts/default." + _): _*)
     engine.packagePrefix = "templates"
-    val environment = config.getServletContext().getInitParameter(org.scalatra.EnvironmentKey)
+    val environment = sys.props.get(org.scalatra.EnvironmentKey).get
     if (environment.equals("production"))
     {
       engine.allowReload = false

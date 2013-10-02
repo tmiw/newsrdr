@@ -22,12 +22,12 @@ class ScalatraBootstrap extends LifeCycle {
     
     if (envVar != null && envVar == "true" ) {
       // force envrionment to production mode
-      context.setInitParameter(org.scalatra.EnvironmentKey, "production")
-    } else if (context.getInitParameter(org.scalatra.EnvironmentKey) == null) {
-      context.setInitParameter(org.scalatra.EnvironmentKey, "development")
+      System.setProperty(org.scalatra.EnvironmentKey, "production")
+    } else if (sys.props.get(org.scalatra.EnvironmentKey) == None) {
+      System.setProperty(org.scalatra.EnvironmentKey, "development")
     }
     
-    val environment = context.getInitParameter(org.scalatra.EnvironmentKey)
+    val environment = sys.props.getOrElse(org.scalatra.EnvironmentKey, "development")
     System.setProperty("scalate.mode", environment)
     var dao = environment match {
       case "production" => new DataTables(MySQLDriver)

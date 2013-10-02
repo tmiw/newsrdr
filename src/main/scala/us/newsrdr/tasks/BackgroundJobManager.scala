@@ -20,8 +20,8 @@ object BackgroundJobManager {
   var scheduler : Scheduler = null
   
   def start(context: ServletContext) = {
-    scheduler = context.getInitParameter(org.scalatra.EnvironmentKey) match {
-      case "production" => {
+    scheduler = sys.props.get(org.scalatra.EnvironmentKey) match {
+      case Some("production") => {
         var temp = new StdSchedulerFactory()
         temp.initialize(context.getResourceAsStream("/WEB-INF/classes/quartz-production.properties"))
         temp.getScheduler()
