@@ -329,9 +329,4 @@ class NR.Views.NewsArticleListing extends SimpleMVC.CollectionView
         super model
         
         # Set up infinite scroll handler
-        $(document).scroll(() =>
-            if not this._debouncing
-                this._debouncing = true
-                fn = () => this._debouncing = false
-                setTimeout(fn, 1000)
-                this._onScroll())
+        $(document).scroll(this._onScroll)
