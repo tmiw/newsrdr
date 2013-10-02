@@ -120,7 +120,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
         notes "Retrieves saved posts from the given user, sorted by post date."
         parameter pathParam[Integer]("uid").description("The user's ID.")
         parameter queryParam[Option[Integer]]("page").description("The page of results to retrieve.")
-        parameter queryParam[Option[Integer]]("latest_post_date").description("The date of the oldest post."))
+        parameter queryParam[Option[Integer]]("latest_post_id").description("The ID of the newest post."))
         
   get("/:uid/posts", operation(getPosts)) {
     val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
@@ -130,13 +130,13 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       case _:Exception => halt(404)
     }
 	    
-	val latestPostDate = params.get("latest_post_date") match {
-      case Some(x) if !x.isEmpty() => Integer.parseInt(x)
-      case _ => new java.util.Date().getTime()
+	val latestPostId = params.get("latest_post_id") match {
+      case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+      case _ => Long.MaxValue
     }
 	    
 	db withSession { implicit session: Session =>
-	  dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate).map(p =>
+	  dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostId).map(p =>
           NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
     }
   }

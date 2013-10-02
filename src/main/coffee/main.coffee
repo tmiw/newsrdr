@@ -294,7 +294,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 NR.API.GetPostsForFeed(
                     this._fid, 
                     this._postPage, 
-                    Date.parse(this.articleList.at(0).article.pubDate), 
+                    this.articleList.at(0).article.id, 
                     this.localSettings.showOnlyUnread, 
                     successWrapper,
                     errorWrapper)
@@ -302,13 +302,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 NR.API.GetSavedPosts(
                     this._uid,
                     this._postPage,
-                    Date.parse(this.articleList.at(0).article.pubDate),
+                    this.articleList.at(0).article.id,
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
                     this._postPage, 
-                    Date.parse(this.articleList.at(0).article.pubDate), 
+                    this.articleList.at(0).article.id, 
                     this.localSettings.showOnlyUnread,
                     successWrapper, 
                     errorWrapper)

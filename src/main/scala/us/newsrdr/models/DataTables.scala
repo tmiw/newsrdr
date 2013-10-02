@@ -373,8 +373,8 @@ class DataTables(val driver: ExtendedProfile) {
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
 	                  "uf"."feedId" = ? and
+	                  "nfa"."id" <= ? and
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-	                  unix_timestamp("nfa"."pubDate") <= ? and
 	                  ("ua"."articleRead" is null or "ua"."articleRead" = 0)
 	        order by "nfa"."pubDate" desc
 	        limit ? offset ?""")
@@ -388,7 +388,7 @@ class DataTables(val driver: ExtendedProfile) {
                 where "uf"."userId" = ? and 
 	                  "uf"."feedId" = ? and
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-                      unix_timestamp("nfa"."pubDate") <= ?
+                      "nfa"."id" <= ?
 	        order by "nfa"."pubDate" desc
 	        limit ? offset ?""")
 	    }
@@ -403,7 +403,7 @@ class DataTables(val driver: ExtendedProfile) {
                 where uf.userId = ? and 
 	                  uf.feedId = ? and
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
-                      unix_timestamp(nfa.pubDate) <= ? and
+                      nfa.id <= ? and
 	                  (ua.articleRead is null or ua.articleRead = 0)
 	        order by nfa.pubDate desc
 	        limit ? offset ?""")
@@ -417,7 +417,7 @@ class DataTables(val driver: ExtendedProfile) {
                 where uf.userId = ? and
 	                  uf.feedId = ? and
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
-                      unix_timestamp(nfa.pubDate) <= ?
+                      nfa.id <= ?
 	        order by nfa.pubDate desc
 	        limit ? offset ?""")
 	    }
@@ -441,7 +441,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-                      unix_timestamp("nfa"."pubDate") <= ? and
+                      "nfa"."id" <= ? and
 	                  ("ua"."articleRead" is null or "ua"."articleRead" = 0)
 	        order by "nfa"."pubDate" desc
 	        limit ? offset ?""")
@@ -454,7 +454,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
                 where "uf"."userId" = ? and 
 	                  unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-                      unix_timestamp("nfa"."pubDate") <= ?
+                      "nfa"."id" <= ?
 	        order by "nfa"."pubDate" desc
 	        limit ? offset ?""")
 	    }
@@ -468,7 +468,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
-                      unix_timestamp(nfa.pubDate) <= ? and
+                      nfa.id <= ? and
 	                  (ua.articleRead is null or ua.articleRead = 0)
 	        order by nfa.pubDate desc
 	        limit ? offset ?""")
@@ -481,7 +481,7 @@ class DataTables(val driver: ExtendedProfile) {
 	        left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
 	                  unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
-                      unix_timestamp(nfa.pubDate) <= ?
+                      nfa.id <= ?
 	        order by nfa.pubDate desc
 	        limit ? offset ?""")
 	    }
@@ -503,7 +503,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
               where "uf"."userId" = ? and 
 	                unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-                    unix_timestamp("nfa"."pubDate") <= ? and
+                    "nfa"."id" <= ? and
 	                "ua"."articleSaved" = 1
 	      order by "nfa"."pubDate" desc
 	      limit ? offset ?""")
@@ -515,7 +515,7 @@ class DataTables(val driver: ExtendedProfile) {
 	      left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
               where uf.userId = ? and 
 	                unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
-                    unix_timestamp(nfa.pubDate) <= ? and
+                    nfa.id <= ? and
 	                ua.articleSaved = 1
 	      order by nfa.pubDate desc
 	      limit ? offset ?""")
