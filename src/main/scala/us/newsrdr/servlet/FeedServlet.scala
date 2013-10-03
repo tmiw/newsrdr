@@ -170,25 +170,35 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    // We probably also want to return validation error info above.
 	    db withTransaction { implicit session: Session =>
 	      // Grab feed from database, creating if it doesn't already exist.
-	      val feed = dao.getFeedFromUrl(session, url) getOrElse {
-	          val fetchJob = new RssFetchJob
-	          val f = fetchJob.fetch(url, false)
+	      try
+	      {
+	        val feed = dao.getFeedFromUrl(session, url) getOrElse {
+	            val fetchJob = new RssFetchJob
+	            val f = fetchJob.fetch(url, false)
 	          
-	          // Schedule periodic feed updates
-	          BackgroundJobManager.scheduleFeedJob(f.feedUrl)
+	            // Schedule periodic feed updates
+	            BackgroundJobManager.scheduleFeedJob(f.feedUrl)
 	          
-	          f
-	      }
+	            f
+	        }
 	      
-	      // Add subscription at the user level.
-	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
+	        // Add subscription at the user level.
+	        dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
-	      val today = new java.util.Date().getTime()
-	      FeedInfoApiResult(true, None, NewsFeedInfo(
+	        val today = new java.util.Date().getTime()
+	        FeedInfoApiResult(true, None, NewsFeedInfo(
 	    		  feed,
 	    		  feed.id.get,
 	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get),
 	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
+	      } catch {
+	        case e:HasNoFeedsException => {
+	          // Provide the HTML actually fetched by the server so that the caller
+	          // can provide workflow to create a feed from said site. We also
+	          // need to do this because of XSS restrictions on the client side.
+	          StringDataApiResult(false, Some("not_a_feed"), e.getMessage())
+	        }
+	      }
 	    }
     }, {
       halt(401)

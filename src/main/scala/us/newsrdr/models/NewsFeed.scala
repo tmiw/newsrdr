@@ -125,6 +125,8 @@ class ManualCloseBufferedStream(s: java.io.InputStream) extends java.io.Buffered
   }
 }
 
+class HasNoFeedsException(text: String) extends Exception(text) { }
+
 object XmlFeedFactory {
   val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
   val f = javax.xml.parsers.SAXParserFactory.newInstance()
@@ -236,7 +238,7 @@ object XmlFeedFactory {
         }
         else
         {
-          throw new RuntimeException("not an RSS or Atom feed!")
+          throw new HasNoFeedsException(xmlDoc.toString())
         }
     
       feed.fillFeedProperties(xmlDoc, url)
