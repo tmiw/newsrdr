@@ -293,22 +293,22 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             if this._fid > 0
                 NR.API.GetPostsForFeed(
                     this._fid, 
-                    this._postPage, 
-                    this.articleList.at(0).article.id, 
+                    0, 
+                    this.articleList.at(this.articleList.length - 1).article.id, 
                     this.localSettings.showOnlyUnread, 
                     successWrapper,
                     errorWrapper)
             else if this._savedPostsMode
                 NR.API.GetSavedPosts(
                     this._uid,
-                    this._postPage,
-                    this.articleList.at(0).article.id,
+                    0,
+                    this.articleList.at(this.articleList.length - 1).article.id,
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
-                    this._postPage, 
-                    this.articleList.at(0).article.id, 
+                    0, 
+                    this.articleList.at(this.articleList.length - 1).article.id, 
                     this.localSettings.showOnlyUnread,
                     successWrapper, 
                     errorWrapper)
