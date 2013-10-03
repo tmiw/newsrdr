@@ -290,30 +290,25 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 
         if this._enableFetch
             this._enableFetch = false
-            minId = this.articleList.at(0).article.id
-            this.articleList.each (i) => 
-                if i.article.id < minId
-                    minId = i.article.id
-                    
             if this._fid > 0
                 NR.API.GetPostsForFeed(
                     this._fid, 
-                    0, 
-                    minId, 
+                    this._postPage, 
+                    this.articleList.at(0).article.id, 
                     this.localSettings.showOnlyUnread, 
                     successWrapper,
                     errorWrapper)
             else if this._savedPostsMode
                 NR.API.GetSavedPosts(
                     this._uid,
-                    0,
-                    minId,
+                    this._postPage,
+                    this.articleList.at(0).article.id,
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
-                    0, 
-                    minId, 
+                    this._postPage, 
+                    this.articleList.at(0).article.id, 
                     this.localSettings.showOnlyUnread,
                     successWrapper, 
                     errorWrapper)
