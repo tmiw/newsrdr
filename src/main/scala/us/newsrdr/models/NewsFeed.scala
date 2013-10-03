@@ -191,25 +191,21 @@ object XmlFeedFactory {
       throw new RuntimeException("Feed too large.")
     }
     
-    val contentStream = new ManualCloseBufferedStream(conn.getInputStream())
-    contentStream.mark(maxContentSize)
+    val stream = conn.getInputStream()
+    val s = new java.util.Scanner(stream).useDelimiter("\\A")
+    val doc = if (s.hasNext()) { s.next() } else { "" }
+    stream.close()
         
     var xmlDoc : xml.Elem = null
     try {
       MyXML.synchronized {
         MyXML.parser.reset()
-        xmlDoc = MyXML.load(contentStream)
+        xmlDoc = MyXML.loadString(doc)
       }
-      contentStream.actualClose
     } catch {
       case _:Exception => {
-        contentStream.reset()
-        try {
-          parser.synchronized {
-            xmlDoc = parser.load(contentStream)
-          }
-        } finally {
-          contentStream.actualClose
+        parser.synchronized {
+          xmlDoc = parser.loadString(doc)
         }
       }
     }
@@ -238,7 +234,7 @@ object XmlFeedFactory {
         }
         else
         {
-          throw new HasNoFeedsException(xmlDoc.toString())
+          throw new HasNoFeedsException(doc)
         }
     
       feed.fillFeedProperties(xmlDoc, url)

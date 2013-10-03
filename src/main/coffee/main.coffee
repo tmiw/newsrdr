@@ -11,14 +11,24 @@ class NR.Application extends SimpleMVC.Controller
                 post[k] = v
             this.articleList.add post
     
-    _apiError: (type, desc) =>
+    _apiError: (type, desc, data) =>
         errorText = "Communications error with the server. Please try again."
         
         switch type
             when NR.API.AuthenticationFailed then location.reload()
-            when NR.API.ServerError then errorText = "The server encountered an error while processing the request. Please try again."
+            when NR.API.ServerError
+                if desc == NR.API.NotAFeedError
+                    iframeDoc = $("#createFeedDocument")[0].contentWindow.document
+                    iframeDoc.open()
+                    iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
+                    iframeDoc.write(data)
+                    iframeDoc.close()
+                    $("#createFeed").modal()
+                else
+                    errorText = "The server encountered an error while processing the request. Please try again."
             
-        noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });
+        if desc != NR.API.NotAFeedError
+            noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });
     
     @route "saved/:uid", (uid) ->
         this._uid = uid
