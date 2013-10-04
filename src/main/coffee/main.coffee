@@ -18,12 +18,11 @@ class NR.Application extends SimpleMVC.Controller
             when NR.API.AuthenticationFailed then location.reload()
             when NR.API.ServerError
                 if desc == NR.API.NotAFeedError
-                    iframeDoc = $("#createFeedDocument")[0].contentWindow.document
-                    iframeDoc.open()
-                    iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
-                    iframeDoc.write(data)
-                    iframeDoc.close()
-                    $("#createFeed").modal()
+                    this._createFeedView = new NR.Views.CreateFeedWindow
+                    feedModel = new NR.Models.CreateFeedModel
+                    feedModel.baseHtml = data
+                    this._createFeedView.model = feedModel
+                    this._createFeedView.show()
                 else
                     errorText = "The server encountered an error while processing the request. Please try again."
             

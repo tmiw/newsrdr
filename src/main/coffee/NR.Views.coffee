@@ -103,6 +103,77 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         window.app.deselectFeed()
         e.preventDefault()
 
+class NR.Views.CreateFeedWindow extends SimpleMVC.View
+    @id "createFeed"
+    @hideOnStart true
+    
+    _canSave: () =>
+        this.model.xpathTitle? and this.model.xpathLink?
+            
+    _updateGlyphs: () =>
+        if this.model.xpathTitle?
+            $("#feed-title-set .glyphicon").show()
+        else
+            $("#feed-title-set .glyphicon").hide()
+            
+        if this.model.xpathLink?
+            $("#feed-link-set .glyphicon").show()
+        else
+            $("#feed-link-set .glyphicon").hide()
+        
+        if this.model.xpathBody?
+            $("#feed-description-set .glyphicon").show()
+        else
+            $("#feed-description-set .glyphicon").hide()
+        
+        # disable save button if needed
+        if this._canSave()
+            $('saveCreatedFeedButton').removeClass("disabled")
+        else
+            $('saveCreatedFeedButton').addClass("disabled")
+            
+    _onChangeXpathTitle: () =>
+        this._suppressRender = true
+        this._updateGlyphs()
+            
+    _onChangeXpathLink: () =>
+        this._suppressRender = true
+        this._updateGlyphs()
+            
+    _onChangeXpathBody: () =>
+        this._suppressRender = true
+        this._updateGlyphs()
+            
+    render: () =>
+        if not this.model? || (this.model? && not this._suppressRender)
+            iframe = $("#createFeedDocument")[0]
+            iframe.contentWindow.location.href = "about:blank"
+        
+            if this.model?
+                iframeDoc = iframe.contentWindow.document
+                iframeDoc.open()
+                iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
+                iframeDoc.write(this.model.baseHtml)
+                iframeDoc.close()
+                
+                this.model.unregisterEvent("change:xpathTitle", this._onChangeXpathTitle)
+                this.model.unregisterEvent("change:xpathLink", this._onChangeXpathLink)
+                this.model.unregisterEvent("change:xpathBody", this._onChangeXpathBody)
+                
+                this.model.registerEvent("change:xpathTitle", this._onChangeXpathTitle)
+                this.model.registerEvent("change:xpathLink", this._onChangeXpathLink)
+                this.model.registerEvent("change:xpathBody", this._onChangeXpathBody)
+                
+                this._updateGlyphs()
+        else
+            this._suppressRender = false
+            
+    show: () =>
+        this.domObject.modal()
+    
+    hide: () =>
+        this.domObject.modal('hide')
+        
 class NR.Views.TopNavBar extends SimpleMVC.View
     @id "top-nav-bar"
     this.prototype.template = Mustache.compile $("#template-topNavBar").html()
