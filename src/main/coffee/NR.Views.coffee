@@ -231,14 +231,13 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
         this.model.xpathBody = null
     
     @event "click", "#saveCreatedFeedButton", () ->
-        # TODO: temporary
         urlField = "url=" + encodeURIComponent(this.model.baseUrl)
         xpathTitleField = "titleXPath=" + encodeURIComponent(this.model.xpathTitle)
         xpathLinkField = "linkXPath=" + encodeURIComponent(this.model.xpathLink)
         qs = "?" + urlField + "&" + xpathTitleField + "&" + xpathLinkField
         if this.model.xpathBody?
             qs = qs + "&bodyXPath=" + encodeURIComponent(this.model.xpathBody)
-        window.open("/feeds/generate.rss" + qs)
+        window.app.addFeed (location.protocol + "//" + location.host + "/feeds/generate.rss" + qs)
         this.hide()
         
     render: () =>

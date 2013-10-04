@@ -62,7 +62,7 @@ class AsyncResult
         this._ajax = new XMLHttpRequest
         queryString = ""
         for k,v of data
-            queryString = queryString + encodeURI(k.toString()) + "=" + encodeURI(v.toString()) + "&"
+            queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(v.toString()) + "&"
         if url.indexOf("?") >= 0
             url = url + "&" + queryString
         else
