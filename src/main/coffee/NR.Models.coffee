@@ -5,6 +5,9 @@ else
     
 NR.Models = {} 
 
+class NR.Models.CreateFeedModel extends SimpleMVC.Model
+    @fields "baseUrl", "baseHtml", "xpathTitle", "xpathLink", "xpathBody"
+    
 class NR.Models.NewsFeedInfo extends SimpleMVC.Model
     @fields "feed", "id", "numUnread", "errorsUpdating"
     

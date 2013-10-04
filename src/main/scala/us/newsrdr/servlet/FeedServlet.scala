@@ -74,6 +74,23 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     })
   }
   
+  val generateRss = 
+    (apiOperation[String]("generateRss")
+        summary "Generates an RSS feed given XPaths to items within the document."
+        notes "Generates an RSS feed given XPaths to items within the document."
+        parameter queryParam[String]("url").description("The URL to the page.")
+        parameter queryParam[Option[String]]("bodyXPath").description("XPath query for the post body.")
+        parameter queryParam[String]("titleXPath").description("XPath query for the post title.")
+        parameter queryParam[String]("linkXPath").description("XPath query for the post's URL."))
+  get("/generate.rss", operation(generateRss)) {
+    contentType="application/rss+xml"
+    XmlFeedFactory.generate(
+        params.get("url").get, 
+        params.get("titleXPath").get, 
+        params.get("linkXPath").get,
+        params.get("bodyXPath"))
+  }
+  
   val getFeedsOpml = 
     (apiOperation[String]("getFeedsOpml")
         summary "Exports the list of subscribed feeds into OPML format."
@@ -170,25 +187,35 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
 	    // We probably also want to return validation error info above.
 	    db withTransaction { implicit session: Session =>
 	      // Grab feed from database, creating if it doesn't already exist.
-	      val feed = dao.getFeedFromUrl(session, url) getOrElse {
-	          val fetchJob = new RssFetchJob
-	          val f = fetchJob.fetch(url, false)
+	      try
+	      {
+	        val feed = dao.getFeedFromUrl(session, url) getOrElse {
+	            val fetchJob = new RssFetchJob
+	            val f = fetchJob.fetch(url, false)
 	          
-	          // Schedule periodic feed updates
-	          BackgroundJobManager.scheduleFeedJob(f.feedUrl)
+	            // Schedule periodic feed updates
+	            BackgroundJobManager.scheduleFeedJob(f.feedUrl)
 	          
-	          f
-	      }
+	            f
+	        }
 	      
-	      // Add subscription at the user level.
-	      dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
+	        // Add subscription at the user level.
+	        dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
 	      
-	      val today = new java.util.Date().getTime()
-	      FeedInfoApiResult(true, None, NewsFeedInfo(
+	        val today = new java.util.Date().getTime()
+	        FeedInfoApiResult(true, None, NewsFeedInfo(
 	    		  feed,
 	    		  feed.id.get,
 	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get),
 	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
+	      } catch {
+	        case e:HasNoFeedsException => {
+	          // Provide the HTML actually fetched by the server so that the caller
+	          // can provide workflow to create a feed from said site. We also
+	          // need to do this because of XSS restrictions on the client side.
+	          StringDataApiResult(false, Some("not_a_feed"), e.getMessage())
+	        }
+	      }
 	    }
     }, {
       halt(401)

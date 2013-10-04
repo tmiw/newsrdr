@@ -25,6 +25,7 @@ NR.API._rootURL = "" #"http://newsrdr.us"
 NR.API.AuthenticationFailed = "auth_failed"
 NR.API.ValidationFailed = "validation_failed"
 NR.API.ServerError = "server_error"
+NR.API.NotAFeedError = "not_a_feed"
 
 NR.API.httpErrorCodeList = {
     401: NR.API.AuthenticationFailed
@@ -61,7 +62,7 @@ class AsyncResult
         this._ajax = new XMLHttpRequest
         queryString = ""
         for k,v of data
-            queryString = queryString + encodeURI(k.toString()) + "=" + encodeURI(v.toString()) + "&"
+            queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(v.toString()) + "&"
         if url.indexOf("?") >= 0
             url = url + "&" + queryString
         else
@@ -85,9 +86,9 @@ class AsyncResult
                         if jsonData.success
                             success.call(this, jsonData.data)
                         else
-                            fail.call(this, NR.API.ServerError, jsonData.errorString)
+                            fail.call(this, NR.API.ServerError, jsonData.error_string, jsonData.data)
                     else
-                        fail.call(this, NR.API.httpErrorCodeList[this._ajax.status], "")
+                        fail.call(this, NR.API.httpErrorCodeList[this._ajax.status], "", null)
                     
                     # Event triggered after request has completed.
                     if document?

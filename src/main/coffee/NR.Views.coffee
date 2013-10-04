@@ -103,6 +103,177 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         window.app.deselectFeed()
         e.preventDefault()
 
+class NR.Views.CreateFeedWindow extends SimpleMVC.View
+    @id "createFeed"
+    @hideOnStart true
+    
+    _canSave: () =>
+        this.model.xpathTitle? and this.model.xpathLink?
+            
+    _updateGlyphs: () =>
+        if this.model.xpathTitle?
+            $("#feed-title-set .glyphicon").show()
+        else
+            $("#feed-title-set .glyphicon").hide()
+            
+        if this.model.xpathLink?
+            $("#feed-link-set .glyphicon").show()
+        else
+            $("#feed-link-set .glyphicon").hide()
+        
+        if this.model.xpathBody?
+            $("#feed-description-set .glyphicon").show()
+        else
+            $("#feed-description-set .glyphicon").hide()
+        
+        # disable save button if needed
+        if this._canSave()
+            $('#saveCreatedFeedButton').removeAttr("disabled")
+        else
+            $('#saveCreatedFeedButton').attr("disabled", "disabled")
+            
+    _onChangeXpathTitle: () =>
+        this._suppressRender = true
+        this._updateGlyphs()
+            
+    _onChangeXpathLink: () =>
+        this._suppressRender = true
+        this._updateGlyphs()
+            
+    _onChangeXpathBody: () =>
+        this._suppressRender = true
+        this._updateGlyphs()
+    
+    _disableButtons: () =>
+        this.domObject.find("#feed-title-set").removeClass("btn-primary")
+        this.domObject.find("#feed-link-set").removeClass("btn-primary")
+        this.domObject.find("#feed-description-set").removeClass("btn-primary")
+    
+    _isLinkEnabled: () =>
+        this.domObject.find("#feed-link-set").hasClass("btn-primary")
+        
+    _isTitleEnabled: () =>
+        this.domObject.find("#feed-title-set").hasClass("btn-primary")
+        
+    _getXPath: (ele) ->
+        if ele.id? and ele.id.length > 0
+            "//*[@id='" + ele.id + "']"
+        else if ele == $("#createFeedDocument")[0].contentWindow.document.body
+            "/" + ele.tagName.toLowerCase()
+        else
+            this._getXPath(ele.parentNode) + "/" + ele.tagName.toLowerCase()
+            
+    _handleClickedItem: (e) =>
+        e.preventDefault()
+        target = $(e.target)
+        if this._isLinkEnabled()
+            if target.prop("tagName") != "A"
+                parent = target.parents().filter(() -> $(this).prop("tagName") == "A").first()
+            else
+                parent = target
+            xpathSuffix = "/@href"
+        else
+            if target.css("display") == "inline"
+                parent = target.parents().filter(() -> $(this).css("display") != "inline").first()
+            else
+                parent = target
+        
+            if this._isTitleEnabled()
+                xpathSuffix = "/descendant::text()"
+            else
+                xpathSuffix = "/child::node()" # Will return a node set on the server.
+        
+        xpath = (this._getXPath parent[0]) + xpathSuffix
+        
+        if this._isLinkEnabled()
+            this.model.xpathLink = xpath
+            this._setCssClass this._linkDomObject, parent, "nr-link-selected"
+            this._linkDomObject = parent
+        else if this._isTitleEnabled()
+            this.model.xpathTitle = xpath
+            this._setCssClass this._titleDomObject, parent, "nr-title-selected"
+            this._titleDomObject = parent
+        else
+            this.model.xpathBody = xpath
+            this._setCssClass this._bodyDomObject, parent, "nr-body-selected"
+            this._bodyDomObject = parent
+    
+    _clearCssClass: (oldObject, aClass) =>
+        if oldObject?
+            oldObject.removeClass(aClass)
+            
+    _setCssClass: (oldObject, newObject, aClass) =>
+        this._clearCssClass oldObject, aClass
+        newObject.addClass(aClass)
+        
+    @event "click", "#feed-title-set", () ->
+        this._disableButtons()
+        this.domObject.find("#feed-title-set").addClass("btn-primary")
+    
+    @event "click", "#feed-link-set", () ->
+        this._disableButtons()
+        this.domObject.find("#feed-link-set").addClass("btn-primary")
+        
+    @event "click", "#feed-description-set", () ->
+        this._disableButtons()
+        this.domObject.find("#feed-description-set").addClass("btn-primary")
+    
+    @event "click", "#reset-create-feed-btn", () ->
+        this._disableButtons()
+        this._clearCssClass this._linkDomObject, "nr-link-selected"
+        this._clearCssClass this._titleDomObject, "nr-title-selected"
+        this._clearCssClass this._bodyDomObject, "nr-body-selected"
+        this._linkDomObject = null
+        this._titleDomObject = null
+        this._bodyDomObject = null
+        this.model.xpathTitle = null
+        this.model.xpathLink = null
+        this.model.xpathBody = null
+    
+    @event "click", "#saveCreatedFeedButton", () ->
+        urlField = "url=" + encodeURIComponent(this.model.baseUrl)
+        xpathTitleField = "titleXPath=" + encodeURIComponent(this.model.xpathTitle)
+        xpathLinkField = "linkXPath=" + encodeURIComponent(this.model.xpathLink)
+        qs = "?" + urlField + "&" + xpathTitleField + "&" + xpathLinkField
+        if this.model.xpathBody?
+            qs = qs + "&bodyXPath=" + encodeURIComponent(this.model.xpathBody)
+        window.app.addFeed (location.protocol + "//" + location.host + "/feeds/generate.rss" + qs)
+        this.hide()
+        
+    render: () =>
+        if not this.model? || (this.model? && not this._suppressRender)
+            iframe = $("#createFeedDocument")[0]
+            iframe.contentWindow.document.removeEventListener 'click', this._handleClickedItem
+            iframe.contentWindow.location.href = "about:blank"
+        
+            if this.model?
+                iframeDoc = iframe.contentWindow.document
+                iframeDoc.open()
+                iframeDoc.write("<link href=\"//" + location.host + "/static/css/newsrdr.css\" rel=\"stylesheet\" type=\"text/css\" />")
+                iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
+                iframeDoc.write(this.model.baseHtml)
+                iframeDoc.close()
+                
+                iframeDoc.addEventListener 'click', this._handleClickedItem
+                
+                this.model.unregisterEvent("change:xpathTitle", this._onChangeXpathTitle)
+                this.model.unregisterEvent("change:xpathLink", this._onChangeXpathLink)
+                this.model.unregisterEvent("change:xpathBody", this._onChangeXpathBody)
+                
+                this.model.registerEvent("change:xpathTitle", this._onChangeXpathTitle)
+                this.model.registerEvent("change:xpathLink", this._onChangeXpathLink)
+                this.model.registerEvent("change:xpathBody", this._onChangeXpathBody)
+                
+                this._updateGlyphs()
+        else
+            this._suppressRender = false
+            
+    show: () =>
+        this.domObject.modal()
+    
+    hide: () =>
+        this.domObject.modal('hide')
+        
 class NR.Views.TopNavBar extends SimpleMVC.View
     @id "top-nav-bar"
     this.prototype.template = Mustache.compile $("#template-topNavBar").html()
