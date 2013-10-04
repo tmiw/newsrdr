@@ -198,9 +198,12 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
             this._setCssClass this._bodyDomObject, parent, "nr-body-selected"
             this._bodyDomObject = parent
     
-    _setCssClass: (oldObject, newObject, aClass) =>
+    _clearCssClass: (oldObject, aClass) =>
         if oldObject?
             oldObject.removeClass(aClass)
+            
+    _setCssClass: (oldObject, newObject, aClass) =>
+        this._clearCssClass oldObject, aClass
         newObject.addClass(aClass)
         
     @event "click", "#feed-title-set", () ->
@@ -214,7 +217,19 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
     @event "click", "#feed-description-set", () ->
         this._disableButtons()
         this.domObject.find("#feed-description-set").addClass("btn-primary")
-          
+    
+    @event "click", "#reset-create-feed-btn", () ->
+        this._disableButtons()
+        this._clearCssClass this._linkDomObject, "nr-link-selected"
+        this._clearCssClass this._titleDomObject, "nr-title-selected"
+        this._clearCssClass this._bodyDomObject, "nr-body-selected"
+        this._linkDomObject = null
+        this._titleDomObject = null
+        this._bodyDomObject = null
+        this.model.xpathTitle = null
+        this.model.xpathLink = null
+        this.model.xpathBody = null
+        
     render: () =>
         if not this.model? || (this.model? && not this._suppressRender)
             iframe = $("#createFeedDocument")[0]
