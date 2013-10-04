@@ -74,6 +74,23 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     })
   }
   
+  val generateRss = 
+    (apiOperation[String]("generateRss")
+        summary "Generates an RSS feed given XPaths to items within the document."
+        notes "Generates an RSS feed given XPaths to items within the document."
+        parameter queryParam[String]("url").description("The URL to the page.")
+        parameter queryParam[Option[String]]("bodyXPath").description("XPath query for the post body.")
+        parameter queryParam[String]("titleXPath").description("XPath query for the post title.")
+        parameter queryParam[String]("linkXPath").description("XPath query for the post's URL."))
+  get("/generate.rss", operation(generateRss)) {
+    contentType="application/rss+xml"
+    XmlFeedFactory.generate(
+        params.get("url").get, 
+        params.get("titleXPath").get, 
+        params.get("linkXPath").get,
+        params.get("bodyXPath"))
+  }
+  
   val getFeedsOpml = 
     (apiOperation[String]("getFeedsOpml")
         summary "Exports the list of subscribed feeds into OPML format."

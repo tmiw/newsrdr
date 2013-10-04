@@ -21,6 +21,7 @@ class NR.Application extends SimpleMVC.Controller
                     this._createFeedView = new NR.Views.CreateFeedWindow
                     feedModel = new NR.Models.CreateFeedModel
                     feedModel.baseHtml = data
+                    feedModel.baseUrl = $("#addFeedUrl").val()
                     this._createFeedView.model = feedModel
                     this._createFeedView.show()
                 else

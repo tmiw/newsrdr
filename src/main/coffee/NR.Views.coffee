@@ -156,12 +156,12 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
         this.domObject.find("#feed-title-set").hasClass("btn-primary")
         
     _getXPath: (ele) ->
-        if ele.id?
-            'id("' + ele.id + '")'
+        if ele.id? and ele.id.length > 0
+            "//*[@id='" + ele.id + "']"
         else if ele == $("#createFeedDocument")[0].contentWindow.document.body
-            "/" + ele.tagName
+            "/" + ele.tagName.toLowerCase()
         else
-            this._getXPath(ele.parentNode) + '/' + ele.tagName
+            this._getXPath(ele.parentNode) + "/" + ele.tagName.toLowerCase()
             
     _handleClickedItem: (e) =>
         e.preventDefault()
@@ -179,7 +179,7 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
                 parent = target
         
             if this._isTitleEnabled()
-                xpathSuffix = "/text()"
+                xpathSuffix = "/descendant::text()"
             else
                 xpathSuffix = "/child::node()" # Will return a node set on the server.
         
@@ -229,6 +229,17 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
         this.model.xpathTitle = null
         this.model.xpathLink = null
         this.model.xpathBody = null
+    
+    @event "click", "#saveCreatedFeedButton", () ->
+        # TODO: temporary
+        urlField = "url=" + encodeURIComponent(this.model.baseUrl)
+        xpathTitleField = "titleXPath=" + encodeURIComponent(this.model.xpathTitle)
+        xpathLinkField = "linkXPath=" + encodeURIComponent(this.model.xpathLink)
+        qs = "?" + urlField + "&" + xpathTitleField + "&" + xpathLinkField
+        if this.model.xpathBody?
+            qs = qs + "&bodyXPath=" + encodeURIComponent(this.model.xpathBody)
+        window.open("/feeds/generate.rss" + qs)
+        this.hide()
         
     render: () =>
         if not this.model? || (this.model? && not this._suppressRender)

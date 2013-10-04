@@ -6,6 +6,15 @@ import java.text.SimpleDateFormat
 import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 import org.joda.time.format._
+import javax.xml.xpath._
+import javax.xml.transform._
+import javax.xml.transform.dom._
+import javax.xml.transform.sax._
+import org.xml.sax.InputSource
+import org.w3c.dom.NodeList
+import scala.collection.mutable.ListBuffer
+import scala.util.control.Breaks._
+import javax.xml.transform.stream.StreamResult
 
 case class Category(
     id: Option[Int],
@@ -129,12 +138,16 @@ class HasNoFeedsException(text: String) extends Exception(text) { }
 
 object XmlFeedFactory {
   val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
+  val xpathParser = new org.ccil.cowan.tagsoup.Parser()
+  xpathParser.setFeature(org.ccil.cowan.tagsoup.Parser.namespacesFeature, false)
+  //xpathParser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+  
   val f = javax.xml.parsers.SAXParserFactory.newInstance()
   f.setNamespaceAware(false)
-  f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+  f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
   val MyXML = XML.withSAXParser(f.newSAXParser())
   
-  def load(url: String) : XmlFeed = {
+  private def fetch[T](url: String, fn: java.io.InputStream => T) : (String, T) = {
     var count = 0
     var code = 0
     var currentUrl = url
@@ -192,23 +205,142 @@ object XmlFeedFactory {
     }
     
     val stream = conn.getInputStream()
-    val s = new java.util.Scanner(stream).useDelimiter("\\A")
-    val doc = if (s.hasNext()) { s.next() } else { "" }
+    val result = fn(stream)
     stream.close()
-        
-    var xmlDoc : xml.Elem = null
-    try {
-      MyXML.synchronized {
-        MyXML.parser.reset()
-        xmlDoc = MyXML.loadString(doc)
-      }
-    } catch {
-      case _:Exception => {
-        parser.synchronized {
-          xmlDoc = parser.loadString(doc)
-        }
-      }
+    (currentUrl, result)
+  }
+  
+  private def longestCommonPrefix(prefixes: List[String]) : String = {
+    var prefix = ""
+    
+    if (prefixes.length > 0)
+    {
+      prefix = prefixes.head
     }
+    
+    for (i <- 1 to prefixes.length - 1) 
+    {
+      val s = prefixes.drop(i).head
+      var tmp = 0
+      breakable { for (j <- 0 to Math.min(prefix.length() - 1, s.length() - 1))
+      {
+        if(prefix.charAt(j) != s.charAt(j)) { break }
+        tmp = j
+      } }
+      prefix = prefix.substring(0, tmp);
+    }
+    
+    prefix
+  }
+  
+  def generate(url: String, titleXPath: String, linkXPath: String, bodyXPath: Option[String]) : scala.xml.Elem = {
+    val xpathFac = XPathFactory.newInstance()
+    val xpath = xpathFac.newXPath()
+    val transformer = TransformerFactory.newInstance().newTransformer()
+    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    
+    val (currentUrl, htmlNode) = fetch(url, (stream) => {
+      val result = new DOMResult()
+      val contentStream = new ManualCloseBufferedStream(stream)
+      contentStream.mark(1024*1024*3)
+      transformer.transform(
+          new SAXSource(
+              xpathParser, 
+              new InputSource(contentStream)),
+          result)
+      
+      result.getNode()
+    })
+
+    val listOfPrefixes = if (bodyXPath.isEmpty) {
+      List[String](titleXPath, linkXPath)
+    } else {
+      List[String](titleXPath, linkXPath, bodyXPath.get)
+    }
+    val longestPrefix = longestCommonPrefix(listOfPrefixes)
+    
+    val tmp = titleXPath.replace(longestPrefix, ".")
+    val compiledTitleXPath = xpath.compile(titleXPath.replace(longestPrefix, "."))
+    val compiledLinkXPath = xpath.compile(linkXPath.replace(longestPrefix, "."))
+    val compiledBodyXPath = if (!bodyXPath.isEmpty) { xpath.compile(bodyXPath.get.replace(longestPrefix, ".")) } else { null }
+    val compiledPerItemXPath = xpath.compile(longestPrefix)
+    
+    val nodes = compiledPerItemXPath.evaluate(htmlNode, XPathConstants.NODESET).asInstanceOf[NodeList]
+    val htmlTitle = xpath.evaluate("//title/text()", htmlNode, XPathConstants.STRING).asInstanceOf[String]
+    val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
+    
+    val listOfArticles = new ListBuffer[(String, String, Option[String])]()
+    for (a <- 0 to nodes.getLength() - 1) {
+      val node = nodes.item(a)
+      val titleNodes = compiledTitleXPath.evaluate(node, XPathConstants.NODESET).asInstanceOf[NodeList]
+      val title = {
+        val writer = new java.io.StringWriter()
+        for (b <- 0 to titleNodes.getLength() - 1) {
+          transformer.transform(new DOMSource(titleNodes.item(b)), new StreamResult(writer))
+        }
+        writer.toString()
+      }
+      val link = compiledLinkXPath.evaluate(node)
+      val body = 
+        if (bodyXPath.isEmpty) { None } 
+        else { 
+          val bodyNodes = compiledBodyXPath.evaluate(node, XPathConstants.NODESET).asInstanceOf[NodeList]
+          val writer = new java.io.StringWriter()
+          for (b <- 0 to bodyNodes.getLength() - 1) {
+            transformer.transform(new DOMSource(bodyNodes.item(b)), new StreamResult(writer))
+          }
+          Some(writer.toString()) 
+      }
+      listOfArticles += ((title, link, body))
+    }
+    
+    <rss version="2.0">
+      <channel>
+        <title>{if (htmlTitle.length() == 0) { url } else { htmlTitle }}</title>
+        <link>{currentUrl}</link>
+        <description>Generated by http://newsrdr.us/.</description>
+        <lastBuildDate>{dateFormatter.format(new java.util.Date())}</lastBuildDate>
+        {listOfArticles.toList.map(p => {
+          <item>
+            <title>{p._1}</title>
+            <link>{new java.net.URL(new java.net.URL(currentUrl), p._2).toString()}</link>
+            <description>{scala.xml.PCData(if (p._3.isEmpty) { "" } else { p._3.get })}</description>
+            <pubDate>{dateFormatter.format(new java.sql.Timestamp(new java.util.Date().getTime()))}</pubDate>
+            <guid isPermaLink="true">{new java.net.URL(new java.net.URL(currentUrl), p._2).toString()}</guid>
+          </item>
+        })}
+      </channel>
+    </rss>
+  }
+  
+  def load(url: String) : XmlFeed = {
+    var doc : String = ""
+    val (currentUrl, xmlDoc) = fetch(url, (stream) => {
+      val contentStream = new ManualCloseBufferedStream(stream)
+      contentStream.mark(1024*1024*3)
+      
+      var xmlDoc : xml.Elem = null
+      try {
+        MyXML.synchronized {
+          MyXML.parser.reset()
+          xmlDoc = MyXML.load(contentStream)
+        }
+      } catch {
+        case _:Exception => {
+          contentStream.reset()
+          parser.synchronized {
+            xmlDoc = parser.load(contentStream)
+          }
+        }
+      } finally {
+        contentStream.reset()
+        val s = new java.util.Scanner(contentStream).useDelimiter("\\A")
+        doc = if (s.hasNext()) { s.next() } else { "" }
+      }
+      
+      xmlDoc
+    })
+        
     
     val feedLinks = (xmlDoc \\ "link").filter(attributeEquals("rel", "alternate")(_))
                                       .filter(x => attributeEquals("type", "application/rss+xml")(x) ||
