@@ -1,6 +1,10 @@
 /* auto-resized images */
 img { max-width: 100%; height: auto; }
 
+#createFeed .modal-dialog {
+    width: 900px;
+}
+
 @media(max-width:767px){
    .affix {
      position: static;
