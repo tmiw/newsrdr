@@ -10,6 +10,14 @@
     background-color: rgba(255,127,80,0.5);
 }
 
+.nr-square {
+    border: 1px solid black;
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-right: 5px;
+}
+
 /* auto-resized images */
 img { max-width: 100%; height: auto; }
 
