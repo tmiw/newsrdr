@@ -55,7 +55,7 @@ newsrdr: a news reader without the extra fluff</title>
                   </ul>
                 </li>
               </ul>
-              <ul class="nav navbar-nav navbar-right" style="height: 40px; width: 364px;">
+              <ul class="nav navbar-nav navbar-right" style="height: 40px; width: 368px;">
                 <li id="top-newsrd" class="item-padding">
                     <div class="btn btn-default" style="padding-left: 5px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; font-size: 12px;" onclick="window.open('http://newsrdr.us/news/feeds/add?url=http://newsrdr.us/blog/feed', '_blank');">
                         <img src='http://newsrdr.us/static/img/button-32x32.png' height='16' width='16' alt='Subscribe with newsrdr' /> Subscribe
