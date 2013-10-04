@@ -128,9 +128,9 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
         
         # disable save button if needed
         if this._canSave()
-            $('saveCreatedFeedButton').removeClass("disabled")
+            $('#saveCreatedFeedButton').removeAttr("disabled")
         else
-            $('saveCreatedFeedButton').addClass("disabled")
+            $('#saveCreatedFeedButton').attr("disabled", "disabled")
             
     _onChangeXpathTitle: () =>
         this._suppressRender = true
@@ -143,18 +143,93 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
     _onChangeXpathBody: () =>
         this._suppressRender = true
         this._updateGlyphs()
+    
+    _disableButtons: () =>
+        this.domObject.find("#feed-title-set").removeClass("btn-primary")
+        this.domObject.find("#feed-link-set").removeClass("btn-primary")
+        this.domObject.find("#feed-description-set").removeClass("btn-primary")
+    
+    _isLinkEnabled: () =>
+        this.domObject.find("#feed-link-set").hasClass("btn-primary")
+        
+    _isTitleEnabled: () =>
+        this.domObject.find("#feed-title-set").hasClass("btn-primary")
+        
+    _getXPath: (ele) ->
+        if ele.id?
+            'id("' + ele.id + '")'
+        else if ele == $("#createFeedDocument")[0].contentWindow.document.body
+            "/" + ele.tagName
+        else
+            this._getXPath(ele.parentNode) + '/' + ele.tagName
             
+    _handleClickedItem: (e) =>
+        e.preventDefault()
+        target = $(e.target)
+        if this._isLinkEnabled()
+            if target.prop("tagName") != "A"
+                parent = target.parents().filter(() -> $(this).prop("tagName") == "A").first()
+            else
+                parent = target
+            xpathSuffix = "/@href"
+        else
+            if target.css("display") == "inline"
+                parent = target.parents().filter(() -> $(this).css("display") != "inline").first()
+            else
+                parent = target
+        
+            if this._isTitleEnabled()
+                xpathSuffix = "/text()"
+            else
+                xpathSuffix = "/child::node()" # Will return a node set on the server.
+        
+        xpath = (this._getXPath parent[0]) + xpathSuffix
+        
+        if this._isLinkEnabled()
+            this.model.xpathLink = xpath
+            this._setCssClass this._linkDomObject, parent, "nr-link-selected"
+            this._linkDomObject = parent
+        else if this._isTitleEnabled()
+            this.model.xpathTitle = xpath
+            this._setCssClass this._titleDomObject, parent, "nr-title-selected"
+            this._titleDomObject = parent
+        else
+            this.model.xpathBody = xpath
+            this._setCssClass this._bodyDomObject, parent, "nr-body-selected"
+            this._bodyDomObject = parent
+    
+    _setCssClass: (oldObject, newObject, aClass) =>
+        if oldObject?
+            oldObject.removeClass(aClass)
+        newObject.addClass(aClass)
+        
+    @event "click", "#feed-title-set", () ->
+        this._disableButtons()
+        this.domObject.find("#feed-title-set").addClass("btn-primary")
+    
+    @event "click", "#feed-link-set", () ->
+        this._disableButtons()
+        this.domObject.find("#feed-link-set").addClass("btn-primary")
+        
+    @event "click", "#feed-description-set", () ->
+        this._disableButtons()
+        this.domObject.find("#feed-description-set").addClass("btn-primary")
+          
     render: () =>
         if not this.model? || (this.model? && not this._suppressRender)
             iframe = $("#createFeedDocument")[0]
+            iframe.contentWindow.document.removeEventListener 'click', this._handleClickedItem
             iframe.contentWindow.location.href = "about:blank"
         
             if this.model?
                 iframeDoc = iframe.contentWindow.document
                 iframeDoc.open()
+                iframeDoc.write("<link href=\"//" + location.host + "/static/css/newsrdr.css\" rel=\"stylesheet\" type=\"text/css\" />")
                 iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
                 iframeDoc.write(this.model.baseHtml)
                 iframeDoc.close()
+                
+                iframeDoc.addEventListener 'click', this._handleClickedItem
                 
                 this.model.unregisterEvent("change:xpathTitle", this._onChangeXpathTitle)
                 this.model.unregisterEvent("change:xpathLink", this._onChangeXpathLink)

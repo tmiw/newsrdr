@@ -1,3 +1,15 @@
+.nr-link-selected {
+    background-color: rgba(255,215,0,0.5);
+}
+
+.nr-title-selected {
+    background-color: rgba(173,255,47,0.5);
+}
+
+.nr-body-selected {
+    background-color: rgba(255,127,80,0.5);
+}
+
 /* auto-resized images */
 img { max-width: 100%; height: auto; }
 
