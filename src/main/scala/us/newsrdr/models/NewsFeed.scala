@@ -205,9 +205,15 @@ object XmlFeedFactory {
     }
     
     val stream = conn.getInputStream()
-    val result = fn(stream)
-    stream.close()
-    (currentUrl, result)
+    try
+    {
+      val result = fn(stream)
+      (currentUrl, result)
+    }
+    finally
+    {
+      stream.close()
+    }
   }
   
   private def longestCommonPrefix(prefixes: List[String]) : String = {
