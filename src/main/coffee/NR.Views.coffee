@@ -250,7 +250,8 @@ class NR.Views.CreateFeedWindow extends SimpleMVC.View
                 iframeDoc = iframe.contentWindow.document
                 iframeDoc.open()
                 iframeDoc.write("<link href=\"//" + location.host + "/static/css/newsrdr.css\" rel=\"stylesheet\" type=\"text/css\" />")
-                iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
+                if $(this.model.baseHtml).filter("base").length == 0
+                    iframeDoc.write("<base href=\"" + $("#addFeedUrl").val() + "\"/>")
                 iframeDoc.write(this.model.baseHtml)
                 iframeDoc.close()
                 
