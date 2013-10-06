@@ -33,10 +33,7 @@ trait NewsrdrStack extends ScalatraServlet with GZipSupport with ScalateSupport 
     // remove content type in case it was set through an action
     contentType = null
     // Try to render a ScalateTemplate if no route matched
-    findTemplate(requestPath) map { path =>
-      contentType = "text/html"
-      layoutTemplate(path)
-    } orElse serveStaticResource() getOrElse { 
+    serveStaticResource() getOrElse { 
       contentType = "text/html"
       response.setStatus(404)
       ssp("/404", "title" -> "not found") 
