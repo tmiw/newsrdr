@@ -36,6 +36,10 @@ trait NewsrdrStack extends ScalatraServlet with GZipSupport with ScalateSupport 
     findTemplate(requestPath) map { path =>
       contentType = "text/html"
       layoutTemplate(path)
-    } orElse serveStaticResource() getOrElse resourceNotFound()
+    } orElse serveStaticResource() getOrElse { 
+      contentType = "text/html"
+      response.setStatus(404)
+      ssp("/404", "title" -> "not found") 
+    }
   }
 }
