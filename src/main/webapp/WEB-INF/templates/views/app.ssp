@@ -136,7 +136,7 @@
           <button type="submit" class="btn btn-primary" name="submitBtn">Import</button>
         </div>
         </form>
-        <iframe id="upload_target" name="upload_target" src="#" style="width:0;height:0;border:0px solid #fff;"></iframe>
+        <iframe id="upload_target" name="upload_target" style="width:0;height:0;border:0px solid #fff;"></iframe>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
@@ -297,6 +297,10 @@ window.___gcfg = {
 window.fbAsyncInit = function() {
     var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
     window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
+    window.app.registerEvent("navigated", function() {
+        ga('send', 'pageview', {'title': document.title, 'page': location.pathname});
+    });
+    
     if (!window.app.start())
     {
         window.app.navigate("/news/<%= uid %>", true);

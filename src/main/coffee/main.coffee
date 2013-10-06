@@ -137,10 +137,6 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             if ($("#ad-body div iframe").length == 0)
                 this._adblocked();
         , 1000);
-        
-        # Send Google Analytics, if needed.
-        if addState
-            ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         ret
     
     _initializeKeyboardNavigation: ->
