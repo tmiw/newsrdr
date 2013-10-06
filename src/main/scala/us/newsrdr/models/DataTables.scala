@@ -282,7 +282,7 @@ class DataTables(val driver: ExtendedProfile) {
 	}
 	
 	def getFeedFromUrl(implicit session: Session, url: String) : Option[NewsFeed] = {
-	  val feedQuery = for { f <- NewsFeeds if f.feedUrl === url } yield f
+	  val feedQuery = for { f <- NewsFeeds if f.feedUrl === url || f.link === url } yield f
 	  feedQuery.firstOption
 	}
 	
