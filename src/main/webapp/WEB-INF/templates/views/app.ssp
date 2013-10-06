@@ -294,22 +294,14 @@ window.___gcfg = {
     fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
 
-var initialized = false;
-$(document).ready(function() {
-    if (!initialized)
+window.fbAsyncInit = function() {
+    var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
+    window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
+    if (!window.app.start())
     {
-        initialized = true;
-        var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
-        window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
-        window.fbAsyncInit = function() {
-            fbInitialized = true;
-            if (!window.app.start())
-            {
-                window.app.navigate("/news/<%= uid %>", true);
-            }
-        };
+        window.app.navigate("/news/<%= uid %>", true);
     }
-});
+};
 
 // -->
 </script>

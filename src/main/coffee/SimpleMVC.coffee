@@ -321,5 +321,9 @@ class SimpleMVC.Controller extends SimpleMVC.Event
         ret
         
     start: () =>
-        this._parseQueryString()
-        this.navigate(location.pathname, true, false)
+        if !this._started || this._started == false
+            this._started = true
+            this._parseQueryString()
+            this.navigate(location.pathname, true, false)
+        else
+            this._started

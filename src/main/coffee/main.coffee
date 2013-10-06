@@ -42,7 +42,6 @@ class NR.Application extends SimpleMVC.Controller
         $("#addFeed").modal()
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
-        ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         index = this.feedList.any((i) -> i.id.toString() == fid.toString())
         if index >= 0
             this._uid = uid
@@ -68,7 +67,6 @@ class NR.Application extends SimpleMVC.Controller
             false
             
     @route "news/:uid/feeds", (uid) ->
-        ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         this._uid = uid
         this._fid = 0
         this._postPage = 1
@@ -88,7 +86,6 @@ class NR.Application extends SimpleMVC.Controller
         this.topNavView.allFeedsSelected()
         
     @route "news/:uid", (uid) ->
-        ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         this._uid = uid
         this._fid = null
         this.currentArticle = -1
@@ -120,8 +117,8 @@ class NR.Application extends SimpleMVC.Controller
          </div>')
     
 
-    navigate: (uri, executeFn) =>
-        ret = super uri, executeFn
+    navigate: (uri, executeFn = false, addState = true) =>
+        ret = super uri, executeFn, addState
         #if ret
         $("#ad-body").html("<!-- newsrdr-new-site -->
 <div id='div-gpt-ad-1379655552510-0' style='width:728px; height:90px;'>
@@ -140,6 +137,10 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             if ($("#ad-body div iframe").length == 0)
                 this._adblocked();
         , 1000);
+        
+        # Send Google Analytics, if needed.
+        if addState
+            ga('send', 'pageview', {'title': document.title, 'page': location.pathname})
         ret
     
     _initializeKeyboardNavigation: ->
