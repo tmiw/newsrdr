@@ -385,7 +385,9 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
 
     updateFeeds: =>
         NR.API.GetFeeds (feeds) =>
+            # Disable sorting until the very end for performance.
             this.newsFeedView.disableSort()
+            
             for i in feeds
                 feed = new NR.Models.NewsFeedInfo
                 for k,v of i
@@ -403,6 +405,18 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this.feedList.add feed
             
             # Remove feeds that no longer exist.
-            # TODO
+            toRemove = []
+            this.feedList.each (i) ->
+                found = false
+                for j in feeds
+                    if i.id == j.id
+                        found = true
+                if not found
+                    toRemove.push i
+            
+            for k in toRemove
+                this.feedList.remove k
+            
+            # Reenable sorting.
             this.newsFeedView.enableSort()
-        , () ->
+        , this._apiError
