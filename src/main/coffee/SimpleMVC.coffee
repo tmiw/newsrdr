@@ -214,8 +214,14 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
                 this._childViews[k].destroy()
                 this._childViews.splice k, 1
     
+    enableSort: () => 
+        this._sortEnabled = true
+        this._resort null
+    
+    disableSort: () => this._sortEnabled = true
+    
     _resort: (item) =>
-        if this.sortFn?
+        if this.sortFn? && this._sortEnabled? && this._sortEnabled
             this._childViews.sort this.sortFn
             
             i = 0
