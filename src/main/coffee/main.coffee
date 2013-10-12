@@ -40,6 +40,15 @@ class NR.Application extends SimpleMVC.Controller
         this._uid = uid
         $("#addFeedUrl").val(this.urlParams["url"])
         $("#addFeed").on("shown.bs.modal", () -> $("#addFeedUrl").focus())
+        $("#addFeed").on("hidden.bs.modal", () => 
+            # return to original page
+            if this._fid
+                this.navigate("/news/" + this._uid + "/feeds/" + this._fid)
+            else if this._fid == 0
+                this.navigate("/news/" + this._uid + "/feeds")
+            else
+                this.navigate("/news/" + this._uid))
+        
         $("#addFeed").modal()
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
