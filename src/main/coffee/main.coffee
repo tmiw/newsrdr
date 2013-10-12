@@ -39,6 +39,7 @@ class NR.Application extends SimpleMVC.Controller
     @route "news/:uid/feeds/add", (uid) ->
         this._uid = uid
         $("#addFeedUrl").val(this.urlParams["url"])
+        $("#addFeed").on("shown.bs.modal", () -> $("#addFeedUrl").focus())
         $("#addFeed").modal()
         
     @route "news/:uid/feeds/:fid", (uid, fid) ->
