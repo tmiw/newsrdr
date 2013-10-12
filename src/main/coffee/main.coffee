@@ -126,6 +126,12 @@ class NR.Application extends SimpleMVC.Controller
            </center>
          </div>')
     
+    submitAddFeedBox: =>
+        if event?
+            event.preventDefault()
+        if $('#addFeedUrl').val().length > 0
+            this.addFeed($('#addFeedUrl').val())
+            $('#addFeed').modal('hide')
 
     navigate: (uri, executeFn = false, addState = true) =>
         ret = super uri, executeFn, addState

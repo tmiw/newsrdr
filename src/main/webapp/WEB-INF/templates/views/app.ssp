@@ -49,7 +49,7 @@
           <h4 class="modal-title">Add Feed</h4>
         </div>
         <div class="modal-body">
-          <form role="form" id="addFeedForm">
+          <form role="form" id="addFeedForm" onsubmit="app.submitAddFeedBox();">
               <div class="form-group">
                 <label for="addFeedUrl">URL of feed or website to subscribe to</label>
                 <input type="url" class="form-control" id="addFeedUrl" placeholder="Feed/website URL">
@@ -58,7 +58,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" onclick="app.addFeed($('#addFeedUrl').val()); $('#addFeed').modal('hide');">Add</button>
+          <button type="button" class="btn btn-primary" onclick="app.submitAddFeedBox();">Add</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
