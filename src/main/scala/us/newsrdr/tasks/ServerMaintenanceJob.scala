@@ -16,39 +16,39 @@ import org.quartz._
 class ServerMaintenanceJob extends Job {
   private def rebalanceJobs() {
     // rebalance jobs due to low resources on AWS VM.
-	val scheduler = BackgroundJobManager.scheduler
-	var divisor = 10
-	var startSeconds = divisor
-	  
-	scheduler.getTriggerGroupNames().foreach(g => {
-	  scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(t => {
-	    if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME)) {
-	      val oldTrigger = scheduler.getTrigger(t)
-	      val builder = oldTrigger.getTriggerBuilder()
-	        
-	      val newTrigger = TriggerBuilder.newTrigger()
+  val scheduler = BackgroundJobManager.scheduler
+  var divisor = 10
+  var startSeconds = divisor
+    
+  scheduler.getTriggerGroupNames().foreach(g => {
+    scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(t => {
+      if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME)) {
+        val oldTrigger = scheduler.getTrigger(t)
+        val builder = oldTrigger.getTriggerBuilder()
+          
+        val newTrigger = TriggerBuilder.newTrigger()
                                          .withIdentity(t.getName())
                                          .startAt(futureDate(startSeconds, IntervalUnit.SECOND))
                                          .withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
                                          .build()
 
-	      scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger)
-	      startSeconds += divisor;
-	        
-	      // The goal is to get all the jobs to run within an hour. 
-	      // If we run out of slots, divide the divisor and restart from the top
-	      // of the hour.
-	      if (startSeconds >= (60*60))
-	      {
-	        if (divisor > 1)
-	        {
-	          divisor = divisor / 2
-	        }
-	        startSeconds = divisor
-	      }
-	    }
-	  })
-	})
+        scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger)
+        startSeconds += divisor;
+          
+        // The goal is to get all the jobs to run within an hour. 
+        // If we run out of slots, divide the divisor and restart from the top
+        // of the hour.
+        if (startSeconds >= (60*60))
+        {
+          if (divisor > 1)
+          {
+            divisor = divisor / 2
+          }
+          startSeconds = divisor
+        }
+      }
+    })
+  })
   }
   
   private def deleteOldSessions() {

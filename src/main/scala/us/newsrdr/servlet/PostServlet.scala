@@ -44,22 +44,22 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   get("/", operation(getPosts)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    
-	    val latestPostId = params.get("latest_post_id") match {
+      val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
+      val userId = getUserId(dao, db, session.getId, request).get
+      
+      val latestPostId = params.get("latest_post_id") match {
             case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
             case _ => Long.MaxValue
         }
-	    
-	    ArticleListApiResult(true, None, db withSession { implicit session: Session =>
-	      params.get("unread_only") match {
-	        case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
-	          dao.getPostsForAllFeeds(session, userId, true, offset, Constants.ITEMS_PER_PAGE, latestPostId)
-	        }
-	        case _ => dao.getPostsForAllFeeds(session, userId, false, offset, Constants.ITEMS_PER_PAGE, latestPostId)
-	      }
-	    })
+      
+      ArticleListApiResult(true, None, db withSession { implicit session: Session =>
+        params.get("unread_only") match {
+          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => {
+            dao.getPostsForAllFeeds(session, userId, true, offset, Constants.ITEMS_PER_PAGE, latestPostId)
+          }
+          case _ => dao.getPostsForAllFeeds(session, userId, false, offset, Constants.ITEMS_PER_PAGE, latestPostId)
+        }
+      })
     }, {
       halt(401)
     })
@@ -73,17 +73,17 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:pid", operation(markReadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setPostStatus(session, userId, pid, false) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
+      var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+      var userId = getUserId(dao, db, session.getId, request).get
+      
+      db withTransaction { implicit session: Session =>
+        dao.setPostStatus(session, userId, pid, false) match {
+          case true => ()
+          case _ => halt(404)
+        }
+      }
+      
+      NoDataApiResult(true, None)
     }, {
       halt(401)
     })
@@ -98,18 +98,18 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/", operation(markAllReadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
-	    val from = Integer.parseInt(params.getOrElse("from", halt(422)))
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setPostStatusForAllPosts(session, userId, from, upTo, false) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
+      val userId = getUserId(dao, db, session.getId, request).get
+      val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
+      val from = Integer.parseInt(params.getOrElse("from", halt(422)))
+      
+      db withTransaction { implicit session: Session =>
+        dao.setPostStatusForAllPosts(session, userId, from, upTo, false) match {
+          case true => ()
+          case _ => halt(404)
+        }
+      }
+      
+      NoDataApiResult(true, None)
     }, {
       halt(401)
     })
@@ -122,17 +122,17 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter pathParam[Int]("pid").description("The ID of the post."))
   put("/:pid", operation(markUnreadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
-	    var userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setPostStatus(session, userId, pid, true) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
+      var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+      var userId = getUserId(dao, db, session.getId, request).get
+      
+      db withTransaction { implicit session: Session =>
+        dao.setPostStatus(session, userId, pid, true) match {
+          case true => ()
+          case _ => halt(404)
+        }
+      }
+      
+      NoDataApiResult(true, None)
     }, {
       halt(401)
     })

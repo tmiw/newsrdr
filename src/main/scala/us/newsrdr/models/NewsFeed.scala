@@ -475,7 +475,7 @@ class RSSFeed extends XmlFeed {
     }
     
     private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
-    	var articleText = useEitherOrString((x \\ "encoded").filter(_.prefix == "content").take(1).text, (x \\ "description").take(1).text)
+      var articleText = useEitherOrString((x \\ "encoded").filter(_.prefix == "content").take(1).text, (x \\ "description").take(1).text)
         var article = NewsFeedArticle(
             None,
             0,
@@ -557,39 +557,39 @@ class AtomFeed extends XmlFeed {
     }
     
     private def getHtmlLink(x : Node, name : String) : String = {
-    	val node = x \\ name
-    	val xhtmlSummary = node.filter(attributeEquals("type", "text/xhtml")).text
-    	val htmlSummary = node.filter(attributeEquals("type", "text/html")).text
-    	val textSummary = escapeText(node.filter(attributeEquals("type", "text/plain")).text)
-    	
-    	useEitherOrString(
-    	    xhtmlSummary,
-    	    useEitherOrString(
-    	        htmlSummary,
-    	        useEitherOrString(
-    	            textSummary,
-    	            "")))
+      val node = x \\ name
+      val xhtmlSummary = node.filter(attributeEquals("type", "text/xhtml")).text
+      val htmlSummary = node.filter(attributeEquals("type", "text/html")).text
+      val textSummary = escapeText(node.filter(attributeEquals("type", "text/plain")).text)
+      
+      useEitherOrString(
+          xhtmlSummary,
+          useEitherOrString(
+              htmlSummary,
+              useEitherOrString(
+                  textSummary,
+                  "")))
     }
     
     private def getHtmlContent(x : Node, name : String) : String = {
-    	val node = x \\ name
-    	val xhtmlSummary = node.filter(attributeEquals("type", "xhtml")).text
-    	val htmlSummary = node.filter(attributeEquals("type", "html")).text
-    	val textSummary = escapeText(node.filter(attributeEquals("type", "text")).text)
-    	val defaultSummary = escapeText(node.text)
-    	
-    	useEitherOrString(
-    	    xhtmlSummary,
-    	    useEitherOrString(
-    	        htmlSummary,
-    	        useEitherOrString(
-    	            textSummary,
-    	            defaultSummary)))
+      val node = x \\ name
+      val xhtmlSummary = node.filter(attributeEquals("type", "xhtml")).text
+      val htmlSummary = node.filter(attributeEquals("type", "html")).text
+      val textSummary = escapeText(node.filter(attributeEquals("type", "text")).text)
+      val defaultSummary = escapeText(node.text)
+      
+      useEitherOrString(
+          xhtmlSummary,
+          useEitherOrString(
+              htmlSummary,
+              useEitherOrString(
+                  textSummary,
+                  defaultSummary)))
     }
     
     private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
 
     private def escapeText(x : String) : String = {
-    	x.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\\r|\\n|\\r\\n", "<br>\r\n")
+      x.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\\r|\\n|\\r\\n", "<br>\r\n")
     }
 }

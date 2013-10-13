@@ -44,12 +44,12 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
    
   post("/optout", operation(optOut)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setOptOut(session, userId, true)
-	      NoDataApiResult(true, None)
-	    }
+      val userId = getUserId(dao, db, session.getId, request).get
+      
+      db withTransaction { implicit session: Session =>
+        dao.setOptOut(session, userId, true)
+        NoDataApiResult(true, None)
+      }
     }, {
       halt(401)
     })
@@ -62,12 +62,12 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/optout", operation(optIn)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setOptOut(session, userId, false)
-	      NoDataApiResult(true, None)
-	    }
+      val userId = getUserId(dao, db, session.getId, request).get
+      
+      db withTransaction { implicit session: Session =>
+        dao.setOptOut(session, userId, false)
+        NoDataApiResult(true, None)
+      }
     }, {
       halt(401)
     })

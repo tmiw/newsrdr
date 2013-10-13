@@ -53,8 +53,8 @@ class ScalatraBootstrap extends LifeCycle {
       var stmt = conn.createStatement()
       stmt.execute("""CREATE ALIAS IF NOT EXISTS UNIX_TIMESTAMP AS $$
             long getSeconds(java.sql.Timestamp ts) {
-        		return ts.getTime() / 1000;
-        	} $$ """)
+            return ts.getTime() / 1000;
+          } $$ """)
       conn.close()  
     }
     

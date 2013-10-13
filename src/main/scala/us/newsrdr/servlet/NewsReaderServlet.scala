@@ -132,7 +132,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   }
   
   get("/auth/authenticated/twitter") {
-	val twitter = session.getAttribute("twitter").asInstanceOf[Twitter]
+  val twitter = session.getAttribute("twitter").asInstanceOf[Twitter]
     val requestToken = session.getAttribute("requestToken").asInstanceOf[RequestToken]
     val verifier = request.getParameter("oauth_verifier")
     
@@ -300,10 +300,10 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
           val today = new java.util.Date().getTime()
           val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => {
             NewsFeedInfo(
-            		  x._1, 
-            		  x._1.id.get,
-            		  x._2,
-            		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
+                  x._1, 
+                  x._1.id.get,
+                  x._2,
+                  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
             )
           }))
           ssp("/app", "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId )

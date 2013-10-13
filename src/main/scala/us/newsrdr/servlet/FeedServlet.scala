@@ -29,9 +29,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   configureMultipartHandling(MultipartConfig(maxFileSize = Some(3*1024*1024)))
   
   error {
-  	case e: SizeConstraintExceededException => {
-  	  contentType = "text/html"
-  	  <script language="javascript">
+    case e: SizeConstraintExceededException => {
+      contentType = "text/html"
+      <script language="javascript">
         window.top.window.AppController.UploadForm.done({{success: "false", reason: "too_big"}});
       </script>
     }
@@ -62,10 +62,10 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
               dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
-            		  x._1, 
-            		  x._1.id.get,
-            		  x._2,
-            		  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
+                  x._1, 
+                  x._1.id.get,
+                  x._2,
+                  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
               )))
         }
       }
@@ -143,8 +143,8 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   
   post("/import.opml", operation(postFeedsOpml)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    db withSession { implicit session: Session =>
-	      // AJAX doesn't support file upload, so we have to do it the old-fashioned way.
+      db withSession { implicit session: Session =>
+        // AJAX doesn't support file upload, so we have to do it the old-fashioned way.
           contentType = "text/html"
           val jsonResult = fileParams.get("feedFile") match {
             case Some(f) => {
@@ -164,7 +164,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           <script language="javascript">
             window.top.window.app.finishedUploadingFeedList({xml.Unparsed(jsonResult)});
           </script>
-	    }
+      }
     }, {
       <script language="javascript">
         window.top.window.AppController.UploadForm.done({{success: "false", reason: "not_authorized"}});
@@ -180,43 +180,43 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
    
   post("/", operation(postFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val url = params.getOrElse("url", halt(422))
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    
-	    // TODO: handle possible exceptions and output error data.
-	    // We probably also want to return validation error info above.
-	    db withTransaction { implicit session: Session =>
-	      // Grab feed from database, creating if it doesn't already exist.
-	      try
-	      {
-	        val feed = dao.getFeedFromUrl(session, url) getOrElse {
-	            val fetchJob = new RssFetchJob
-	            val f = fetchJob.fetch(url, false)
-	          
-	            // Schedule periodic feed updates
-	            BackgroundJobManager.scheduleFeedJob(f.feedUrl)
-	          
-	            f
-	        }
-	      
-	        // Add subscription at the user level.
-	        dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
-	      
-	        val today = new java.util.Date().getTime()
-	        FeedInfoApiResult(true, None, NewsFeedInfo(
-	    		  feed,
-	    		  feed.id.get,
-	    		  dao.getUnreadCountForFeed(session, userId, feed.id.get),
-	    		  if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
-	      } catch {
-	        case e:HasNoFeedsException => {
-	          // Provide the HTML actually fetched by the server so that the caller
-	          // can provide workflow to create a feed from said site. We also
-	          // need to do this because of XSS restrictions on the client side.
-	          StringDataApiResult(false, Some("not_a_feed"), e.getMessage())
-	        }
-	      }
-	    }
+      val url = params.getOrElse("url", halt(422))
+      val userId = getUserId(dao, db, session.getId, request).get
+      
+      // TODO: handle possible exceptions and output error data.
+      // We probably also want to return validation error info above.
+      db withTransaction { implicit session: Session =>
+        // Grab feed from database, creating if it doesn't already exist.
+        try
+        {
+          val feed = dao.getFeedFromUrl(session, url) getOrElse {
+              val fetchJob = new RssFetchJob
+              val f = fetchJob.fetch(url, false)
+            
+              // Schedule periodic feed updates
+              BackgroundJobManager.scheduleFeedJob(f.feedUrl)
+            
+              f
+          }
+        
+          // Add subscription at the user level.
+          dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
+        
+          val today = new java.util.Date().getTime()
+          FeedInfoApiResult(true, None, NewsFeedInfo(
+            feed,
+            feed.id.get,
+            dao.getUnreadCountForFeed(session, userId, feed.id.get),
+            if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
+        } catch {
+          case e:HasNoFeedsException => {
+            // Provide the HTML actually fetched by the server so that the caller
+            // can provide workflow to create a feed from said site. We also
+            // need to do this because of XSS restrictions on the client side.
+            StringDataApiResult(false, Some("not_a_feed"), e.getMessage())
+          }
+        }
+      }
     }, {
       halt(401)
     })
@@ -230,17 +230,17 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:id", operation(deleteFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val id = params.getOrElse("id", halt(422))
-	    var userId = getUserId(dao, db, session.getId, request).get
-	    
-	    // TODO: handle possible exceptions and output error data.
-	    // We probably also want to return validation error info above.
-	    db withTransaction { implicit session: Session =>
-	      // Remove subscription at the user level.
-	      dao.unsubscribeFeed(session, userId, Integer.parseInt(id))
-	    }
-	    
-	    NoDataApiResult(true, None)
+      val id = params.getOrElse("id", halt(422))
+      var userId = getUserId(dao, db, session.getId, request).get
+      
+      // TODO: handle possible exceptions and output error data.
+      // We probably also want to return validation error info above.
+      db withTransaction { implicit session: Session =>
+        // Remove subscription at the user level.
+        dao.unsubscribeFeed(session, userId, Integer.parseInt(id))
+      }
+      
+      NoDataApiResult(true, None)
     }, {
       halt(401)
     })
@@ -257,22 +257,22 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   get("/:id/posts", operation(getPostsForFeed)) {
       authenticationRequired(dao, session.getId, db, request, {
-	      val id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	      val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	      val userId = getUserId(dao, db, session.getId, request).get
-	      
-	      val latestPostId = params.get("latest_post_id") match {
+        val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+        val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
+        val userId = getUserId(dao, db, session.getId, request).get
+        
+        val latestPostId = params.get("latest_post_id") match {
             case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
             case _ => Long.MaxValue
           }
-	      
-	      ArticleListApiResult(true, None, db withSession { implicit session: Session =>
-	        params.get("unread_only") match {
-	          case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
-	            dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostId)
-	          case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostId)
-	        }
-	      })
+        
+        ArticleListApiResult(true, None, db withSession { implicit session: Session =>
+          params.get("unread_only") match {
+            case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
+              dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostId)
+            case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostId)
+          }
+        })
       }, {
       halt(401)
     })
@@ -288,19 +288,19 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:id/posts", operation(markAllReadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-	    val id = Integer.parseInt(params.getOrElse("id", halt(422)))
-	    val userId = getUserId(dao, db, session.getId, request).get
-	    val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
-	    val from = Integer.parseInt(params.getOrElse("from", halt(422)))
-	    
-	    db withTransaction { implicit session: Session =>
-	      dao.setPostStatusForAllPosts(session, userId, id, from, upTo, false) match {
-	        case true => ()
-	        case _ => halt(404)
-	      }
-	    }
-	    
-	    NoDataApiResult(true, None)
+      val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+      val userId = getUserId(dao, db, session.getId, request).get
+      val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
+      val from = Integer.parseInt(params.getOrElse("from", halt(422)))
+      
+      db withTransaction { implicit session: Session =>
+        dao.setPostStatusForAllPosts(session, userId, id, from, upTo, false) match {
+          case true => ()
+          case _ => halt(404)
+        }
+      }
+      
+      NoDataApiResult(true, None)
     }, {
       halt(401)
     })

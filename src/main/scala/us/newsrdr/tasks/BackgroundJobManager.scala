@@ -34,13 +34,13 @@ object BackgroundJobManager {
     {
       // schedule cleanup job since it hasn't been done yet.
       val trigger = newTrigger()
-    		.withIdentity(CLEANUP_JOB_NAME)
-    		.startNow()
-    		.withSchedule(dailyAtHourAndMinute(0, 0))
-    		.build()
+        .withIdentity(CLEANUP_JOB_NAME)
+        .startNow()
+        .withSchedule(dailyAtHourAndMinute(0, 0))
+        .build()
       val job = newJob(classOf[ServerMaintenanceJob])
-    		.withIdentity(CLEANUP_JOB_NAME)
-    		.build()
+        .withIdentity(CLEANUP_JOB_NAME)
+        .build()
     
       scheduler.scheduleJob(job, trigger)
     }
@@ -48,10 +48,10 @@ object BackgroundJobManager {
     {
       // reschedule so it starts at 00:00 GMT
       val trigger = newTrigger()
-    		.withIdentity(CLEANUP_JOB_NAME)
-    		.startNow()
-    		.withSchedule(dailyAtHourAndMinute(0, 0))
-    		.build()
+        .withIdentity(CLEANUP_JOB_NAME)
+        .startNow()
+        .withSchedule(dailyAtHourAndMinute(0, 0))
+        .build()
       scheduler.rescheduleJob(new TriggerKey(CLEANUP_JOB_NAME), trigger)
     }
     
@@ -73,14 +73,14 @@ object BackgroundJobManager {
   def scheduleFeedJob(url: String) {
     if (!scheduler.checkExists(new JobKey(url))) {
       val trigger = newTrigger()
-    		.withIdentity(url)
-    		.startAt(futureDate(60, IntervalUnit.MINUTE))
-    		.withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
-    		.build()
+        .withIdentity(url)
+        .startAt(futureDate(60, IntervalUnit.MINUTE))
+        .withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
+        .build()
       val job = newJob(classOf[RssFetchJob])
-    		.withIdentity(url)
-    		.usingJobData("url", url)
-    		.build()
+        .withIdentity(url)
+        .usingJobData("url", url)
+        .build()
     
       scheduler.scheduleJob(job, trigger)
     }
@@ -92,7 +92,7 @@ object BackgroundJobManager {
     if (oldTrigger != null)
     {
       val builder = oldTrigger.getTriggerBuilder()
-	        
+          
       val newTrigger = TriggerBuilder.newTrigger()
                                      .withIdentity(t.getName())
                                      .startAt(futureDate(intervalInSeconds, IntervalUnit.SECOND))

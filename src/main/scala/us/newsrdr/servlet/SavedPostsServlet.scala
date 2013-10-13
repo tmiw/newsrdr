@@ -124,19 +124,19 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
         
   get("/:uid/posts", operation(getPosts)) {
     val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-	val userId = try {
+  val userId = try {
       Integer.parseInt(params.get("uid").get)
     } catch {
       case _:Exception => halt(404)
     }
-	    
-	val latestPostId = params.get("latest_post_id") match {
+      
+  val latestPostId = params.get("latest_post_id") match {
       case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
       case _ => Long.MaxValue
     }
-	    
-	db withSession { implicit session: Session =>
-	  dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostId).map(p =>
+      
+  db withSession { implicit session: Session =>
+    dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostId).map(p =>
           NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
     }
   }
