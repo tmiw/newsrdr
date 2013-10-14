@@ -294,18 +294,27 @@ window.___gcfg = {
     fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
 
+var initialized = false;
 window.fbAsyncInit = function() {
-    var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
-    window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
-    window.app.registerEvent("navigated", function() {
-        ga('send', 'pageview', {'title': document.title, 'page': location.pathname});
-    });
-    
-    if (!window.app.start())
+    if (initialized == false)
     {
-        window.app.navigate("/news/<%= uid %>", true);
+        initialized = true;
+        
+        var bootstrappedFeeds = <%= unescape(bootstrappedFeeds) %>;
+        window.app = new NR.Application(bootstrappedFeeds, [], <%= optOut %>);
+        window.app.registerEvent("navigated", function() {
+            ga('send', 'pageview', {'title': document.title, 'page': location.pathname});
+        });
+        
+        if (!window.app.start())
+        {
+            window.app.navigate("/news/<%= uid %>", true);
+        }
     }
 };
+
+// in case Facebook doesn't load.
+setTimeout(function() { window.fbAsyncInit(); }, 5000);
 
 // -->
 </script>

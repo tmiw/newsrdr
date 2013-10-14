@@ -218,11 +218,20 @@ node.parentNode.insertBefore(gads, node);
 })();
     
     var bootstrappedPosts = <%= unescape(bootstrappedPosts) %>;
+    var initialized = false;
+    
     window.fbAsyncInit = function() {
-        window.app = new NR.Application([], bootstrappedPosts, false, true);
-        window.app.start();
-        if (window.nextFbAsyncInit) { window.nextFbAsyncInit(); }
+        if (initialized == false)
+        {
+            initialized = true;
+            window.app = new NR.Application([], bootstrappedPosts, false, true);
+            window.app.start();
+            if (window.nextFbAsyncInit) { window.nextFbAsyncInit(); }
+        }
     };
+    
+    // in case Facebook doesn't load.
+    setTimeout(function() { window.fbAsyncInit(); }, 5000);
 });
 // -->
 </script>
