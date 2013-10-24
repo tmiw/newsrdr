@@ -831,13 +831,13 @@ class DataTables(val driver: ExtendedProfile) {
         e <- NewsFeedArticles if e.feedId === feedId &&
                      ((e.link === newPost.link && !newPost.link.isEmpty()) ||
                                  (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
-                                 (e.title === newPost.title && e.link === newPost.link && e.description === newPost.description))
+                                 (e.title === newPost.title && e.description === newPost.description))
       } yield e.id
       val entry = for { 
         e <- NewsFeedArticles if e.feedId === feedId &&
                      ((e.link === newPost.link && !newPost.link.isEmpty()) ||
                                  (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
-                                 (e.title === newPost.title && e.link === newPost.link && e.description === newPost.description))
+                                 (e.title === newPost.title && e.description === newPost.description))
       } yield (
           e.title ~ e.link ~ e.description ~ e.author ~ e.comments ~ e.enclosureLength ~ 
           e.enclosureType ~ e.enclosureUrl ~ e.guid ~ e.isGuidPermalink ~ e.pubDate ~
