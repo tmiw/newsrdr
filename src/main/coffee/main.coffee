@@ -312,7 +312,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this._postPage = this._postPage + 1
                 oldPostCount = this.articleList.length
                 this._processFeedPosts data
-                if (this.articleList.length - oldPostCount) < 10
+                if (this.articleList.length - oldPostCount) < 10 && this._postPage > 1
                     this.fetchMorePosts()
         
         if this._postPage > 0
