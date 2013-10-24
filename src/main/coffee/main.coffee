@@ -9,7 +9,8 @@ class NR.Application extends SimpleMVC.Controller
             post = new NR.Models.NewsFeedArticleInfo
             for k,v of i
                 post[k] = v
-            this.articleList.add post
+            if (!this.localSettings.showOnlyUnread || (this.localSettings.showOnlyUnread && post.unread))
+                this.articleList.add post
     
     _apiError: (type, desc, data) =>
         errorText = "Communications error with the server. Please try again."
@@ -56,7 +57,7 @@ class NR.Application extends SimpleMVC.Controller
         if index >= 0
             this._uid = uid
             this._fid = fid
-            this._postPage = 1
+            this._postPage = 0
             this._enableFetch = true
             this.currentArticle = -1
             
@@ -66,7 +67,7 @@ class NR.Application extends SimpleMVC.Controller
             this.welcomeView.hide()
             
             # Get posts from server
-            NR.API.GetPostsForFeed fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+            this.fetchMorePosts()
             
             # Update nav elements.        
             feed = this.feedList.at index
@@ -79,7 +80,7 @@ class NR.Application extends SimpleMVC.Controller
     @route "news/:uid/feeds", (uid) ->
         this._uid = uid
         this._fid = 0
-        this._postPage = 1
+        this._postPage = 0
         this._enableFetch = true
         this.currentArticle = -1
         
@@ -89,7 +90,7 @@ class NR.Application extends SimpleMVC.Controller
         this.welcomeView.hide()
         
         # Get posts from server
-        NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+        this.fetchMorePosts()
      
         # Update nav elements.
         this.newsFeedView.allFeedsSelected()
@@ -264,13 +265,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             NR.API.MarkAllFeedPostsAsRead this._fid, 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
                 this.articleList.reset()
                 this.updateFeeds()
-                NR.API.GetPostsForFeed this._fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+                NR.API.GetPostsForFeed this._fid, 0, "", false, this._processFeedPosts, this._apiError
             , this._apiError
         else
             NR.API.MarkAllPostsAsRead 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
                 this.articleList.reset()
                 this.updateFeeds()
-                NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+                NR.API.GetAllPosts 0, "", false, this._processFeedPosts, this._apiError
             , this._apiError
     
     importSingleFeed: () =>
@@ -309,30 +310,38 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             if data.length > 0
                 this._enableFetch = true
                 this._postPage = this._postPage + 1
+                oldPostCount = this.articleList.length
                 this._processFeedPosts data
-                
+                if (this.articleList.length - oldPostCount) < 10
+                    this.fetchMorePosts()
+        
+        if this._postPage > 0
+            lastArticleId = this.articleList.at(0).article.id
+        else
+            lastArticleId = ""
+            
         if this._enableFetch
             this._enableFetch = false
             if this._fid > 0
                 NR.API.GetPostsForFeed(
                     this._fid, 
                     this._postPage, 
-                    this.articleList.at(0).article.id, 
-                    this.localSettings.showOnlyUnread, 
+                    lastArticleId, 
+                    false, 
                     successWrapper,
                     errorWrapper)
             else if this._savedPostsMode
                 NR.API.GetSavedPosts(
                     this._uid,
                     this._postPage,
-                    this.articleList.at(0).article.id,
+                    lastArticleId,
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
                     this._postPage, 
-                    this.articleList.at(0).article.id, 
-                    this.localSettings.showOnlyUnread,
+                    lastArticleId, 
+                    false,
                     successWrapper, 
                     errorWrapper)
     
@@ -386,12 +395,12 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         this.articleList.reset()
         if this._fid?
             if this._fid > 0
-                NR.API.GetPostsForFeed this._fid, 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+                NR.API.GetPostsForFeed this._fid, 0, "", false, this._processFeedPosts, this._apiError
                 index = this.feedList.any((i) => i.id.toString() == this._fid.toString())
                 feed = this.feedList.at index
                 this.topNavView.feedSelected feed
             else
-                NR.API.GetAllPosts 0, "", this.localSettings.showOnlyUnread, this._processFeedPosts, this._apiError
+                NR.API.GetAllPosts 0, "", false, this._processFeedPosts, this._apiError
                 this.topNavView.allFeedsSelected
 
     toggleOptOut: =>
