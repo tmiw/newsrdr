@@ -261,18 +261,16 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         , this._apiError
     
     markAllRead: () =>
+        successFn = (data) =>
+            this.articleList.reset()
+            this.updateFeeds()
+            this._postPage = 0
+            this.fetchMorePosts()
+                
         if this._fid > 0
-            NR.API.MarkAllFeedPostsAsRead this._fid, 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
-                this.articleList.reset()
-                this.updateFeeds()
-                NR.API.GetPostsForFeed this._fid, 0, "", false, this._processFeedPosts, this._apiError
-            , this._apiError
+            NR.API.MarkAllFeedPostsAsRead this._fid, 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, successFn, this._apiError
         else
-            NR.API.MarkAllPostsAsRead 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, (data) =>
-                this.articleList.reset()
-                this.updateFeeds()
-                NR.API.GetAllPosts 0, "", false, this._processFeedPosts, this._apiError
-            , this._apiError
+            NR.API.MarkAllPostsAsRead 0, Date.parse(this.articleList.at(0).article.pubDate) / 1000, successFn, this._apiError
     
     importSingleFeed: () =>
         nextImport = () =>
@@ -312,8 +310,10 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this._postPage = this._postPage + 1
                 oldPostCount = this.articleList.length
                 this._processFeedPosts data
-                if (this.articleList.length - oldPostCount) < 10 && this._postPage > 1
-                    this.fetchMorePosts()
+                if (this.articleList.length - oldPostCount) < 10 && this._postPage > 1 && this.localSettings.showOnlyUnread
+                    unreadCount = this.articleList.count((i) -> i.unread)
+                    if unreadCount < this.newsFeedView.getSelectedUnread()
+                        this.fetchMorePosts()
         
         if this._postPage > 0
             lastArticleId = this.articleList.at(0).article.id
@@ -394,14 +394,8 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         this.localSettings.showOnlyUnread = !this.localSettings.showOnlyUnread
         this.articleList.reset()
         if this._fid?
-            if this._fid > 0
-                NR.API.GetPostsForFeed this._fid, 0, "", false, this._processFeedPosts, this._apiError
-                index = this.feedList.any((i) => i.id.toString() == this._fid.toString())
-                feed = this.feedList.at index
-                this.topNavView.feedSelected feed
-            else
-                NR.API.GetAllPosts 0, "", false, this._processFeedPosts, this._apiError
-                this.topNavView.allFeedsSelected
+            this._postPage = 0
+            this.fetchMorePosts()
 
     toggleOptOut: =>
         NR.API.OptOutSharing (not this.localSettings.optedOut), () =>

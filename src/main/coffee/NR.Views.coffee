@@ -82,6 +82,7 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         this.$("#allFeedsLink").addClass("active")
         this._isAllFeedsSelected = true
         this._isFeedSelected = false
+        this._expectedTotalUnread = this._totalUnread
         this._updateAllUnread()
         
     feedSelected: (feed) ->
@@ -93,8 +94,18 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
             if this._childViews[k].model.id.toString() == feed.toString()
                 this._childViews[k].domObject.addClass("active")
                 this._feedTitle = this._childViews[k].model.feed.title
+                this._childViews[k].expectedUnread = this._childViews[k].model.unread
         this._updateAllUnread()
 
+    getSelectedUnread: () ->
+        if this._isAllFeedsSelected
+            this._expectedTotalUnread
+        else
+            _unread = 0
+            for k,v of this._childViews
+                if this._childViews[k].domObject.hasClass("active")
+                    _unread = this._childViews[k].expectedUnread
+                    
     @event "click", "#allFeedsLink", (e) ->
         window.app.selectAllFeeds()
         e.preventDefault()
