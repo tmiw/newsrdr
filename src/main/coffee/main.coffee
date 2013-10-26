@@ -10,6 +10,8 @@ class NR.Application extends SimpleMVC.Controller
             for k,v of i
                 post[k] = v
             if (!this.localSettings.showOnlyUnread || (this.localSettings.showOnlyUnread && post.unread))
+                if post.unread
+                    this._seenUnread = this._seenUnread + 1
                 this.articleList.add post
     
     _apiError: (type, desc, data) =>
@@ -58,6 +60,7 @@ class NR.Application extends SimpleMVC.Controller
             this._uid = uid
             this._fid = fid
             this._postPage = 0
+            this._seenUnread = 0
             this._enableFetch = true
             this.currentArticle = -1
             
@@ -81,6 +84,7 @@ class NR.Application extends SimpleMVC.Controller
         this._uid = uid
         this._fid = 0
         this._postPage = 0
+        this._seenUnread = 0
         this._enableFetch = true
         this.currentArticle = -1
         
@@ -265,6 +269,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             this.articleList.reset()
             this.updateFeeds()
             this._postPage = 0
+            this._seenUnread = 0
             this.fetchMorePosts()
                 
         if this._fid > 0
@@ -311,8 +316,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 oldPostCount = this.articleList.length
                 this._processFeedPosts data
                 if (this.articleList.length - oldPostCount) < 10 && this._postPage > 1 && this.localSettings.showOnlyUnread
-                    unreadCount = this.articleList.count((i) -> i.unread)
-                    if unreadCount < this.newsFeedView.getSelectedUnread()
+                    if this._seenUnread < this.newsFeedView.getSelectedUnread()
                         this.fetchMorePosts()
         
         if this._postPage > 0
@@ -395,6 +399,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         this.articleList.reset()
         if this._fid?
             this._postPage = 0
+            this._seenUnread = 0
             this.fetchMorePosts()
 
     toggleOptOut: =>
