@@ -27,6 +27,8 @@ class ScalatraBootstrap extends LifeCycle {
       System.setProperty(org.scalatra.EnvironmentKey, "development")
     }
     
+    context.initParameters("org.scalatra.cors.allowCredentials") = "true"
+    
     val environment = sys.props.getOrElse(org.scalatra.EnvironmentKey, "development")
     System.setProperty("scalate.mode", environment)
     var dao = environment match {

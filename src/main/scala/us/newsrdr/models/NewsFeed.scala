@@ -21,6 +21,30 @@ case class Category(
     name: String
     )
 
+object NewsFeedFuncs {
+  def CreateFakeFeed() : NewsFeed = {
+    NewsFeed(
+        None,
+        "all",
+        "",
+        "",
+        "",
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        new java.sql.Timestamp(new java.util.Date().getTime())
+    )
+  }
+}
 case class NewsFeed(
     id: Option[Int],
     title: String,

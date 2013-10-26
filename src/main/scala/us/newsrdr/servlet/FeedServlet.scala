@@ -24,7 +24,7 @@ import scala.xml._
 
 class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport
-  with GZipSupport {
+  with GZipSupport with CorsSupport {
 
   configureMultipartHandling(MultipartConfig(maxFileSize = Some(3*1024*1024)))
   
@@ -48,30 +48,55 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     contentType = formats("json")
   }
   
+  options("/*") {
+    response.setHeader("Access-Control-Allow-Headers", request.getHeader("Access-Control-Request-Headers"))
+    contentType = "text/plain"
+  }
+    
   val getFeeds = 
     (apiOperation[FeedListApiResult]("getFeeds")
         summary "Shows all feeds"
         notes "Returns the list of all feeds the currently logged-in user is subscribed to.")
         
   get("/", operation(getFeeds)) {
-    authenticationRequired(dao, session.getId, db, request, {
+    val userId = request.getHeader("X-newsrdr-userId")
+    if (userId != null && userId.length() > 0)
+    {
       executeOrReturnError {
-        val userId = getUserId(dao, db, session.getId, request).get
-        val today = new java.util.Date().getTime()
-        
         db withSession { implicit session: Session =>
           FeedListApiResult(true, None, 
-              dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
-                  x._1, 
-                  x._1.id.get,
-                  x._2,
-                  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
-              )))
+            List[NewsFeedInfo](
+              NewsFeedInfo(
+                  NewsFeedFuncs.CreateFakeFeed(),
+                  0,
+                  dao.getSubscribedFeeds(session, Integer.parseInt(userId)).foldRight(0)((b,a) => b._2 + a),
+                  false)
+              )
+            )
         }
       }
-    }, {
-      halt(401)
-    })
+    }
+    else
+    {
+      authenticationRequired(dao, session.getId, db, request, {
+        executeOrReturnError {
+          val userId = getUserId(dao, db, session.getId, request).get
+          val today = new java.util.Date().getTime()
+        
+          db withSession { implicit session: Session =>
+            FeedListApiResult(true, None, 
+                dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
+                    x._1, 
+                    x._1.id.get,
+                    x._2,
+                    if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
+                )))
+          }
+        }
+      }, {
+        halt(401)
+      })
+    }
   }
   
   val generateRss = 
