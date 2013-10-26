@@ -313,11 +313,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             if data.length > 0
                 this._enableFetch = true
                 this._postPage = this._postPage + 1
-                oldPostCount = this.articleList.length
                 this._processFeedPosts data
                 if (this._seenUnread - this._lastSeenUnread) < 10 && this.localSettings.showOnlyUnread
-                    if this._seenUnread < this.newsFeedView.getSelectedUnread()
+                    if this.newsFeedView? && this._seenUnread < this.newsFeedView.getSelectedUnread()
                         this.fetchMorePosts()
+                    else
+                        this._enableFetch = false
+                        this._lastSeenUnread = null
                 else
                     this._lastSeenUnread = null
         
