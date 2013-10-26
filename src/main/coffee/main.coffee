@@ -315,10 +315,15 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this._postPage = this._postPage + 1
                 oldPostCount = this.articleList.length
                 this._processFeedPosts data
-                if (this.articleList.length - oldPostCount) < 10 && this._postPage > 1 && this.localSettings.showOnlyUnread
+                if (this._seenUnread - this._lastSeenUnread) < 10 && this.localSettings.showOnlyUnread
                     if this._seenUnread < this.newsFeedView.getSelectedUnread()
                         this.fetchMorePosts()
+                else
+                    this._lastSeenUnread = null
         
+        if not this._lastSeenUnread?
+            this._lastSeenUnread = this._seenUnread
+            
         if this._postPage > 0
             lastArticleId = this.articleList.at(0).article.id
         else
