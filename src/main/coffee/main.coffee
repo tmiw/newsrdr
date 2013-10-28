@@ -314,20 +314,20 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this._enableFetch = true
                 this._postPage = this._postPage + 1
                 this._processFeedPosts data
-                if (this._seenUnread - this._lastSeenUnread) < 10 && this.localSettings.showOnlyUnread
-                    if this.newsFeedView? && this._seenUnread < this.newsFeedView.getSelectedUnread()
-                        this.fetchMorePosts()
-                    else
-                        this._enableFetch = false
-                        this._lastSeenUnread = null
-                else
-                    this._lastSeenUnread = null
+                #if (this._seenUnread - this._lastSeenUnread) < 10 && this.localSettings.showOnlyUnread
+                #    if this.newsFeedView? && this._seenUnread < this.newsFeedView.getSelectedUnread()
+                #        this.fetchMorePosts()
+                #    else
+                #        this._enableFetch = false
+                #        this._lastSeenUnread = null
+                #else
+                #    this._lastSeenUnread = null
         
         if not this._lastSeenUnread?
             this._lastSeenUnread = this._seenUnread
             
         if this._postPage > 0
-            lastArticleId = this.articleList.at(0).article.id
+            lastArticleId = this.articleList.at(this.articleList.length - 1).article.id
         else
             lastArticleId = ""
             
@@ -336,23 +336,23 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             if this._fid > 0
                 NR.API.GetPostsForFeed(
                     this._fid, 
-                    this._postPage, 
+                    0, 
                     lastArticleId, 
-                    false, 
+                    this.localSettings.showOnlyUnread, 
                     successWrapper,
                     errorWrapper)
             else if this._savedPostsMode
                 NR.API.GetSavedPosts(
                     this._uid,
-                    this._postPage,
+                    0,
                     lastArticleId,
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
-                    this._postPage, 
+                    0, 
                     lastArticleId, 
-                    false,
+                    this.localSettings.showOnlyUnread,
                     successWrapper, 
                     errorWrapper)
     
