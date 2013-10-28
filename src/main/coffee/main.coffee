@@ -9,11 +9,12 @@ class NR.Application extends SimpleMVC.Controller
             post = new NR.Models.NewsFeedArticleInfo
             for k,v of i
                 post[k] = v
-            if (!this.localSettings.showOnlyUnread || (this.localSettings.showOnlyUnread && post.unread))
-                if post.unread
-                    this._seenUnread = this._seenUnread + 1
-                this.articleList.add post
-    
+            #if (!this.localSettings.showOnlyUnread || (this.localSettings.showOnlyUnread && post.unread))
+            #    if post.unread
+            #        this._seenUnread = this._seenUnread + 1
+            #    this.articleList.add post
+            this.articleList.add post
+            
     _apiError: (type, desc, data) =>
         errorText = "Communications error with the server. Please try again."
         
@@ -327,7 +328,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             this._lastSeenUnread = this._seenUnread
             
         if this._postPage > 0
-            lastArticleId = this.articleList.at(this.articleList.length - 1).article.id
+            lastArticleId = Date.parse(this.articleList.at(this.articleList.length - 1).article.pubDate) / 1000
         else
             lastArticleId = ""
             
