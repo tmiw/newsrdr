@@ -56,7 +56,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       else
       {
         val user = dao.getUserInfo(session, userId)
-        val savedPosts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue).map(p =>
+        val savedPosts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue, Long.MaxValue).map(p =>
           NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
         val bootstrappedPosts = write(savedPosts)
         
@@ -89,7 +89,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       else
       {
         val user = dao.getUserInfo(session, userId)
-        val posts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue)
+        val posts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue, Long.MaxValue)
         val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
         
         <rss version="2.0">
@@ -135,8 +135,12 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       case _ => Long.MaxValue
     }
       
+  val latestPostDate = params.get("latest_post_date") match {
+      case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+      case _ => Long.MaxValue
+    }
   db withSession { implicit session: Session =>
-    dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostId).map(p =>
+    dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId).map(p =>
           NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
     }
   }

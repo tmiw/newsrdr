@@ -339,6 +339,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this._fid, 
                     0, 
                     lastArticleId, 
+                    "",
                     this.localSettings.showOnlyUnread, 
                     successWrapper,
                     errorWrapper)
@@ -347,12 +348,14 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this._uid,
                     0,
                     lastArticleId,
+                    "",
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
                     0, 
                     lastArticleId, 
+                    "",
                     this.localSettings.showOnlyUnread,
                     successWrapper, 
                     errorWrapper)

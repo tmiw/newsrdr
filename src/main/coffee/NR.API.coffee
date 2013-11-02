@@ -185,7 +185,8 @@ NR.API.RemoveFeed = (feedId, successFn, failFn) ->
 # Input: 
 #     * feedId: feed ID/NewsFeedInfo object (required)
 #     * pageNumber: page number of posts to retrieve (default: first page)
-#     * newestPostId: the ID of the newest post to show.
+#     * newestPostDate: the date of the newest post to show.
+#     * newestPostId: the largest ID of the post to show.
 #     * unreadOnly: whether to retrieve only unread posts (default: true)
 # Output: on success, a list of NewsFeedArticleInfo objects:
 #     {
@@ -198,13 +199,14 @@ NR.API.RemoveFeed = (feedId, successFn, failFn) ->
 #         'saved': ...
 #     }
 #############################################################################
-NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostId = "", unreadOnly = true, successFn, failFn) ->
+NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostDate = "", newestPostId = "", unreadOnly = true, successFn, failFn) ->
     NR.API.verifyInitialized()
     feedId = feedId.id if feedId.id?
     feedId = feedId.feed.id if feedId.feed?
     new AsyncResult "GET", "/feeds/" + feedId + "/posts", {
         page: pageNumber,
         latest_post_id: newestPostId,
+        latest_post_date: newestPostDate,
         unread_only: unreadOnly
     }, successFn, failFn
 
@@ -212,7 +214,8 @@ NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostId = "", unreadOnly 
 # Retrieves posts for all feeds
 # Input: 
 #     * pageNumber: page number of posts to retrieve (default: first page)
-#     * newestPostId: the ID of the newest post to show.
+#     * newestPostId: the largest post ID to show.
+#     * newestPostDate: the date of the newest post to show.
 #     * unreadOnly: whether to retrieve only unread posts (default: true)
 # Output: on success, a list of NewsFeedArticleInfo objects:
 #     {
@@ -225,11 +228,12 @@ NR.API.GetPostsForFeed = (feedId, pageNumber = 0, newestPostId = "", unreadOnly 
 #         'saved': ...
 #     }
 #############################################################################
-NR.API.GetAllPosts = (pageNumber = 0, newestPostId = "", unreadOnly = true, successFn, failFn) ->
+NR.API.GetAllPosts = (pageNumber = 0, newestPostDate = "", newestPostId = "", unreadOnly = true, successFn, failFn) ->
     NR.API.verifyInitialized()
     new AsyncResult "GET", "/posts", {
         page: pageNumber,
         latest_post_id: newestPostId,
+        latest_post_date: newestPostDate,
         unread_only: unreadOnly
     }, successFn, failFn
 
@@ -238,7 +242,8 @@ NR.API.GetAllPosts = (pageNumber = 0, newestPostId = "", unreadOnly = true, succ
 # Input: 
 #     * uid: the user's ID
 #     * pageNumber: page number of posts to retrieve (default: first page)
-#     * newestPostId: the ID of the newest post to show.
+#     * newestPostId: the largest post ID to show.
+#     * newestPostDate: the date of the newest post to show.
 # Output: on success, a list of NewsFeedArticleInfo objects:
 #     {
 #         'article': {
@@ -250,11 +255,12 @@ NR.API.GetAllPosts = (pageNumber = 0, newestPostId = "", unreadOnly = true, succ
 #         'saved': ...
 #     }
 #############################################################################
-NR.API.GetSavedPosts = (uid, pageNumber = 0, newestPostId = "", successFn, failFn) ->
+NR.API.GetSavedPosts = (uid, pageNumber = 0, newestPostDate = "", newestPostId = "", successFn, failFn) ->
     NR.API.verifyInitialized()
     new AsyncResult "GET", "/saved/" + uid + "/posts", {
         page: pageNumber,
         latest_post_id: newestPostId,
+        latest_post_date: newestPostDate,
         unread_only: unreadOnly
     }, successFn, failFn
     

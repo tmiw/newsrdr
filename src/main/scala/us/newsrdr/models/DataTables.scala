@@ -360,12 +360,12 @@ class DataTables(val driver: ExtendedProfile) {
     articleQuery.take(Constants.ITEMS_PER_PAGE).list.map(NewsFeedArticleInfo(_, false, false))
   }
   
-  def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+  def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
       if (unreadOnly) {
-        Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
             (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
           from "NewsFeedArticles" "nfa"
@@ -373,13 +373,14 @@ class DataTables(val driver: ExtendedProfile) {
           left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
                     "uf"."feedId" = ? and
+                    "nfa"."id" <= ? and
                     unix_timestamp("nfa"."pubDate") < ? and
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     ("ua"."articleRead" is null or "ua"."articleRead" = 0)
           order by "nfa"."pubDate" desc
           limit ? offset ?""")
       } else {
-        Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
             (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
           from "NewsFeedArticles" "nfa"
@@ -387,6 +388,7 @@ class DataTables(val driver: ExtendedProfile) {
           left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
                     "uf"."feedId" = ? and
+                    "nfa"."id" <= ? and
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     unix_timestamp("nfa"."pubDate") < ?
           order by "nfa"."pubDate" desc
@@ -394,7 +396,7 @@ class DataTables(val driver: ExtendedProfile) {
       }
     } else {
       if (unreadOnly) {
-        Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
             (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
           from NewsFeedArticles nfa
@@ -402,13 +404,14 @@ class DataTables(val driver: ExtendedProfile) {
           left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
                     uf.feedId = ? and
+                    nfa.id <= ? and
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ? and
                     (ua.articleRead is null or ua.articleRead = 0)
           order by nfa.pubDate desc
           limit ? offset ?""")
       } else {
-        Q.query[(Int, Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
             (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
           from NewsFeedArticles nfa
@@ -416,6 +419,7 @@ class DataTables(val driver: ExtendedProfile) {
           left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and
                     uf.feedId = ? and
+                    nfa.id <= ? and
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ?
           order by nfa.pubDate desc
@@ -423,36 +427,38 @@ class DataTables(val driver: ExtendedProfile) {
       }
     }
     
-    feed_posts.list((userId, feedId, latestPostId, maxEntries, offset)).map(x => {
+    feed_posts.list((userId, feedId, latestPostId, latestPostDate, maxEntries, offset)).map(x => {
       NewsFeedArticleInfo(x._1, x._2 == false, x._3)
     })
   }
   
-  def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+  def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long, latestPostDate: Long) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
       if (unreadOnly) {
-        Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
             (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
           from "NewsFeedArticles" "nfa"
           inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
           left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
+                    "nfa"."id" <= ? and
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     unix_timestamp("nfa"."pubDate") < ? and
                     ("ua"."articleRead" is null or "ua"."articleRead" = 0)
           order by "nfa"."pubDate" desc
           limit ? offset ?""")
       } else {
-        Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
             (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
           from "NewsFeedArticles" "nfa"
           inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
           left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
                 where "uf"."userId" = ? and 
+                    "nfa"."id" <= ? and
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     unix_timestamp("nfa"."pubDate") < ?
           order by "nfa"."pubDate" desc
@@ -460,26 +466,28 @@ class DataTables(val driver: ExtendedProfile) {
       }
     } else {
       if (unreadOnly) {
-        Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
             (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
           from NewsFeedArticles nfa
           inner join UserFeeds uf on uf.feedId = nfa.feedId
           left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and 
+                    nfa.id <= ? and
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ? and
                     (ua.articleRead is null or ua.articleRead = 0)
           order by nfa.pubDate desc
           limit ? offset ?""")
       } else {
-        Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
+        Q.query[(Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean, Boolean)]("""
           select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead,
             (case when ua.articleSaved is null then 0 else ua.articleSaved end) as isSaved
           from NewsFeedArticles nfa
           inner join UserFeeds uf on uf.feedId = nfa.feedId
           left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
-                where uf.userId = ? and 
+                where uf.userId = ? and
+                    nfa.id <= ? and
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ?
           order by nfa.pubDate desc
@@ -487,33 +495,35 @@ class DataTables(val driver: ExtendedProfile) {
       }
     }
     
-    feed_posts.list((userId, latestPostId, maxEntries, offset)).map(x => {
+    feed_posts.list((userId, latestPostId, latestPostDate, maxEntries, offset)).map(x => {
       NewsFeedArticleInfo(x._1, x._2 == false, x._3)
     })
   }
   
-  def getSavedPosts(implicit session: Session, userId: Int, offset: Int, maxEntries: Int, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+  def getSavedPosts(implicit session: Session, userId: Int, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
-      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
+      Q.query[(Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
         select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead
         from "NewsFeedArticles" "nfa"
         inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
         left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
               where "uf"."userId" = ? and 
+                  "nfa"."id" <= ? and
                   unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     "nfa"."id" <= ? and
                   "ua"."articleSaved" = 1
         order by "nfa"."pubDate" desc
         limit ? offset ?""")
     } else {
-      Q.query[(Int, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
+      Q.query[(Int, Long, Long, Int, Int), (NewsFeedArticle, Boolean)]("""
         select nfa.*, (case when ua.articleRead is null then 0 else ua.articleRead end) as isRead
         from NewsFeedArticles nfa
         inner join UserFeeds uf on uf.feedId = nfa.feedId
         left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
               where uf.userId = ? and 
+                  nfa.id <= ? and
                   unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     nfa.id <= ? and
                   ua.articleSaved = 1
@@ -521,7 +531,7 @@ class DataTables(val driver: ExtendedProfile) {
         limit ? offset ?""")
     }
     
-    feed_posts.list((userId, latestPostId, maxEntries, offset)).map(x => {
+    feed_posts.list((userId, latestPostDate, latestPostId, maxEntries, offset)).map(x => {
       NewsFeedArticleInfo(x._1, false, true)
     })
   }

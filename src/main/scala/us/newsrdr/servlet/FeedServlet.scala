@@ -291,11 +291,16 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case _ => Long.MaxValue
           }
         
+        val latestPostDate = params.get("latest_post_date") match {
+            case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+            case _ => Long.MaxValue
+          }
+        
         ArticleListApiResult(true, None, db withSession { implicit session: Session =>
           params.get("unread_only") match {
             case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
-              dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostId)
-            case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostId)
+              dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
+            case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
           }
         })
       }, {
