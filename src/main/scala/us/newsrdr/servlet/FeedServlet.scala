@@ -286,22 +286,23 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
         val userId = getUserId(dao, db, session.getId, request).get
         
-        val latestPostId = params.get("latest_post_id") match {
-            case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
-            case _ => Long.MaxValue
-          }
-        
         val latestPostDate = params.get("latest_post_date") match {
-            case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
-            case _ => Long.MaxValue
-          }
+          case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+          case _ => Long.MaxValue
+        }
         
         ArticleListApiResult(true, None, db withSession { implicit session: Session =>
-          params.get("unread_only") match {
-            case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" =>
-              dao.getPostsForFeed(session, userId, id, true, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
-            case _ => dao.getPostsForFeed(session, userId, id, false, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
+          val unreadOnly = params.get("unread_only") match {
+            case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => true
+            case _ => false
           }
+          
+          val latestPostId = params.get("latest_post_id") match {
+            case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+            case _ => dao.getMaxPostIdForFeed(session, userId, id, unreadOnly, latestPostDate)
+          }
+          
+          dao.getPostsForFeed(session, userId, id, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
         })
       }, {
       halt(401)

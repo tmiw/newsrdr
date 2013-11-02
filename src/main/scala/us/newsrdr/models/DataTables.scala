@@ -360,6 +360,65 @@ class DataTables(val driver: ExtendedProfile) {
     articleQuery.take(Constants.ITEMS_PER_PAGE).list.map(NewsFeedArticleInfo(_, false, false))
   }
   
+  def getMaxPostIdForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, latestPostDate: Long) : Long = {
+    implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
+
+    val feed_posts = if (driver.isInstanceOf[H2Driver]) {
+      if (unreadOnly) {
+        Q.query[(Int, Int, Long), Long]("""
+          select max("nfa"."id")
+          from "NewsFeedArticles" "nfa"
+          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
+                where "uf"."userId" = ? and 
+                    "uf"."feedId" = ? and
+                    unix_timestamp("nfa"."pubDate") < ? and
+                    unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                    ("ua"."articleRead" is null or "ua"."articleRead" = 0)""")
+      } else {
+        Q.query[(Int, Int, Long), Long]("""
+          select max("nfa"."id")
+          from "NewsFeedArticles" "nfa"
+          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
+                where "uf"."userId" = ? and 
+                    "uf"."feedId" = ? and
+                    unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                    unix_timestamp("nfa"."pubDate") < ?
+          limit ? offset ?""")
+      }
+    } else {
+      if (unreadOnly) {
+        Q.query[(Int, Int, Long), Long]("""
+          select max(nfa.id)
+          from NewsFeedArticles nfa
+          inner join UserFeeds uf on uf.feedId = nfa.feedId
+          left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+                where uf.userId = ? and 
+                    uf.feedId = ? and
+                    unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                    unix_timestamp(nfa.pubDate) < ? and
+                    (ua.articleRead is null or ua.articleRead = 0)
+          order by nfa.pubDate desc
+          limit ? offset ?""")
+      } else {
+        Q.query[(Int, Int, Long), Long]("""
+          select max(nfa.id)
+          from NewsFeedArticles nfa
+          inner join UserFeeds uf on uf.feedId = nfa.feedId
+          left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+                where uf.userId = ? and
+                    uf.feedId = ? and
+                    unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                    unix_timestamp(nfa.pubDate) < ?
+          order by nfa.pubDate desc
+          limit ? offset ?""")
+      }
+    }
+    
+    feed_posts.list((userId, feedId, latestPostDate)).head
+  }
+  
   def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
@@ -430,6 +489,60 @@ class DataTables(val driver: ExtendedProfile) {
     feed_posts.list((userId, feedId, latestPostId, latestPostDate, maxEntries, offset)).map(x => {
       NewsFeedArticleInfo(x._1, x._2 == false, x._3)
     })
+  }
+  
+  def getMaxPostIdForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, latestPostDate: Long) : Long = {
+    implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
+
+    val feed_posts = if (driver.isInstanceOf[H2Driver]) {
+      if (unreadOnly) {
+        Q.query[(Int, Long), Long]("""
+          select max("nfa"."id")
+          from "NewsFeedArticles" "nfa"
+          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
+                where "uf"."userId" = ? and 
+                    unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                    unix_timestamp("nfa"."pubDate") < ? and
+                    ("ua"."articleRead" is null or "ua"."articleRead" = 0)
+          order by "nfa"."pubDate" desc""")
+      } else {
+        Q.query[(Int, Long), Long]("""
+          select max("nfa"."id")
+          from "NewsFeedArticles" "nfa"
+          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
+          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+                where "uf"."userId" = ? and 
+                    unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
+                    unix_timestamp("nfa"."pubDate") < ?
+          order by "nfa"."pubDate" desc""")
+      }
+    } else {
+      if (unreadOnly) {
+        Q.query[(Int, Long), Long]("""
+          select max(nfa.id)
+          from NewsFeedArticles nfa
+          inner join UserFeeds uf on uf.feedId = nfa.feedId
+          left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+                where uf.userId = ? and 
+                    unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                    unix_timestamp(nfa.pubDate) < ? and
+                    (ua.articleRead is null or ua.articleRead = 0)
+          order by nfa.pubDate desc""")
+      } else {
+        Q.query[(Int, Long), Long]("""
+          select max(nfa.id)
+          from NewsFeedArticles nfa
+          inner join UserFeeds uf on uf.feedId = nfa.feedId
+          left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
+                where uf.userId = ? and
+                    unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
+                    unix_timestamp(nfa.pubDate) < ?
+          order by nfa.pubDate desc""")
+      }
+    }
+    
+    feed_posts.list((userId, latestPostDate)).head
   }
   
   def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long, latestPostDate: Long) : List[NewsFeedArticleInfo] = {
