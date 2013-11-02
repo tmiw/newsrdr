@@ -38,6 +38,7 @@ class NR.Application extends SimpleMVC.Controller
         this._uid = uid
         this._savedPostsMode = true
         this._postPage = 1
+        this._maxId = ""
         this.newsArticleView.show()
 
     @route "news/:uid/feeds/add", (uid) ->
@@ -60,6 +61,7 @@ class NR.Application extends SimpleMVC.Controller
         if index >= 0
             this._uid = uid
             this._fid = fid
+            this._maxId = ""
             this._postPage = 0
             this._seenUnread = 0
             this._enableFetch = true
@@ -86,6 +88,7 @@ class NR.Application extends SimpleMVC.Controller
         this._fid = 0
         this._postPage = 0
         this._seenUnread = 0
+        this._maxId = ""
         this._enableFetch = true
         this.currentArticle = -1
         
@@ -104,6 +107,7 @@ class NR.Application extends SimpleMVC.Controller
     @route "news/:uid", (uid) ->
         this._uid = uid
         this._fid = null
+        this._maxId = ""
         this.currentArticle = -1
         
         # Hide articles.
@@ -311,10 +315,11 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             this._apiError type, desc
         
         successWrapper = (data) =>
-            if data.length > 0
+            if data.list.length > 0
                 this._enableFetch = true
+                this._maxId = data.id
                 this._postPage = this._postPage + 1
-                this._processFeedPosts data
+                this._processFeedPosts data.list
                 #if (this._seenUnread - this._lastSeenUnread) < 10 && this.localSettings.showOnlyUnread
                 #    if this.newsFeedView? && this._seenUnread < this.newsFeedView.getSelectedUnread()
                 #        this.fetchMorePosts()
@@ -339,7 +344,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this._fid, 
                     0, 
                     lastArticleId, 
-                    "",
+                    this._maxId,
                     this.localSettings.showOnlyUnread, 
                     successWrapper,
                     errorWrapper)
@@ -348,14 +353,14 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this._uid,
                     0,
                     lastArticleId,
-                    "",
+                    this._maxId,
                     successWrapper,
                     errorWrapper)
             else
                 NR.API.GetAllPosts(
                     0, 
                     lastArticleId, 
-                    "",
+                    this._maxId,
                     this.localSettings.showOnlyUnread,
                     successWrapper, 
                     errorWrapper)

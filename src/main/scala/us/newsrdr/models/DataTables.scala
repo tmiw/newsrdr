@@ -504,8 +504,7 @@ class DataTables(val driver: ExtendedProfile) {
                 where "uf"."userId" = ? and 
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     unix_timestamp("nfa"."pubDate") < ? and
-                    ("ua"."articleRead" is null or "ua"."articleRead" = 0)
-          order by "nfa"."pubDate" desc""")
+                    ("ua"."articleRead" is null or "ua"."articleRead" = 0)""")
       } else {
         Q.query[(Int, Long), Long]("""
           select max("nfa"."id")
@@ -514,8 +513,7 @@ class DataTables(val driver: ExtendedProfile) {
           left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
                 where "uf"."userId" = ? and 
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-                    unix_timestamp("nfa"."pubDate") < ?
-          order by "nfa"."pubDate" desc""")
+                    unix_timestamp("nfa"."pubDate") < ?""")
       }
     } else {
       if (unreadOnly) {
@@ -527,8 +525,7 @@ class DataTables(val driver: ExtendedProfile) {
                 where uf.userId = ? and 
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ? and
-                    (ua.articleRead is null or ua.articleRead = 0)
-          order by nfa.pubDate desc""")
+                    (ua.articleRead is null or ua.articleRead = 0)""")
       } else {
         Q.query[(Int, Long), Long]("""
           select max(nfa.id)
@@ -537,8 +534,7 @@ class DataTables(val driver: ExtendedProfile) {
           left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
                 where uf.userId = ? and
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
-                    unix_timestamp(nfa.pubDate) < ?
-          order by nfa.pubDate desc""")
+                    unix_timestamp(nfa.pubDate) < ?""")
       }
     }
     

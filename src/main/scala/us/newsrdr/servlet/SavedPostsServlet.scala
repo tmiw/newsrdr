@@ -140,8 +140,10 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
       case _ => Long.MaxValue
     }
   db withSession { implicit session: Session =>
-    dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId).map(p =>
-          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
+    SavedArticleListWithMaxId(
+        latestPostId,
+        dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get))))
     }
   }
 }

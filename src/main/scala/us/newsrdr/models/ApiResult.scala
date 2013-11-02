@@ -46,5 +46,9 @@ case class FeedInfoApiResult(success: Boolean, error_string: Option[String], dat
 case class FeedListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeedInfo]) 
   extends ApiResult(success, error_string)
 
-case class ArticleListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeedArticleInfo]) 
+case class ArticleListWithMaxId(id: Long, list: List[NewsFeedArticleInfo])
+
+case class SavedArticleListWithMaxId(id: Long, list: List[NewsFeedArticleInfoWithFeed])
+
+case class ArticleListApiResult(success: Boolean, error_string: Option[String], data: ArticleListWithMaxId) 
     extends ApiResult(success, error_string)

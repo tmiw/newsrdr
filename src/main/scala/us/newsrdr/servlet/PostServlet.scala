@@ -63,7 +63,10 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case _ => dao.getMaxPostIdForAllFeeds(session, userId, unreadOnly, latestPostDate)
         }
         
-        dao.getPostsForAllFeeds(session, userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
+        ArticleListWithMaxId(
+            latestPostId,
+            dao.getPostsForAllFeeds(session, userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
+        )
       })
     }, {
       halt(401)
