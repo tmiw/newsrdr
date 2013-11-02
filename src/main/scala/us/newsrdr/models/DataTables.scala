@@ -384,8 +384,7 @@ class DataTables(val driver: ExtendedProfile) {
                 where "uf"."userId" = ? and 
                     "uf"."feedId" = ? and
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
-                    unix_timestamp("nfa"."pubDate") < ?
-          limit ? offset ?""")
+                    unix_timestamp("nfa"."pubDate") < ?""")
       }
     } else {
       if (unreadOnly) {
@@ -399,8 +398,7 @@ class DataTables(val driver: ExtendedProfile) {
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ? and
                     (ua.articleRead is null or ua.articleRead = 0)
-          order by nfa.pubDate desc
-          limit ? offset ?""")
+          order by nfa.pubDate desc""")
       } else {
         Q.query[(Int, Int, Long), Long]("""
           select max(nfa.id)
@@ -411,8 +409,7 @@ class DataTables(val driver: ExtendedProfile) {
                     uf.feedId = ? and
                     unix_timestamp(nfa.pubDate) > (unix_timestamp(uf.addedDate) - (60*60*24*14)) and
                     unix_timestamp(nfa.pubDate) < ?
-          order by nfa.pubDate desc
-          limit ? offset ?""")
+          order by nfa.pubDate desc""")
       }
     }
     
