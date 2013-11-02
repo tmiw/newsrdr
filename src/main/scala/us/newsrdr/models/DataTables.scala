@@ -538,7 +538,7 @@ class DataTables(val driver: ExtendedProfile) {
     feed_posts.list((userId, latestPostDate)).head
   }
   
-  def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostId: Long, latestPostDate: Long) : List[NewsFeedArticleInfo] = {
+  def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
