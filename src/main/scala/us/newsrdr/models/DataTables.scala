@@ -509,8 +509,8 @@ class DataTables(val driver: ExtendedProfile) {
         Q.query[(Int, Long), Long]("""
           select max("nfa"."id")
           from "NewsFeedArticles" "nfa"
-          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
-          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
                     unix_timestamp("nfa"."pubDate") < ?""")
@@ -564,8 +564,8 @@ class DataTables(val driver: ExtendedProfile) {
           select "nfa".*, (case when "ua"."articleRead" is null then 0 else "ua"."articleRead" end) as isRead,
             (case when "ua"."articleSaved" is null then 0 else "ua"."articleSaved" end) as isSaved
           from "NewsFeedArticles" "nfa"
-          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId" and "ua"."userId" = "uf"."userId"
-          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" 
+          inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
+          left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
                 where "uf"."userId" = ? and 
                     "nfa"."id" <= ? and
                     unix_timestamp("nfa"."pubDate") > (unix_timestamp("uf"."addedDate") - (60*60*24*14)) and
