@@ -363,11 +363,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 article.unread = false
                 if article.feed.numUnread > 0
                     article.feed.numUnread = article.feed.numUnread - 1
+                this.newsFeedView.sort()
             , this._apiError
         else
             NR.API.MarkPostAsUnread article.article.id, (data) =>
                 article.unread = true
                 article.feed.numUnread = article.feed.numUnread + 1
+                this.newsFeedView.sort()
             , this._apiError
     
     toggleSavePost: (article) =>

@@ -18,7 +18,7 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     @viewType NR.Views.NewsFeed
     this.prototype.template = Mustache.compile $("#template-newsFeedListing").html()
     this.prototype.titleTemplate = Mustache.compile $("#template-title").html()
-    
+        
     sortFn: (first, second) ->
         fModel = first.model
         sModel = second.model
@@ -40,6 +40,7 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
     constructor: (coll) ->
         super(coll)
         this._totalUnread = 0
+        this.enableSort()
         
     _updateAllUnread: () =>
         text = this._totalUnread.toString()

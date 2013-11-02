@@ -227,6 +227,8 @@ class SimpleMVC.CollectionView extends SimpleMVC.View
     
     disableSort: () => this._sortEnabled = true
     
+    sort: () => this._resort null
+    
     _resort: (item) =>
         if this.sortFn? && this._sortEnabled? && this._sortEnabled
             this._childViews.sort this.sortFn
