@@ -235,8 +235,7 @@ class DataTables(val driver: ExtendedProfile) {
             left join "UserArticles" "ua" on "ua"."articleId" = "nfa"."id" and "ua"."userId" = "uf"."userId"
         where "uf"."userId" = ? and
                 ("ua"."articleRead" is null or "ua"."articleRead" = false) and
-              UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14)) and
-            UNIX_TIMESTAMP("nfa"."pubDate") < UNIX_TIMESTAMP(CURRENT_TIMESTAMP())
+              UNIX_TIMESTAMP("nfa"."pubDate") >= (UNIX_TIMESTAMP("uf"."addedDate") - (60*60*24*14))
         group by "uf"."id"
       """
     } else {
@@ -247,8 +246,7 @@ class DataTables(val driver: ExtendedProfile) {
             left join UserArticles ua on ua.articleId = nfa.id and ua.userId = uf.userId
         where uf.userId = ? and
                 (ua.articleRead is null or ua.articleRead = false) and
-              UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14)) and
-              UNIX_TIMESTAMP(nfa.pubDate) < UNIX_TIMESTAMP(UTC_TIMESTAMP())
+              UNIX_TIMESTAMP(nfa.pubDate) >= (UNIX_TIMESTAMP(uf.addedDate) - (60*60*24*14))
         group by uf.id
       """
     }
