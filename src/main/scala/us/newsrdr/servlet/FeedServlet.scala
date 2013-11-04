@@ -218,12 +218,12 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
               val fetchJob = new RssFetchJob
               val f = fetchJob.fetch(url, false)
             
-              // Schedule periodic feed updates
-              BackgroundJobManager.scheduleFeedJob(f.feedUrl)
-            
               f
           }
         
+          // Schedule periodic feed updates
+          BackgroundJobManager.scheduleFeedJob(feed.feedUrl)
+              
           // Add subscription at the user level.
           dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
         
