@@ -11,6 +11,7 @@ import org.quartz.CronScheduleBuilder._
 import org.quartz.DateBuilder._
 import org.quartz._
 import org.scalatra._
+import scala.slick.session.Session
 
 object BackgroundJobManager {
   val CLEANUP_JOB_NAME = "newsrdr_cleanup"
@@ -63,22 +64,39 @@ object BackgroundJobManager {
     scheduler = null; // force GC of scheduler objects.
   }
   
+  private def getJobName(url: String) : String = {
+    if (url.length() > 200)
+    {
+      // Quartz has a maximum length that we have to follow. Encode the feed ID instead,
+      // and make the background task retrieve the real feed URL.
+      db.withSession { implicit session: Session =>
+          "feed_fetch_" + dao.getFeedFromUrl(session, url).get.id.toString()
+      }
+    }
+    else
+    {
+      url
+    }
+  }
+  
   def unscheduleFeedJob(url: String) {
-    val key = new JobKey(url)
+    val newName = getJobName(url)
+    val key = new JobKey(newName)
     if (scheduler.checkExists(key)) {
       scheduler.deleteJob(key)
     }
   }
   
   def scheduleFeedJob(url: String) {
-    if (!scheduler.checkExists(new JobKey(url))) {
+    val newName = getJobName(url)
+    if (!scheduler.checkExists(new JobKey(newName))) {
       val trigger = newTrigger()
-        .withIdentity(url)
+        .withIdentity(newName)
         .startAt(futureDate(60, IntervalUnit.MINUTE))
         .withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
         .build()
       val job = newJob(classOf[RssFetchJob])
-        .withIdentity(url)
+        .withIdentity(newName)
         .usingJobData("url", url)
         .build()
     
@@ -87,7 +105,8 @@ object BackgroundJobManager {
   }
   
   def rescheduleFeedJob(url: String, intervalInSeconds: Int) {
-    val t = new TriggerKey(url)
+    val newName = getJobName(url)
+    val t = new TriggerKey(newName)
     val oldTrigger = scheduler.getTrigger(t)
     if (oldTrigger != null)
     {
