@@ -273,6 +273,8 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         successFn = (data) =>
             this.articleList.reset()
             this.updateFeeds()
+            this._enableFetch = true
+            this._maxId = ""
             this._postPage = 0
             this._seenUnread = 0
             this.fetchMorePosts()
