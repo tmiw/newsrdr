@@ -37,7 +37,7 @@ object BackgroundJobManager {
       val trigger = newTrigger()
         .withIdentity(CLEANUP_JOB_NAME)
         .startNow()
-        .withSchedule(dailyAtHourAndMinute(0, 0))
+        .withSchedule(dailyAtHourAndMinute(8, 0))
         .build()
       val job = newJob(classOf[ServerMaintenanceJob])
         .withIdentity(CLEANUP_JOB_NAME)
@@ -47,11 +47,11 @@ object BackgroundJobManager {
     }
     else
     {
-      // reschedule so it starts at 00:00 GMT
+      // reschedule so it starts at 00:00 UTC-8
       val trigger = newTrigger()
         .withIdentity(CLEANUP_JOB_NAME)
         .startNow()
-        .withSchedule(dailyAtHourAndMinute(0, 0))
+        .withSchedule(dailyAtHourAndMinute(8, 0))
         .build()
       scheduler.rescheduleJob(new TriggerKey(CLEANUP_JOB_NAME), trigger)
     }
