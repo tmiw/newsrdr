@@ -98,6 +98,63 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
                 this._childViews[k].expectedUnread = this._childViews[k].model.unread
         this._updateAllUnread()
 
+    canNavigateDownList: () ->
+        if !this._isAllFeedsSelected && !this._isFeedSelected
+            true
+        else if this._isAllFeedsSelected
+            true
+        else
+            index = 0
+            found = false
+            for k,v of this._childViews
+                if this._childViews[k].domObject.hasClass("active")
+                    found = true
+                if !found
+                    index = index + 1
+            
+            if index < this._childViews.length - 1
+                true
+            else
+                false
+    
+    getNextFeed: () ->
+        if !this._isAllFeedsSelected && !this._isFeedSelected
+            0
+        else if this._isAllFeedsSelected
+            this._childViews[0].model.id
+        else
+            index = 0
+            found = false
+            for k,v of this._childViews
+                if !found
+                    index = index + 1
+                if this._childViews[k].domObject.hasClass("active")
+                    found = true
+            
+            this._childViews[index].model.id
+            
+    canNavigateUpList: () ->
+        if !this._isAllFeedsSelected && !this._isFeedSelected
+            false
+        else
+            true
+            
+    getPrevFeed: () ->
+        if this._isAllFeedsSelected
+            null
+        else
+            index = 0
+            found = false
+            for k,v of this._childViews
+                if this._childViews[k].domObject.hasClass("active")
+                    found = true
+                if !found
+                    index = index + 1
+            if index == 0
+                0
+            else
+                this._childViews[index - 1].model.id
+                
     getSelectedUnread: () ->
         if this._isAllFeedsSelected
             this._expectedTotalUnread

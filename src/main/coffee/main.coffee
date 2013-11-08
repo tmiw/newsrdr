@@ -198,14 +198,40 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
             }, 500)
             e.preventDefault()
-                
+    
+    _handleFeedKeys: (e) =>
+        if this.newsFeedView.canNavigateDownList() && (e.keyCode == 115 || e.keyCode == 83)
+            # s/S (navigate down list)
+            initUrl = "/news/" + this._uid + "/feeds"
+            nextFeed = this.newsFeedView.getNextFeed()
+            if nextFeed > 0
+                initUrl = initUrl + "/" + nextFeed
+            this.navigate initUrl, true
+            
+        else if this.newsFeedView.canNavigateUpList() && (e.keyCode == 119 || e.keyCode == 87)
+            # w/W (navigate up list)
+            initUrl = "/news/" + this._uid
+            nextFeed = this.newsFeedView.getPrevFeed()
+            if nextFeed? && nextFeed >= 0
+                initUrl = initUrl + "/feeds"
+                if nextFeed > 0
+                    initUrl = initUrl + "/" + nextFeed
+            this.navigate initUrl, true
+            
+        e.preventDefault()
+        
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation
         $(window).keypress (e) =>
             if not this._modalVisible()
                 if (e.keyCode == 74 || e.keyCode == 75 || e.keyCode == 106 || e.keyCode == 107)
-                    # j/k/J/K
+                    # j/k/J/K (post navigation)
                     this._handlePostKeys e
+                else if (e.keyCode == 63)
+                    # ? (help)
+                else if (e.keyCode == 119 || e.keyCode == 87 || e.keyCode == 115 || e.keyCode == 83)
+                    # w/W/s/S (feed navigation)
+                    this._handleFeedKeys e
                     
     constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
         super()
