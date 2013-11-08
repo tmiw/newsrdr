@@ -41,6 +41,32 @@
 
 
 <!-- Modal -->
+  <div class="modal fade" id="keyboardHelp" tabindex="-1" role="dialog" aria-labelledby="keyboardHelp" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Keyboard shortcuts</h4>
+        </div>
+        <div class="modal-body">
+          <table class="table table-condensed">
+            <tr><th>Key</th><th>Action</th></tr>
+            <tr><td>w / s</td><td>Navigates up and down in feed list.</td></tr>
+            <tr><td>j / k</td><td>Navigates up and down in article list.</td></tr>
+            <tr><td>a</td><td>Subscribes to a new feed/website.</td></tr>
+            <tr><td>d</td><td>Removes current feed.</td></tr>
+            <tr><td>r</td><td>Marks all posts as read.</td></tr>
+            <tr><td>?</td><td>This help message.</td></tr>
+            <tr><td>Esc</td><td>Closes current dialog box.</td></tr>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
   <div class="modal fade" id="addFeed" tabindex="-1" role="dialog" aria-labelledby="addFeedLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">

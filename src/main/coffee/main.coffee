@@ -229,9 +229,24 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     this._handlePostKeys e
                 else if (e.keyCode == 63)
                     # ? (help)
+                    e.preventDefault()
+                    $("#keyboardHelp").modal("show")
                 else if (e.keyCode == 119 || e.keyCode == 87 || e.keyCode == 115 || e.keyCode == 83)
                     # w/W/s/S (feed navigation)
                     this._handleFeedKeys e
+                else if (e.keyCode == 114 || e.keyCode == 82)
+                    # r/R (mark all as read)
+                    e.preventDefault()
+                    this.markAllRead()
+                else if (e.keyCode == 100 || e.keyCode == 68)
+                    # d/D (deletes current feed)
+                    e.preventDefault()
+                    if not $("#removeFeedLink").parent().hasClass("disabled")
+                        $("#removeFeedConfirm").modal()
+                else if (e.keyCode == 97 || e.keyCode == 65)
+                    # a/A (add new feed)
+                    e.preventDefault()
+                    this.showAddFeedWindow()
                     
     constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
         super()
