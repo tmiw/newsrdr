@@ -582,9 +582,15 @@ class AtomFeed extends XmlFeed {
     
     private def getHtmlLink(x : Node, name : String) : String = {
       val node = x \\ name
-      val xhtmlSummary = node.filter(attributeEquals("type", "text/xhtml")).text
-      val htmlSummary = node.filter(attributeEquals("type", "text/html")).text
-      val textSummary = escapeText(node.filter(attributeEquals("type", "text/plain")).text)
+      val altFn = (p : Node) => {
+        val a = p.attribute("rel")
+        a.isEmpty || a.get.text == "alternate"
+      }
+      val altNode = node.filter(altFn)
+      val xhtmlSummary = (altNode.filter(attributeEquals("type", "text/xhtml")) \ "@href").text
+      val htmlSummary = (altNode.filter(attributeEquals("type", "text/html")) \ "@href").text
+      val textSummary = (escapeText((altNode.filter(attributeEquals("type", "text/plain")) \ "@href").text))
+      val otherSummary = (altNode.filter(_.attribute("href").isEmpty) \ "@href").text
       
       useEitherOrString(
           xhtmlSummary,
@@ -592,7 +598,7 @@ class AtomFeed extends XmlFeed {
               htmlSummary,
               useEitherOrString(
                   textSummary,
-                  "")))
+                  otherSummary)))
     }
     
     private def getHtmlContent(x : Node, name : String) : String = {
@@ -611,7 +617,7 @@ class AtomFeed extends XmlFeed {
                   defaultSummary)))
     }
     
-    private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
+    private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).map(_.text).getOrElse("") == value
 
     private def escapeText(x : String) : String = {
       x.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\\r|\\n|\\r\\n", "<br>\r\n")
