@@ -65,6 +65,14 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
     })
   }
   
+  get("/maint/rebalance") {
+    adminWrapper((session: Session, userInfo: User) => {
+      val maint = new us.newsrdr.tasks.ServerMaintenanceJob
+      maint.rebalanceJobs
+      redirect("/admin/")
+    })
+  }
+  
   get("/blog") {
     adminWrapper((session: Session, userInfo: User) => {
         val postList = dao.getBlogPosts(session, 0)
