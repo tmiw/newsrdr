@@ -18,11 +18,11 @@ class ServerMaintenanceJob extends Job {
     // rebalance jobs due to low resources on AWS VM.
     val scheduler = BackgroundJobManager.scheduler
     val groupNames = scheduler.getTriggerGroupNames()
-    val triggerList = List[TriggerKey]()
+    val triggerList = collection.mutable.ListBuffer[TriggerKey]()
     
     // get list of triggers
     groupNames.foreach(g => {
-      scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(triggerList.add(_))
+      scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(triggerList += _)
     })
     
     val SECONDS_PER_HOUR = 60*60
@@ -34,7 +34,7 @@ class ServerMaintenanceJob extends Job {
     }
     var startSeconds = START_TIME
 
-    triggerList.foreach(t => {
+    triggerList.toList.foreach(t => {
       if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME)) {
         val oldTrigger = scheduler.getTrigger(t)
         val builder = oldTrigger.getTriggerBuilder()
