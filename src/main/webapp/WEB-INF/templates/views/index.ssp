@@ -93,7 +93,7 @@
         </div>
       </div>
 
-<% if (!randomPost.isEmpty) { %>
+<% if (false) { %>
       <hr class="featurette-divider">
       
       <div class="row">
