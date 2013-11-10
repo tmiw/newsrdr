@@ -18,37 +18,43 @@ class ServerMaintenanceJob extends Job {
     // rebalance jobs due to low resources on AWS VM.
     val scheduler = BackgroundJobManager.scheduler
     val groupNames = scheduler.getTriggerGroupNames()
+    val triggerList = List[TriggerKey]()
+    
+    // get list of triggers
+    groupNames.foreach(g => {
+      scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(triggerList.add(_))
+    })
+    
     val SECONDS_PER_HOUR = 60*60
-    val divisor = if (groupNames.length >= SECONDS_PER_HOUR) {
+    val START_TIME = 60
+    val divisor = if (triggerList.length >= SECONDS_PER_HOUR) {
       1
     } else {
-      SECONDS_PER_HOUR / groupNames.length
+      SECONDS_PER_HOUR / triggerList.length
     }
-    var startSeconds = divisor
+    var startSeconds = START_TIME
 
-    groupNames.foreach(g => {
-      scheduler.getTriggerKeys(GroupMatcher.groupEquals(g)).foreach(t => {
-        if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME)) {
-          val oldTrigger = scheduler.getTrigger(t)
-          val builder = oldTrigger.getTriggerBuilder()
+    triggerList.foreach(t => {
+      if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME)) {
+        val oldTrigger = scheduler.getTrigger(t)
+        val builder = oldTrigger.getTriggerBuilder()
           
-          val newTrigger = TriggerBuilder.newTrigger()
-                                         .withIdentity(t.getName())
-                                         .startAt(futureDate(startSeconds, IntervalUnit.SECOND))
-                                         .withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
-                                         .build()
+        val newTrigger = TriggerBuilder.newTrigger()
+                                       .withIdentity(t.getName())
+                                       .startAt(futureDate(startSeconds, IntervalUnit.SECOND))
+                                       .withSchedule(simpleSchedule().withIntervalInHours(1).repeatForever())
+                                       .build()
 
-          scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger)
-          startSeconds += divisor;
+        scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger)
+        startSeconds = startSeconds + divisor;
           
-          // The goal is to get all the jobs to run within an hour. 
-          // If we run out of slots, restart from the top of the hour.
-          if (startSeconds >= SECONDS_PER_HOUR)
-          {
-            startSeconds = divisor
-          }
+        // The goal is to get all the jobs to run within an hour. 
+        // If we run out of slots, restart from the top of the hour.
+        if (startSeconds >= SECONDS_PER_HOUR)
+        {
+          startSeconds = START_TIME
         }
-      })
+      }
     })
   }
   
