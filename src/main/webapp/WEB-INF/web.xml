@@ -14,7 +14,7 @@
   </listener>
   
   <session-config>
-    <!-- 24 hour session inactivity timeout -->
-    <session-timeout>1440</session-timeout>
+    <!-- 7 day session inactivity timeout -->
+    <session-timeout>10080</session-timeout>
   </session-config>
 </web-app>
