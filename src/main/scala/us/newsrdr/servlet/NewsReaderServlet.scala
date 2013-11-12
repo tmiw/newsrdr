@@ -291,6 +291,10 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       {
         tr.connect(props.get("mail.smtp.user").toString(), props.get("mail.smtp.password").toString())
       }
+      else
+      {
+        tr.connect()
+      }
       message.saveChanges()
       tr.sendMessage(message, message.getAllRecipients())
       tr.close()
