@@ -219,7 +219,24 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             this.navigate initUrl, true
             
         e.preventDefault()
-        
+    
+    _handleOpenArticleKeys: (e) =>
+         if this.articleList? && this.articleList.length > 0
+            if !this.currentArticle? || this.currentArticle < 0 || this.currentArticle >= this.articleList.length
+                this.currentArticle = 0
+            
+            article = this.articleList.at this.currentArticle
+            articleId = article.article.id;
+            articleOffset = $("a[name='article" + articleId + "']").offset()
+            $('html, body').animate({
+                scrollTop: articleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
+            }, 500)
+            e.preventDefault()
+            
+            window.open article.article.link, "_blank"
+            if this.authedUser && article? && article.unread
+                this.togglePostAsRead article
+                
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation
         $(window).keypress (e) =>
@@ -247,6 +264,9 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     # a/A (add new feed)
                     e.preventDefault()
                     this.showAddFeedWindow()
+                else if (e.keyCode == 79 || e.keyCode == 111)
+                    # o/O (open current article in new window)
+                    this._handleOpenArticleKeys e
                     
     constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
         super()

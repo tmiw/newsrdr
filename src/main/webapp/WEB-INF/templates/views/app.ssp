@@ -56,6 +56,7 @@
             <tr><td>a</td><td>Subscribes to a new feed/website.</td></tr>
             <tr><td>d</td><td>Removes current feed.</td></tr>
             <tr><td>r</td><td>Marks all posts as read.</td></tr>
+            <tr><td>o</td><td>Opens post in a new window.</td></tr>
             <tr><td>?</td><td>This help message.</td></tr>
             <tr><td>Esc</td><td>Closes current dialog box.</td></tr>
           </table>
