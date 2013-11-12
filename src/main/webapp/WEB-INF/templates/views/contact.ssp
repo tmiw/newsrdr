@@ -1,0 +1,41 @@
+<%@ val invalid: Boolean %>
+<%@ val from: String %>
+<%@ val subject: String %>
+<%@ val body: String %>
+
+        <div id="fb-root"></div>
+
+<div class="container">
+<div class="jumbotron">
+      <div class="container">
+        <h2>Contact Us</h2>
+      </div>
+</div>
+    <div class="row">
+        <div class="col-md-12">
+            <% if (invalid) { %>
+              <div class="panel panel-default">
+                  <div class="panel-heading">
+                      <h3 class="panel-title">Error</h3>
+                  </div>
+                  <div class="panel-body">
+                      The form data below is invalid. Please verify below and try sending again.
+                  </div>
+              </div>
+            <% } %>
+            
+            <form role="form" method="POST" action="/contact">
+  <div class="form-group">
+    <label for="from">Email address</label>
+    <input type="email" class="form-control" id="from" name="from" placeholder="Your email address (user@isp.com)" value="<%= from %>">
+  </div>
+  <div class="form-group">
+    <label for="subject">Subject</label>
+    <input type="text" class="form-control" id="subject" name="subject" placeholder="What the message is about" value="<%= subject %>">
+  </div>
+  <div class="form-group">
+    <label for="body">Your message</label>
+    <textarea class="form-control" id="body" name="body" rows="3"><%= body %></textarea>
+  </div>
+  <button type="submit" class="btn btn-default">Send</button>
+</form>

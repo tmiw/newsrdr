@@ -3,6 +3,7 @@ import org.scalatra._
 import javax.servlet.ServletContext
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import org.slf4j.LoggerFactory
+import java.util.Properties
 
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.session.{Database, Session}
@@ -16,8 +17,13 @@ class ScalatraBootstrap extends LifeCycle {
   implicit val swagger = new ApiSwagger
   
   var cpds : ComboPooledDataSource = null
+  val appProperties = new Properties()
   
   override def init(context: ServletContext) {
+    val is = getClass().getResourceAsStream("newsrdr.properties")
+    appProperties.load(is)
+    is.close()
+    
     val envVar = System.getenv("IS_PRODUCTION")
     
     if (envVar != null && envVar == "true" ) {
@@ -40,7 +46,7 @@ class ScalatraBootstrap extends LifeCycle {
     logger.info("Created c3p0 connection pool")
   
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
-    context.mount(new NewsReaderServlet(dao, db), "/*")
+    context.mount(new NewsReaderServlet(dao, db, appProperties), "/*")
     context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")
     context.mount(new PostServlet(dao, db, swagger), "/posts/*")
     context.mount(new UserServlet(dao, db, swagger), "/user/*")

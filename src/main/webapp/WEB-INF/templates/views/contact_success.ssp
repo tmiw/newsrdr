@@ -1,0 +1,18 @@
+<div class="container">
+<div class="jumbotron">
+      <div class="container">
+        <h1>Message Sent</h1>
+      </div>
+</div>
+
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <p class="lead">
+          Thank you for contacting us.
+        </p>
+        <p>
+            You should receive a response within a few days.
+        </p>
+      </div>
+    </div>
+</div>

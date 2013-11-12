@@ -20,10 +20,14 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.RequestToken;
 
+import javax.mail._
+import javax.mail.internet._
+import java.util.Properties
+
 // Swagger support
 import org.scalatra.swagger._
 
-class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
+class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
   
   get("/") {
@@ -189,7 +193,7 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   }
   
   get("/auth/authenticated/google") {
-    val openidResp = new ParameterList(request.getParameterMap())
+    val openidResp = new org.openid4java.message.ParameterList(request.getParameterMap())
     val discovered = session.getAttribute("discovered").asInstanceOf[DiscoveryInformation]
     val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request, "google")) //request.getRequestURL()
     val queryString = request.getQueryString()
@@ -221,24 +225,78 @@ class NewsReaderServlet(dao: DataTables, db: Database) extends NewsrdrStack with
   }
   
   get("/auth/login") {
-      // Show list of login choices
-      contentType="text/html"
-      ssp("/login", "title" -> "login" )
+    // Show list of login choices
+    contentType="text/html"
+    ssp("/login", "title" -> "login" )
   }
   
   get("/about") {
-      contentType="text/html"
-      ssp("/about", "title" -> "About" )
+    contentType="text/html"
+    ssp("/about", "title" -> "About" )
   }
   
   get("/privacy_policy") {
-      contentType="text/html"
-      ssp("/privacy_policy", "title" -> "Privacy Policy" )
+    contentType="text/html"
+    ssp("/privacy_policy", "title" -> "Privacy Policy" )
   }
   
   get("/developers/button") {
-      contentType="text/html"
-      ssp("/developers/button", "title" -> "Get the Button" )
+    contentType="text/html"
+    ssp("/developers/button", "title" -> "Get the Button" )
+  }
+  
+  get("/contact") {
+    contentType="text/html"
+    ssp("/contact", "title" -> "Contact", "invalid" -> false, "from" -> "", "subject" -> "", "body" -> "" )
+  }
+  
+  private def isValidEmail(s: String) : Boolean = {
+    try
+    {
+      new InternetAddress(s).validate()
+      true
+    }
+    catch
+    {
+      case (_:AddressException) => false
+    }
+  }
+  
+  post("/contact") {
+    contentType="text/html"
+    
+    // Validate properties
+    val from = params("from")
+    val subject = params("subject")
+    val body = params("body")
+    
+    if (from == null || from.length() == 0 || !isValidEmail(from) ||
+        subject == null || subject.length() == 0 ||
+        body == null || body.length() == 0)
+    {
+      ssp("/contact", "title" -> "Contact", "invalid" -> true, "from" -> from, "subject" -> subject, "body" -> body )
+    }
+    else
+    {
+      val session = Session.getDefaultInstance(props)
+      val message = new MimeMessage(session)
+
+      message.setFrom(new InternetAddress(params("from")))
+      message.setRecipients(javax.mail.Message.RecipientType.TO, props.get("us.newsrdr.email-to").toString())
+      message.setSubject(params("subject"))
+      message.setText(params("body"))
+   
+      val tr = session.getTransport("smtp")
+      if (props.get("mail.smtp.auth") == "true")
+      {
+        tr.connect(props.get("mail.smtp.user").toString(), props.get("mail.smtp.password").toString())
+      }
+      message.saveChanges()
+      tr.sendMessage(message, message.getAllRecipients())
+      tr.close()
+
+      ssp("/contact_success", "title" -> "Message Sent" )
+    }
   }
   
   get("/_elb_health_check") {
