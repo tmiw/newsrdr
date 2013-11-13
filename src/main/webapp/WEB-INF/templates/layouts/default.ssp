@@ -40,7 +40,6 @@ newsrdr: a news reader without the extra fluff</title>
                 <li class="active"><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
                 <li><a href="/blog">Blog</a></li>
-                <li><a href="/contact">Contact</a></li>
                 <% if (loggedIn) { %>
                 <li><a href="/news/">Your News</a></li>
                 <% } else { %>
@@ -63,6 +62,7 @@ newsrdr: a news reader without the extra fluff</title>
                 <% if (loggedIn) { %>
                 <li><a href="/auth/logout">Logout</a></li>
                 <% } %>
+                <li><a href="/contact">Contact</a></li>
               </ul>
               <ul class="nav navbar-nav navbar-right" style="height: 40px; width: 368px;">
                 <li id="top-newsrd" class="item-padding">
