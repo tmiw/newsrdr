@@ -25,6 +25,8 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read, write}
 
+import scala.collection._
+
 class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with AuthOpenId with GZipSupport
 {
@@ -37,6 +39,13 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   // Before every action runs, set the content type to be in JSON format.
   before() {
     contentType = formats("json")
+  }
+  
+  override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
+    val sessionId = request.getSession().getId()
+    db withSession { implicit session: Session =>
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+    }
   }
   
   get("/") {

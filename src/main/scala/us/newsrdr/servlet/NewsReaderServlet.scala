@@ -27,8 +27,17 @@ import java.util.Properties
 // Swagger support
 import org.scalatra.swagger._
 
+import scala.collection._
+
 class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
+  
+  override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
+    val sessionId = request.getSession().getId()
+    db withSession { implicit session: Session =>
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+    }
+  }
   
   get("/") {
     contentType = "text/html"
