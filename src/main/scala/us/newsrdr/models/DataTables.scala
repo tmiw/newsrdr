@@ -846,70 +846,70 @@ class DataTables(val driver: ExtendedProfile) {
   
   def startUserSession(implicit session: Session, sessionId: String, username: String, email: String, ip: String, friendlyName: String) {
     val q = for { u <- Users if u.username === username } yield u
-      val userId = q.firstOption match {
-        case Some(u) => {
-          q.update(User(u.id, u.username, u.password, email, friendlyName, false, u.isAdmin))
-          u.id.get
-        }
-        case None => {
-          Users returning Users.id insert User(None, username, "", email, friendlyName, false, false)
-        }
+    val userId = q.firstOption match {
+      case Some(u) => {
+        q.update(User(u.id, u.username, u.password, email, friendlyName, false, u.isAdmin))
+        u.id.get
       }
-      UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
+      case None => {
+        Users returning Users.id insert User(None, username, "", email, friendlyName, false, false)
+      }
+    }
+    UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
   }
   
   def updateOrInsertFeed(implicit session: Session, feedUrl: String, feed: XmlFeed) : NewsFeed = {
     val feedQuery = Query(NewsFeeds)
-      val newsFeed = 
-        for { f <- NewsFeeds if f.feedUrl === feedUrl } yield
-        (f.copyright ~ f.description ~ f.docs ~ f.generator ~ f.imageLink ~
-         f.imageTitle ~ f.imageUrl ~ f.language ~ f.lastBuildDate ~ f.link ~
-         f.managingEditor ~ f.pubDate ~ f.title ~ f.ttl ~ f.webMaster ~ f.lastUpdate)
+    val newsFeed = 
+      for { f <- NewsFeeds if f.feedUrl === feedUrl } yield
+      (f.copyright ~ f.description ~ f.docs ~ f.generator ~ f.imageLink ~
+       f.imageTitle ~ f.imageUrl ~ f.language ~ f.lastBuildDate ~ f.link ~
+       f.managingEditor ~ f.pubDate ~ f.title ~ f.ttl ~ f.webMaster ~ f.lastUpdate)
       
-      newsFeed.firstOption match {
-          case Some(fd) => {
-            newsFeed.update(
-            (feed.feedProperties.copyright, 
-             feed.feedProperties.description,
-             feed.feedProperties.docs, 
-             feed.feedProperties.generator,
-             feed.feedProperties.imageLink,
-             feed.feedProperties.imageTitle, 
-             feed.feedProperties.imageUrl, 
-             feed.feedProperties.language, 
-             feed.feedProperties.lastBuildDate, 
-             feed.feedProperties.link,
-             feed.feedProperties.managingEditor, 
-             feed.feedProperties.pubDate, 
-             feed.feedProperties.title, 
-             feed.feedProperties.ttl, 
-             feed.feedProperties.webMaster,
-             new java.sql.Timestamp(new java.util.Date().getTime())))
-          }
-          case None => {
-            (NewsFeeds.feedUrl ~ NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
-             NewsFeeds.imageTitle ~ NewsFeeds.imageUrl ~ NewsFeeds.language ~ NewsFeeds.lastBuildDate ~ NewsFeeds.link ~
-             NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster ~ NewsFeeds.lastUpdate).insert(
-                 feedUrl,
-                 feed.feedProperties.copyright, 
-             feed.feedProperties.description,
-             feed.feedProperties.docs, 
-             feed.feedProperties.generator,
-             feed.feedProperties.imageLink,
-             feed.feedProperties.imageTitle, 
-             feed.feedProperties.imageUrl, 
-             feed.feedProperties.language, 
-             feed.feedProperties.lastBuildDate, 
-             feed.feedProperties.link,
-             feed.feedProperties.managingEditor, 
-             feed.feedProperties.pubDate, 
-             feed.feedProperties.title, 
-             feed.feedProperties.ttl, 
-             feed.feedProperties.webMaster,
-             new java.sql.Timestamp(new java.util.Date().getTime())
-            )
-          }
+    newsFeed.firstOption match {
+      case Some(fd) => {
+        newsFeed.update(
+          (feed.feedProperties.copyright, 
+           feed.feedProperties.description,
+           feed.feedProperties.docs, 
+           feed.feedProperties.generator,
+           feed.feedProperties.imageLink,
+           feed.feedProperties.imageTitle, 
+           feed.feedProperties.imageUrl, 
+           feed.feedProperties.language, 
+           feed.feedProperties.lastBuildDate, 
+           feed.feedProperties.link,
+           feed.feedProperties.managingEditor, 
+           feed.feedProperties.pubDate, 
+           feed.feedProperties.title, 
+           feed.feedProperties.ttl, 
+           feed.feedProperties.webMaster,
+         new java.sql.Timestamp(new java.util.Date().getTime())))
         }
+        case None => {
+          (NewsFeeds.feedUrl ~ NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
+           NewsFeeds.imageTitle ~ NewsFeeds.imageUrl ~ NewsFeeds.language ~ NewsFeeds.lastBuildDate ~ NewsFeeds.link ~
+           NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster ~ NewsFeeds.lastUpdate).insert(
+            feedUrl,
+            feed.feedProperties.copyright, 
+            feed.feedProperties.description,
+            feed.feedProperties.docs, 
+            feed.feedProperties.generator,
+            feed.feedProperties.imageLink,
+            feed.feedProperties.imageTitle, 
+            feed.feedProperties.imageUrl, 
+            feed.feedProperties.language, 
+            feed.feedProperties.lastBuildDate, 
+            feed.feedProperties.link,
+            feed.feedProperties.managingEditor, 
+            feed.feedProperties.pubDate, 
+            feed.feedProperties.title, 
+            feed.feedProperties.ttl, 
+            feed.feedProperties.webMaster,
+            new java.sql.Timestamp(new java.util.Date().getTime())
+          )
+        }
+      }
     
       val newsFeedId = (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f.id).first
             
