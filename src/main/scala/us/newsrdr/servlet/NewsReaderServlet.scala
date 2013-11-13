@@ -54,6 +54,11 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     ssp("/privacy_policy", "title" -> "privacy policy")
   }
   
+  get("/extensions") {
+    contentType = "text/html"
+    ssp("/extensions", "title" -> "Browser Extensions")
+  }
+  
   get("/auth/login/google") {
     val sId = session.getId()
     val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)

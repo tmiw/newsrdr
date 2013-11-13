@@ -1,0 +1,39 @@
+<div class="container">
+  <div class="jumbotron">
+      <div class="container">
+        <h1>newsrdr checker</h1>
+        <p>Love newsrdr? Have it always with you with this browser extension.</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Frees up tab space</h2>
+          <p>Provides a toolbar button in your favorite browser for quick access to newsrdr. No more having to dig through your bookmarks or to type the URL by hand.</p>
+        </div>
+        <div class="col-md-4">
+          <h2>Updates at a glance</h2>
+          <p>Quickly be notified of any new posts from your favorite websites as they happen.</p>
+       </div>
+        <div class="col-md-4">
+          <h2>Works in most major browsers</h2>
+          <p>Available for Chrome, Safari and Firefox.</p>
+        </div>
+      </div>
+      
+      <hr class="featurette-divider">
+      
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h2 class="featurette-heading text-center">Convinced? <span class="text-muted">Download today:</span></h2>
+          <p class="text-center">
+            <a class="btn btn-large btn-default" href="https://chrome.google.com/webstore/detail/newsrdrus-checker/bnchcmdgmdfnhelmcfaebjiggnldiedf?hl=en&gl=US">Chrome</a>
+            <a class="btn btn-large btn-default" href="https://addons.mozilla.org/en-US/firefox/addon/newsrdrus-checker/">Firefox</a>
+            <a class="btn btn-large btn-default" href="http://newsrdr.us/extension/safari/newsrdr-checker.safariextz">Safari</a>
+          </p>
+        </div>
+      </div>
+    </div> <!-- /container -->
+</div>

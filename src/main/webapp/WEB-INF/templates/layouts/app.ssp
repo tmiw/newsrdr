@@ -58,6 +58,7 @@ newsrdr: a news reader without the extra fluff</title>
                     <li><a href="/developers/button">Get Button</a></li>
                   </ul>
                 </li>
+                <li><a href="/extensions">Extension</a></li>
                 <li><a href="/auth/logout">Logout</a></li>
               </ul>
             </div>
