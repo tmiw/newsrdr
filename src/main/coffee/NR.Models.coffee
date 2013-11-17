@@ -5,6 +5,9 @@ else
     
 NR.Models = {} 
 
+class NR.Models.MultipleFeedEntry extends SimpleMVC.Model
+    @fields "title", "url"
+    
 class NR.Models.CreateFeedModel extends SimpleMVC.Model
     @fields "baseUrl", "baseHtml", "xpathTitle", "xpathLink", "xpathBody"
     

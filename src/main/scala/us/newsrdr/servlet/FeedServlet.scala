@@ -240,6 +240,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             // need to do this because of XSS restrictions on the client side.
             StringDataApiResult(false, Some("not_a_feed"), e.getMessage())
           }
+          case e:MultipleFeedsException => {
+            AddFeedListApiResult(false, Some("multiple_feeds_found"), e.getFeedList)
+          }
         }
       }
     }, {

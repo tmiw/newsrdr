@@ -28,10 +28,19 @@ class NR.Application extends SimpleMVC.Controller
                     feedModel.baseUrl = $("#addFeedUrl").val()
                     this._createFeedView.model = feedModel
                     this._createFeedView.show()
+                else if desc == NR.API.MultipleFeedsFoundError
+                    foundList = new SimpleMVC.Collection
+                    this._multipleFeedFoundView = new NR.Views.MultipleFeedsFoundWindow foundList
+                    this._multipleFeedFoundView.show()
+                    for i in data
+                        entry = new NR.Models.MultipleFeedEntry
+                        entry.title = i.title
+                        entry.url = i.url
+                        foundList.add entry
                 else
                     errorText = "The server encountered an error while processing the request. Please try again."
             
-        if desc != NR.API.NotAFeedError
+        if desc != NR.API.NotAFeedError && desc != NR.API.MultipleFeedsFoundError
             noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });
     
     @route "saved/:uid", (uid) ->

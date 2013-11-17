@@ -159,6 +159,11 @@ class ManualCloseBufferedStream(s: java.io.InputStream) extends java.io.Buffered
 }
 
 class HasNoFeedsException(text: String) extends Exception(text) { }
+case class AddFeedEntry(title: String, url: String)
+class MultipleFeedsException(feedList: List[AddFeedEntry]) extends Exception 
+{ 
+  def getFeedList = feedList
+}
 
 object XmlFeedFactory {
   val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
@@ -375,9 +380,18 @@ object XmlFeedFactory {
     val feedLinks = (xmlDoc \\ "link").filter(attributeEquals("rel", "alternate")(_))
                                       .filter(x => attributeEquals("type", "application/rss+xml")(x) ||
                                                    attributeEquals("type", "application/atom+xml")(x))
-    if (feedLinks.count(_ => true) > 0 && !feedLinks.head.attribute("href").map(_.text).head.equals(url))
+    val feedCount = feedLinks.count(_ => true)
+    if (feedCount == 1 && !feedLinks.head.attribute("href").map(_.text).head.equals(url))
     {
       load(new java.net.URL(new java.net.URL(currentUrl), feedLinks.head.attribute("href").map(_.text).head).toString())
+    }
+    else if (feedCount > 1)
+    {
+      // Return list of RSS feeds for user to choose from.
+      throw new MultipleFeedsException(
+          feedLinks.map(p => AddFeedEntry(
+              p.attribute("title").map(_.text).head,
+              p.attribute("href").map(_.text).head)).toList)
     }
     else
     {

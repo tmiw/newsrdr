@@ -26,6 +26,7 @@ NR.API.AuthenticationFailed = "auth_failed"
 NR.API.ValidationFailed = "validation_failed"
 NR.API.ServerError = "server_error"
 NR.API.NotAFeedError = "not_a_feed"
+NR.API.MultipleFeedsFoundError = "multiple_feeds_found"
 
 NR.API.httpErrorCodeList = {
     401: NR.API.AuthenticationFailed

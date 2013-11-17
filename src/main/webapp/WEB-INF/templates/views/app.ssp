@@ -91,6 +91,10 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
   
+  <div class="modal fade" id="multipleFeedsFound" tabindex="-1" role="dialog" aria-labelledby="multipleFeedsFound" aria-hidden="true">
+    
+  </div><!-- /.modal -->
+  
   <div class="modal fade" id="createFeed" tabindex="-1" role="dialog" aria-labelledby="createFeedLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -167,7 +171,36 @@
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
-  
+
+<script type="text/template" id="template-multipleFeedsListing">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Multiple Feeds Found</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+            The Web page provided exports multiple feeds. Please choose one below to add:
+          </p>
+          <p class="multipleFeedList">
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary disabled" id="addMultipleFeedButton">Add</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</script>
+
+<script type="text/template" id="template-multipleFeedEntry">
+  <label>
+    <input type="radio" name="aMultipleFeedEntry" value="{{url}}" />
+    {{title}}
+  </label>
+</script>
+
 <script type="text/template" id="template-topNavBar">
 <div class="navbar-header">
               <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">

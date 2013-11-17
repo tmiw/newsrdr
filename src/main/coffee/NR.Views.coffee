@@ -172,6 +172,34 @@ class NR.Views.NewsFeedListing extends SimpleMVC.CollectionView
         window.app.deselectFeed()
         e.preventDefault()
 
+class NR.Views.MultipleFeedEntry extends SimpleMVC.View
+    @tag "div"
+    @class "radio"
+    this.prototype.template = Mustache.compile $("#template-multipleFeedEntry").html()
+    
+class NR.Views.MultipleFeedsFoundWindow extends SimpleMVC.CollectionView
+    @hideOnStart true
+    @id "multipleFeedsFound"
+    @listClass "multipleFeedList"
+    @viewType NR.Views.MultipleFeedEntry
+    this.prototype.template = Mustache.compile $("#template-multipleFeedsListing").html()
+    
+    @event "click", "#addMultipleFeedButton", () ->
+        if not $("#addMultipleFeedButton").hasClass "disabled"
+            selectedUrl = $('input:radio[name=aMultipleFeedEntry]:checked').val();
+            window.app.addFeed selectedUrl
+            this.hide()
+    
+    @event "click", "input:radio[name=aMultipleFeedEntry]", () ->
+        # Enable Add button.
+        $("#addMultipleFeedButton").removeClass "disabled"
+        
+    show: () =>
+        this.domObject.modal()
+    
+    hide: () =>
+        this.domObject.modal('hide')
+        
 class NR.Views.CreateFeedWindow extends SimpleMVC.View
     @id "createFeed"
     @hideOnStart true

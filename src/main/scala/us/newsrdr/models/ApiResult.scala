@@ -35,13 +35,16 @@ object Constants {
 class ApiResult(success: Boolean, error_string: Option[String])
 
 case class StringDataApiResult(success: Boolean, error_string: Option[String], data: String)
-    extends ApiResult(success, error_string)
+  extends ApiResult(success, error_string)
+
+case class AddFeedListApiResult(success: Boolean, error_string: Option[String], data: List[AddFeedEntry])
+  extends ApiResult(success, error_string)
 
 case class NoDataApiResult(success: Boolean, error_string: Option[String])
   extends ApiResult(success, error_string)
 
 case class FeedInfoApiResult(success: Boolean, error_string: Option[String], data: NewsFeedInfo) 
-    extends ApiResult(success, error_string)
+  extends ApiResult(success, error_string)
 
 case class FeedListApiResult(success: Boolean, error_string: Option[String], data: List[NewsFeedInfo]) 
   extends ApiResult(success, error_string)
