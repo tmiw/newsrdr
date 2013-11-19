@@ -13,12 +13,39 @@ import org.quartz._
 import org.scalatra._
 import scala.slick.session.Session
 
+class QuartzWatchdogThread extends java.lang.Thread {
+    private var isExiting = false
+    private val SCHEDULER_RESTART_TIME = 60*60*6 // every 6 hours
+    
+    override def run() = {
+      var i = 0
+      while (isExiting == false) {
+        while (i < SCHEDULER_RESTART_TIME && isExiting == false)
+        {
+            java.lang.Thread.sleep(1000)
+            i = i + 1
+        }
+        i = 0
+        if (!isExiting)
+        {
+          BackgroundJobManager.scheduler.shutdown(true)
+          BackgroundJobManager.scheduler.start()
+        }
+      }
+    }
+    
+    def stopThread() = {
+      isExiting = true
+    }
+}
+
 object BackgroundJobManager {
   val CLEANUP_JOB_NAME = "newsrdr_cleanup"
   
   var db : Database = _
   var dao : DataTables = _
   var scheduler : Scheduler = null
+  var watchdog : QuartzWatchdogThread = null
   
   def start(context: ServletContext) = {
     scheduler = sys.props.get(org.scalatra.EnvironmentKey) match {
@@ -57,9 +84,16 @@ object BackgroundJobManager {
     }
     
     scheduler.start()
+    
+    // Start watchdog (shouldn't be necessary, but you know...)
+    watchdog = new QuartzWatchdogThread
+    watchdog.start
   }
   
   def shutdown = {
+    watchdog.stopThread
+    watchdog = null
+    
     scheduler.shutdown(true)
     scheduler = null; // force GC of scheduler objects.
   }
