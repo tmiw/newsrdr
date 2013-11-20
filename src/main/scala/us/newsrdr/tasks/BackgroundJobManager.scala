@@ -86,13 +86,13 @@ object BackgroundJobManager {
     scheduler.start()
     
     // Start watchdog (shouldn't be necessary, but you know...)
-    watchdog = new QuartzWatchdogThread
-    watchdog.start
+    //watchdog = new QuartzWatchdogThread
+    //watchdog.start
   }
   
   def shutdown = {
-    watchdog.stopThread
-    watchdog = null
+    //watchdog.stopThread
+    //watchdog = null
     
     scheduler.shutdown(true)
     scheduler = null; // force GC of scheduler objects.
