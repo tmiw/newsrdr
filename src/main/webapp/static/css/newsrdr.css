@@ -88,6 +88,10 @@ and (orientation : landscape) {
         display: none;
     }
     
+    body {
+        padding-bottom: 60px;
+    }
+    
     #top-nav-bar.affix {
         position: fixed;
         top: 5px;
