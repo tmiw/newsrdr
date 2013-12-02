@@ -43,9 +43,9 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     contentType = "text/html"
       
     db withSession { implicit session: Session =>
-      val randomPost = dao.getNewestRandomPost(session)
-      val randomPostFeed = randomPost.map(p => dao.getFeedByPostId(session, p.article.id.get))
-      ssp("/index", "title" -> "", "randomPost" -> randomPost, "randomPostFeed" -> randomPostFeed)
+      //val randomPost = dao.getNewestRandomPost(session)
+      //val randomPostFeed = randomPost.map(p => dao.getFeedByPostId(session, p.article.id.get))
+      ssp("/index", "title" -> "", "randomPost" -> None, "randomPostFeed" -> None)
     }
   }
   

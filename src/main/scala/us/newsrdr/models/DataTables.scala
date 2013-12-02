@@ -314,7 +314,7 @@ class DataTables(val driver: ExtendedProfile) {
     return feed.first
   }
   
-  def getNewestRandomPost(implicit session: Session) : Option[NewsFeedArticleInfo] = {
+  /*def getNewestRandomPost(implicit session: Session) : Option[NewsFeedArticleInfo] = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
     val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
     
@@ -334,7 +334,7 @@ class DataTables(val driver: ExtendedProfile) {
         case _ => None
       }
     } else None
-  }
+  }*/
   
   def getLatestPostsForUser(implicit session: Session, userId: Int) : List[NewsFeedArticleInfo] = {
     val userOptedOut = Query(Users).filter(_.id === userId).first.optOutSharing
