@@ -1,5 +1,6 @@
 package us.newsrdr.servlet
 
+import scala.collection._
 import org.scalatra._
 import scalate.ScalateSupport
 import scala.slick.session.Database
@@ -34,6 +35,13 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
   // Sets up automatic case class to JSON output serialization
   protected implicit val jsonFormats: Formats = DefaultFormats
 
+  override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
+    val sessionId = request.getSession().getId()
+    db withSession { implicit session: Session =>
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+    }
+  }
+  
   // Before every action runs, set the content type to be in JSON format.
   before() {
     contentType = formats("json")
