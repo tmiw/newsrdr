@@ -178,15 +178,16 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         $(".modal[aria-hidden!='true']").length > 0
     
     _handlePostKeys: (e) =>
+        kc = e.keyCode || e.charCode
         # Scroll up/down one article.
         if this.articleList? && this.articleList.length > 0
-            if ((e.keyCode == 75 || e.keyCode == 107) && this.currentArticle?)
+            if ((kc == 75 || kc == 107) && this.currentArticle?)
                 # Mark current article as read before proceeding.
                 article = this.articleList.at this.currentArticle
                 if this.authedUser && article? && article.unread
                     this.togglePostAsRead article
                 this.currentArticle = this.currentArticle - 1
-            else if ((e.keyCode == 74 || e.keyCode == 106) && this.currentArticle <= this.articleList.length - 1)
+            else if ((kc == 74 || kc == 106) && this.currentArticle <= this.articleList.length - 1)
                 article = this.articleList.at this.currentArticle
                 if this.authedUser && article? && article.unread
                     # Mark current article as read before proceeding.
@@ -209,7 +210,8 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             e.preventDefault()
     
     _handleFeedKeys: (e) =>
-        if this.newsFeedView.canNavigateDownList() && (e.keyCode == 115 || e.keyCode == 83)
+        kc = e.keyCode || e.charCode
+        if this.newsFeedView.canNavigateDownList() && (kc == 115 || kc == 83)
             # s/S (navigate down list)
             initUrl = "/news/" + this._uid + "/feeds"
             nextFeed = this.newsFeedView.getNextFeed()
@@ -217,7 +219,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 initUrl = initUrl + "/" + nextFeed
             this.navigate initUrl, true
             
-        else if this.newsFeedView.canNavigateUpList() && (e.keyCode == 119 || e.keyCode == 87)
+        else if this.newsFeedView.canNavigateUpList() && (kc == 119 || kc == 87)
             # w/W (navigate up list)
             initUrl = "/news/" + this._uid
             nextFeed = this.newsFeedView.getPrevFeed()
@@ -230,50 +232,51 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         e.preventDefault()
     
     _handleOpenArticleKeys: (e) =>
-         if this.articleList? && this.articleList.length > 0
-            if !this.currentArticle? || this.currentArticle < 0 || this.currentArticle >= this.articleList.length
-                this.currentArticle = 0
+        if this.articleList? && this.articleList.length > 0
+           if !this.currentArticle? || this.currentArticle < 0 || this.currentArticle >= this.articleList.length
+               this.currentArticle = 0
             
-            article = this.articleList.at this.currentArticle
-            articleId = article.article.id;
-            articleOffset = $("a[name='article" + articleId + "']").offset()
-            $('html, body').animate({
-                scrollTop: articleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
-            }, 500)
-            e.preventDefault()
+           article = this.articleList.at this.currentArticle
+           articleId = article.article.id;
+           articleOffset = $("a[name='article" + articleId + "']").offset()
+           $('html, body').animate({
+               scrollTop: articleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
+           }, 500)
+           e.preventDefault()
             
-            window.open article.article.link, "_blank"
-            if this.authedUser && article? && article.unread
-                this.togglePostAsRead article
+           window.open article.article.link, "_blank"
+           if this.authedUser && article? && article.unread
+               this.togglePostAsRead article
                 
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation
         $(window).keypress (e) =>
             if not this._modalVisible()
-                if (e.keyCode == 74 || e.keyCode == 75 || e.keyCode == 106 || e.keyCode == 107)
+                kc = e.keyCode || e.charCode
+                if (kc == 74 || kc == 75 || kc == 106 || kc == 107)
                     # j/k/J/K (post navigation)
                     this._handlePostKeys e
-                else if (e.keyCode == 63)
+                else if (kc == 63)
                     # ? (help)
                     e.preventDefault()
                     $("#keyboardHelp").modal("show")
-                else if (e.keyCode == 119 || e.keyCode == 87 || e.keyCode == 115 || e.keyCode == 83)
+                else if (kc == 119 || kc == 87 || kc == 115 || kc == 83)
                     # w/W/s/S (feed navigation)
                     this._handleFeedKeys e
-                else if (e.keyCode == 114 || e.keyCode == 82)
+                else if (kc == 114 || kc == 82)
                     # r/R (mark all as read)
                     e.preventDefault()
                     this.markAllRead()
-                else if (e.keyCode == 100 || e.keyCode == 68)
+                else if (kc == 100 || kc == 68)
                     # d/D (deletes current feed)
                     e.preventDefault()
                     if not $("#removeFeedLink").parent().hasClass("disabled")
                         $("#removeFeedConfirm").modal()
-                else if (e.keyCode == 97 || e.keyCode == 65)
+                else if (kc == 97 || kc == 65)
                     # a/A (add new feed)
                     e.preventDefault()
                     this.showAddFeedWindow()
-                else if (e.keyCode == 79 || e.keyCode == 111)
+                else if (kc == 79 || kc == 111)
                     # o/O (open current article in new window)
                     this._handleOpenArticleKeys e
                     
