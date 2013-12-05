@@ -1,6 +1,6 @@
 <%@ val body: String %>
 <%@ val title: String = "" %>
-<%@ val loggedIn: Boolean %>
+<%@ val loggedIn: Boolean = false %>
 <!DOCTYPE html>
 <html lang="en">
   <head>
