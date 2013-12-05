@@ -22,9 +22,17 @@ import twitter4j.auth.RequestToken;
 
 // Swagger support
 import org.scalatra.swagger._
+import scala.collection._
 
 class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
+  
+  override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
+    val sessionId = request.getSession().getId()
+    db withSession { implicit session: Session =>
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+    }
+  }
   
   def adminWrapper[T](f: (Session, User) => T) : Any = {
     contentType="text/html"

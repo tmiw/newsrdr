@@ -22,6 +22,8 @@ import org.scalatra.swagger._
 // XML support
 import scala.xml._
 
+import scala.collection._
+
 class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport
   with GZipSupport {
@@ -35,6 +37,13 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   // Before every action runs, set the content type to be in JSON format.
   before() {
     contentType = formats("json")
+  }
+  
+  override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
+    val sessionId = request.getSession().getId()
+    db withSession { implicit session: Session =>
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+    }
   }
   
   val optOut =

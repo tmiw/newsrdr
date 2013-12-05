@@ -19,6 +19,7 @@ import org.scalatra.json._
 
 // Swagger support
 import org.scalatra.swagger._
+import scala.collection._
 
 class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with AuthOpenId with GZipSupport {
@@ -32,6 +33,13 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   // Before every action runs, set the content type to be in JSON format.
   before() {
     contentType = formats("json")
+  }
+  
+  override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
+    val sessionId = request.getSession().getId()
+    db withSession { implicit session: Session =>
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+    }
   }
   
   val getPosts =
