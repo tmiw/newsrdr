@@ -746,8 +746,8 @@ class DataTables(val driver: ExtendedProfile) {
         } yield ua
         feed_posts.firstOption match {
           case Some(x) => {
-            val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
-            single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, !unread, x.articleSaved))
+            val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua.articleRead
+            single_feed_post.update(!unread)
           }
           case None => UserArticles.insert(UserArticle(None, userId, postId, !unread, false))
         }
