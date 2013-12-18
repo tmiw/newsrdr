@@ -428,17 +428,16 @@ class DataTables(val driver: ExtendedProfile) {
   def getPostsForFeeds(implicit session: Session, userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Int): List[NewsFeedArticleInfo] = {
     val q = if (unreadOnly) {
       for {
-        (nfa, (uf, ua)) <- NewsFeedArticles join (UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId && a.articleRead === false)) on (_.feedId === _._1.feedId)
-                           if (ua.articleId.isNull || ua.articleId === nfa.id) &&
+        (nfa, (uf, ua)) <- NewsFeedArticles join (UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId && a.articleRead === false)) on ((na, ufa) => na.feedId === ufa._1.feedId && (ufa._2.articleId.isNull || ufa._2.articleId === na.id))
+                           if nfa.id <= latestPostId && unixTimestampFn(nfa.pubDate) < latestPostDate &&
                               nfa.id <= latestPostId && unixTimestampFn(nfa.pubDate) < latestPostDate &&
                               uf.userId === userId && uf.feedId.inSet(feedIds) &&
                               unixTimestampFn(nfa.pubDate) > unixTimestampFn(uf.addedDate) - (60*60*24*14).toLong
       } yield (nfa, ua.maybe)
     } else {
       for {
-        (nfa, (uf, ua)) <- NewsFeedArticles join (UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId)) on (_.feedId === _._1.feedId)
-                           if (ua.articleId.isNull || ua.articleId === nfa.id) &&
-                              nfa.id <= latestPostId && unixTimestampFn(nfa.pubDate) < latestPostDate &&
+        (nfa, (uf, ua)) <- NewsFeedArticles join (UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId)) on ((na, ufa) => na.feedId === ufa._1.feedId && (ufa._2.articleId.isNull || ufa._2.articleId === na.id))
+                           if nfa.id <= latestPostId && unixTimestampFn(nfa.pubDate) < latestPostDate &&
                               uf.userId === userId && uf.feedId.inSet(feedIds) &&
                               unixTimestampFn(nfa.pubDate) > unixTimestampFn(uf.addedDate) - (60*60*24*14).toLong
       } yield (nfa, ua.maybe)
