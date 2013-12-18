@@ -53,7 +53,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
@@ -78,7 +78,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
               NewsFeedInfo(
                   NewsFeedFuncs.CreateFakeFeed(),
                   0,
-                  dao.getSubscribedFeeds(session, Integer.parseInt(userId)).foldRight(0)((b,a) => b._2 + a),
+                  dao.getSubscribedFeeds(Integer.parseInt(userId)).foldRight(0)((b,a) => b._2 + a),
                   false)
               )
             )
@@ -94,7 +94,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
           db withSession { implicit session: Session =>
             FeedListApiResult(true, None, 
-                dao.getSubscribedFeeds(session, userId).map(x => NewsFeedInfo(
+                dao.getSubscribedFeeds(userId).map(x => NewsFeedInfo(
                     x._1, 
                     x._1.id.get,
                     x._2,
@@ -137,11 +137,11 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         var sId = session.getId
         db withSession { implicit session: Session =>
           val userId = getUserId(dao, db, sId, request).get
-          val userName = dao.getUserName(session, userId)
+          val userName = dao.getUserName(userId)
       
           val destFormat = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
           val today = destFormat.format(new java.util.Date())
-          val feedList = dao.getSubscribedFeeds(session, userId).toList
+          val feedList = dao.getSubscribedFeeds(userId).toList
 
           // Force a download instead of displaying in the browser.
           response.addHeader("Content-Disposition", "attachment; filename=subscriptions.opml")
@@ -223,7 +223,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         // Grab feed from database, creating if it doesn't already exist.
         try
         {
-          val feed = dao.getFeedFromUrl(session, url) getOrElse {
+          val feed = dao.getFeedFromUrl(url) getOrElse {
               val fetchJob = new RssFetchJob
               val f = fetchJob.fetch(url, false)
             
@@ -234,13 +234,13 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           BackgroundJobManager.scheduleFeedJob(feed.feedUrl)
               
           // Add subscription at the user level.
-          dao.addSubscriptionIfNotExists(session, userId, feed.id.get)
+          dao.addSubscriptionIfNotExists(userId, feed.id.get)
         
           val today = new java.util.Date().getTime()
           FeedInfoApiResult(true, None, NewsFeedInfo(
             feed,
             feed.id.get,
-            dao.getUnreadCountForFeed(session, userId, feed.id.get),
+            dao.getUnreadCountForFeed(userId, feed.id.get),
             if ((today - feed.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }))
         } catch {
           case e:HasNoFeedsException => {
@@ -274,7 +274,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       // We probably also want to return validation error info above.
       db withTransaction { implicit session: Session =>
         // Remove subscription at the user level.
-        dao.unsubscribeFeed(session, userId, Integer.parseInt(id))
+        dao.unsubscribeFeed(userId, Integer.parseInt(id))
       }
       
       NoDataApiResult(true, None)
@@ -311,12 +311,12 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           
           val latestPostId = params.get("latest_post_id") match {
             case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
-            case _ => dao.getMaxPostIdForFeed(session, userId, id, unreadOnly, latestPostDate)
+            case _ => dao.getMaxPostIdForFeed(userId, id, unreadOnly, latestPostDate)
           }
           
           ArticleListWithMaxId(
               latestPostId,
-              dao.getPostsForFeed(session, userId, id, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
+              dao.getPostsForFeed(userId, id, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
           )
         })
       }, {
@@ -340,7 +340,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       val from = Integer.parseInt(params.getOrElse("from", halt(422)))
       
       db withTransaction { implicit session: Session =>
-        dao.setPostStatusForAllPosts(session, userId, id, from, upTo, false) match {
+        dao.setPostStatusForAllPosts(userId, id, from, upTo, false) match {
           case true => ()
           case _ => halt(404)
         }

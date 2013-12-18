@@ -35,7 +35,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
@@ -70,7 +70,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sId, request.getRemoteAddr()) match {
+      dao.getUserSession(sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
           val discoveries = manager.discover("https://www.google.com/accounts/o8/id")
@@ -101,7 +101,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sId, request.getRemoteAddr()) match {
+      dao.getUserSession(sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
           redirect(Constants.getFacebookLoginURL(request))    
@@ -121,7 +121,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sId, request.getRemoteAddr()) match {
+      dao.getUserSession(sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
           val twitter = new TwitterFactory().getInstance()
@@ -138,7 +138,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     try {
       val sId = session.getId()
       db withTransaction { implicit session: Session =>
-        dao.invalidateSession(session, sId)
+        dao.invalidateSession(sId)
       }
     } catch {
       case _:Exception => () // ignore any exceptions here
@@ -160,7 +160,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     
     val sId = session.getId()
     db withTransaction { implicit session: Session =>
-      dao.startUserSession(session, sId, "tw:" + twitter.getId(), "", twitter.getScreenName())
+      dao.startUserSession(sId, "tw:" + twitter.getId(), "", twitter.getScreenName())
     }
     redirect("/auth/login/twitter")
   }
@@ -200,7 +200,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       
       val sId = session.getId()
       db withTransaction { implicit session: Session =>
-        dao.startUserSession(session, sId, email, request.getRemoteAddr(), realName)
+        dao.startUserSession(sId, email, request.getRemoteAddr(), realName)
       }
       redirect("/auth/login/fb")
     }
@@ -229,7 +229,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
         val sId = session.getId()
         session.setAttribute("authService", "google")
         db withTransaction { implicit session: Session =>
-          dao.startUserSession(session, sId, email, request.getRemoteAddr(), firstName + " " + lastName)
+          dao.startUserSession(sId, email, request.getRemoteAddr(), firstName + " " + lastName)
         }
         redirect("/auth/login/google")
       }
@@ -363,7 +363,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       val sid = session.getId
       db withSession { implicit session: Session =>
         val userId = getUserId(dao, db, sid, request).get
-        val user = dao.getUserInfo(session, userId)
+        val user = dao.getUserInfo(userId)
         
         if (userId.toString != uidAsString)
         {
@@ -374,7 +374,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
         {
           implicit val formats = Serialization.formats(NoTypeHints)
           val today = new java.util.Date().getTime()
-          val bootstrappedFeeds = write(dao.getSubscribedFeeds(session, userId).map(x => {
+          val bootstrappedFeeds = write(dao.getSubscribedFeeds(userId).map(x => {
             NewsFeedInfo(
                   x._1, 
                   x._1.id.get,
@@ -389,9 +389,9 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       if (request.getHeader("User-Agent") == "Mediapartners-Google") {
         db withSession { implicit session: Session =>
           val userId = Integer.parseInt(uidAsString)
-          val user = dao.getUserInfo(session, userId)
-          val savedPosts = dao.getLatestPostsForUser(session, userId).map(p =>
-            NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
+          val user = dao.getUserInfo(userId)
+          val savedPosts = dao.getLatestPostsForUser(userId).map(p =>
+            NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)))
           val bootstrappedPosts = write(savedPosts)
         
           ssp("/saved_posts",

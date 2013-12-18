@@ -38,7 +38,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
@@ -57,15 +57,15 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
         case _:Exception => halt(404)
       }
       
-      if (dao.getUserName(session, userId).isEmpty())
+      if (dao.getUserName(userId).isEmpty())
       {
         halt(404)
       }
       else
       {
-        val user = dao.getUserInfo(session, userId)
-        val savedPosts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue, Long.MaxValue).map(p =>
-          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get)))
+        val user = dao.getUserInfo(userId)
+        val savedPosts = dao.getSavedPosts(userId, 0, 10, Long.MaxValue, Long.MaxValue).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)))
         val bootstrappedPosts = write(savedPosts)
         
         // Render the posts directly in the HTML only if the AdSense bot visited.
@@ -90,14 +90,14 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
     db withSession { implicit session: Session =>
       val userId = Integer.parseInt(params.get("uid").get)
       
-      if (dao.getUserName(session, userId).isEmpty())
+      if (dao.getUserName(userId).isEmpty())
       {
         halt(404)
       }
       else
       {
-        val user = dao.getUserInfo(session, userId)
-        val posts = dao.getSavedPosts(session, userId, 0, 10, Long.MaxValue, Long.MaxValue)
+        val user = dao.getUserInfo(userId)
+        val posts = dao.getSavedPosts(userId, 0, 10, Long.MaxValue, Long.MaxValue)
         val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
         
         <rss version="2.0">
@@ -150,8 +150,8 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
   db withSession { implicit session: Session =>
     SavedArticleListWithMaxId(
         latestPostId,
-        dao.getSavedPosts(session, userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId).map(p =>
-          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(session, p.article.id.get))))
+        dao.getSavedPosts(userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get))))
     }
   }
 }

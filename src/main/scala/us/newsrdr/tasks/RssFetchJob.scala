@@ -37,71 +37,14 @@ class RssFetchJob extends Job {
     throw new RuntimeException("Could not break deadlock.")
   }
   
-  /*val htmlParser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
-  object ImagePrefetch extends RewriteRule
-  {
-    override def transform(n: Node): Seq[Node] = n match {
-      case Elem(prefix, "img", attribs, scope, _*) => {
-        if (attribs.get("height").isEmpty && attribs.get("width").isEmpty)
-        {
-          val imageUrl = attribs.get("src").map(_.text).get
-          try
-          {
-            val img = javax.imageio.ImageIO.read(new java.net.URL(imageUrl))
-            n.asInstanceOf[Elem] % Attribute(None, "height", Text(img.getHeight().toString), Null) % 
-                                   Attribute(None, "width", Text(img.getWidth().toString), Null) toSeq
-          }
-          catch
-          {
-            case _:Exception => {
-              // ignore any exceptions, not being able to fix the <img> tags isn't
-              // the end of the world.
-              n
-            }
-          }
-        }
-        else
-        {
-          n
-        }
-      }
-      case other => other
-    }
-  }*/
-  
   def fetch(feedUrl: String, log: Boolean): NewsFeed = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
     try {
-      val feed = XmlFeedFactory.load(feedUrl)
-
-      // Pre-fetch images listed in <img> tags and populate height= and width=
-      // attributes. This is done so that page rendering on the client end 
-      // is faster.
-      /*object transform extends RuleTransformer(ImagePrefetch)
-      feed.entries = feed.entries.par.map({ p: (NewsFeedArticle, List[String]) =>
-        val dom = htmlParser.loadString(p._1.description)
-        (NewsFeedArticle(
-            p._1.id,
-            p._1.feedId,
-            p._1.title,
-            p._1.link,
-            transform(dom).toString,
-            p._1.author,
-            p._1.comments,
-            p._1.enclosureUrl,
-            p._1.enclosureLength,
-            p._1.enclosureType,
-            p._1.guid,
-            p._1.isGuidPermalink,
-            p._1.pubDate,
-            p._1.source),
-         p._2)
-      }).toList*/
-      
+      val feed = XmlFeedFactory.load(feedUrl)      
       val ret = preventDeadlock { implicit session: Session =>
         // Update feed's contents with whatever we've fetched from the server.
         // If it doesn't already exist, create.
-        BackgroundJobManager.dao.updateOrInsertFeed(session, feedUrl, feed)
+        BackgroundJobManager.dao.updateOrInsertFeed(feedUrl, feed)
       }
       
       BackgroundJobManager.rescheduleFeedJob(feedUrl, 60*60)
@@ -115,14 +58,14 @@ class RssFetchJob extends Job {
         } else {
           // log to error log
           preventDeadlock { implicit session: Session =>
-            BackgroundJobManager.dao.logFeedFailure(session, feedUrl, e.getMessage())
+            BackgroundJobManager.dao.logFeedFailure(feedUrl, e.getMessage())
           }
           
           // Hold off on updating again for 2x the previous interval (max 24 hours).
           // This will reduce the amount of load/bandwidth on the server if the outage
           // is longer than expected.
           BackgroundJobManager.db.withTransaction { implicit session: Session =>
-            val feed = BackgroundJobManager.dao.getFeedFromUrl(session, feedUrl)
+            val feed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)
             feed match {
               case Some(f) => {
                 val timeDiff = 2 * (today.getTime() - f.lastUpdate.getTime()) / 1000

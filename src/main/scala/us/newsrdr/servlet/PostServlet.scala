@@ -38,7 +38,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
@@ -69,13 +69,13 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
         val latestPostId = params.get("latest_post_id") match {
             case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
-            case _ => dao.getMaxPostIdForAllFeeds(session, userId, unreadOnly, latestPostDate)
+            case _ => dao.getMaxPostIdForAllFeeds(userId, unreadOnly, latestPostDate)
         }
         
         ArticleListWithMaxId(
             latestPostId,
-            if (feedList.size > 0) dao.getPostsForFeeds(session, userId, feedList, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
-            else dao.getPostsForAllFeeds(session, userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
+            if (feedList.size > 0) dao.getPostsForFeeds(userId, feedList, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
+            else dao.getPostsForAllFeeds(userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
         )
       })
     }, {
@@ -95,7 +95,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       var userId = getUserId(dao, db, session.getId, request).get
       
       db withTransaction { implicit session: Session =>
-        dao.setPostStatus(session, userId, pid, false) match {
+        dao.setPostStatus(userId, pid, false) match {
           case true => ()
           case _ => halt(404)
         }
@@ -121,7 +121,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       val from = Integer.parseInt(params.getOrElse("from", halt(422)))
       
       db withTransaction { implicit session: Session =>
-        dao.setPostStatusForAllPosts(session, userId, from, upTo, false) match {
+        dao.setPostStatusForAllPosts(userId, from, upTo, false) match {
           case true => ()
           case _ => halt(404)
         }
@@ -144,7 +144,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       var userId = getUserId(dao, db, session.getId, request).get
       
       db withTransaction { implicit session: Session =>
-        dao.setPostStatus(session, userId, pid, true) match {
+        dao.setPostStatus(userId, pid, true) match {
           case true => ()
           case _ => halt(404)
         }
@@ -170,7 +170,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         val userId = getUserId(dao, db, session.getId, request).get
         
         db withTransaction { implicit session: Session =>
-          dao.savePost(session, userId, id, pid) match {
+          dao.savePost(userId, id, pid) match {
             case true => ()
             case _ => halt(404)
           }
@@ -195,7 +195,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         val userId = getUserId(dao, db, session.getId, request).get
         
         db withTransaction { implicit session: Session =>
-          dao.unsavePost(session, userId, id, pid) match {
+          dao.unsavePost(userId, id, pid) match {
             case true => ()
             case _ => halt(404)
           }

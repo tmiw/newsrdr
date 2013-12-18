@@ -42,7 +42,7 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
@@ -56,7 +56,7 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       val userId = getUserId(dao, db, session.getId, request).get
       
       db withTransaction { implicit session: Session =>
-        dao.setOptOut(session, userId, true)
+        dao.setOptOut(userId, true)
         NoDataApiResult(true, None)
       }
     }, {
@@ -74,7 +74,7 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       val userId = getUserId(dao, db, session.getId, request).get
       
       db withTransaction { implicit session: Session =>
-        dao.setOptOut(session, userId, false)
+        dao.setOptOut(userId, false)
         NoDataApiResult(true, None)
       }
     }, {

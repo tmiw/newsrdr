@@ -104,7 +104,7 @@ object BackgroundJobManager {
       // Quartz has a maximum length that we have to follow. Encode the feed ID instead,
       // and make the background task retrieve the real feed URL.
       db.withSession { implicit session: Session =>
-          "feed_fetch_" + dao.getFeedFromUrl(session, url).get.id.toString()
+          "feed_fetch_" + dao.getFeedFromUrl(url).get.id.toString()
       }
     }
     else

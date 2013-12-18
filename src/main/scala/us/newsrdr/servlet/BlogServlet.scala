@@ -44,7 +44,7 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
@@ -52,7 +52,7 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     contentType="text/html"
     
     db withSession { implicit session: Session =>
-        val postList = dao.getBlogPosts(session, 0)
+        val postList = dao.getBlogPosts(0)
         ssp("/blog",
             "title" -> "blog", 
             "postList" -> postList,
@@ -65,7 +65,7 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     
     db withSession { implicit session: Session =>
         val offset = Integer.parseInt(params.get("page").get)
-        val postList = dao.getBlogPosts(session, offset * Constants.ITEMS_PER_PAGE)
+        val postList = dao.getBlogPosts(offset * Constants.ITEMS_PER_PAGE)
         ssp("/blog",
             "title" -> "blog", 
             "postList" -> postList,
@@ -77,7 +77,7 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     contentType="text/html"
     
     db withSession { implicit session: Session =>
-        val post = dao.getBlogPostById(session, Integer.parseInt(params.get("id").get))
+        val post = dao.getBlogPostById(Integer.parseInt(params.get("id").get))
         ssp("/blog_post",
             "title" -> post.subject, 
             "post" -> post)
@@ -87,7 +87,7 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   get("/feed") {
     contentType="application/rss+xml"
     db withSession { implicit session: Session =>
-        val posts = dao.getBlogPosts(session, 0)
+        val posts = dao.getBlogPosts(0)
         val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
         
         <rss version="2.0">

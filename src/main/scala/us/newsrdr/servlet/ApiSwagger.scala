@@ -33,13 +33,13 @@ trait ApiExceptionWrapper {
 trait AuthOpenId {
   def getUserId(dao: DataTables, db: Database, sessionId: String, http: javax.servlet.ServletRequest) : Option[Int] = {
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, sessionId, http.getRemoteAddr()).map(_.userId)
+      dao.getUserSession(sessionId, http.getRemoteAddr()).map(_.userId)
     }
   }
     
   def authenticationRequired[T](dao: DataTables, id: String, db: Database, http: javax.servlet.ServletRequest, f: => T, g: => T) : T = {
     db withSession { implicit session: Session =>
-      dao.getUserSession(session, id, http.getRemoteAddr()) match {
+      dao.getUserSession(id, http.getRemoteAddr()) match {
         case Some(sess) => f
         case None => g
       }

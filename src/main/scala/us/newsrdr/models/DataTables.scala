@@ -189,7 +189,7 @@ class DataTables(val driver: ExtendedProfile) {
       def user = foreignKey("blogEntryUserIdKey", authorId, Users)(_.id)
   }
   
-  def create(implicit session: Session) = {
+  def create()(implicit session: Session) = {
       if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == NewsFeeds.tableName)) NewsFeeds.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == NewsFeedCategories.tableName)) NewsFeedCategories.ddl.create
@@ -203,7 +203,7 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == BlogEntries.tableName)) BlogEntries.ddl.create
   }
 
-  def getSiteStatistics(implicit session: Session) : SiteStatistics = {
+  def getSiteStatistics()(implicit session: Session) : SiteStatistics = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
       val lastWeek = new java.sql.Timestamp(today.getTime() - 60*60*24*7*1000)
     val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
@@ -215,29 +215,29 @@ class DataTables(val driver: ExtendedProfile) {
         (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(yesterday))} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true))
   }
   
-  def getBlogPosts(implicit session: Session, offset: Int) : List[BlogEntry] = {
+  def getBlogPosts(offset: Int)(implicit session: Session) : List[BlogEntry] = {
     Query(BlogEntries).sortBy(_.postDate.desc).drop(offset).take(Constants.ITEMS_PER_PAGE).list
   }
   
-  def getBlogPostById(implicit session: Session, id: Int) : BlogEntry = {
+  def getBlogPostById(id: Int)(implicit session: Session) : BlogEntry = {
       Query(BlogEntries).filter(_.id === id).first
     }
   
-  def insertBlogPost(implicit session: Session, uid: Int, subject: String, body: String) {
+  def insertBlogPost(uid: Int, subject: String, body: String)(implicit session: Session) {
     BlogEntries.insert(BlogEntry(None, uid, new java.sql.Timestamp(new java.util.Date().getTime()), subject, body))
   }
   
-  def deleteBlogPost(implicit session: Session, id: Int) {
+  def deleteBlogPost(id: Int)(implicit session: Session) {
     val query = for { be <- BlogEntries if be.id === id } yield be
     query.delete
   }
   
-  def editBlogPost(implicit session: Session, id: Int, subject: String, body: String) {
+  def editBlogPost(id: Int, subject: String, body: String)(implicit session: Session) {
       val query = for { be <- BlogEntries if be.id === id } yield be.subject ~ be.body
       query.update(subject, body)
     }
   
-  def getSubscribedFeeds(implicit session: Session, userId: Int) : List[(NewsFeed, Int)] = {
+  def getSubscribedFeeds(userId: Int)(implicit session: Session) : List[(NewsFeed, Int)] = {
     val queryString = if (driver.isInstanceOf[H2Driver]) {
       """
         select "uf"."id", count(*) as unread 
@@ -273,7 +273,7 @@ class DataTables(val driver: ExtendedProfile) {
     } yield (uf.id, f)).sortBy(_._2.title).list.map(x => (x._2, feedMap.getOrElse(x._1, 0)))
   }
   
-  def getUnreadCountForFeed(implicit session: Session, userId: Int, feedId: Int) : Int = {
+  def getUnreadCountForFeed(userId: Int, feedId: Int)(implicit session: Session) : Int = {
     val today = new Timestamp(new java.util.Date().getTime())
     
     val feed_posts = for { 
@@ -290,12 +290,12 @@ class DataTables(val driver: ExtendedProfile) {
       (for { (fp, fq) <- feed_posts2 if fq.getOrElse(false) == false } yield fp ).length
   }
   
-  def getFeedFromUrl(implicit session: Session, url: String) : Option[NewsFeed] = {
+  def getFeedFromUrl(url: String)(implicit session: Session) : Option[NewsFeed] = {
     val feedQuery = for { f <- NewsFeeds if f.feedUrl === url || f.link === url } yield f
     feedQuery.firstOption
   }
   
-  def addSubscriptionIfNotExists(implicit session: Session, userId: Int, feedId: Int) {    
+  def addSubscriptionIfNotExists(userId: Int, feedId: Int)(implicit session: Session) {    
     val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
     userFeed.firstOption match {
       case Some(uf) => ()
@@ -306,7 +306,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def unsubscribeFeed(implicit session: Session, userId: Int, feedId: Int) {
+  def unsubscribeFeed(userId: Int, feedId: Int)(implicit session: Session) {
     val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
     userFeed.delete
     
@@ -318,36 +318,14 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def getFeedByPostId(implicit session: Session, postId: Int) : NewsFeed = {
+  def getFeedByPostId(postId: Int)(implicit session: Session) : NewsFeed = {
     val feed = for {
       (nfa, nf) <- NewsFeedArticles innerJoin NewsFeeds on (_.feedId === _.id) if nfa.id === postId
     } yield nf
     return feed.first
   }
   
-  /*def getNewestRandomPost(implicit session: Session) : Option[NewsFeedArticleInfo] = {
-    val today = new java.sql.Timestamp(new java.util.Date().getTime())
-    val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
-    
-    val articleQuery = 
-      for {
-        (uf, u) <- UserFeeds innerJoin Users on (_.userId === _.id) if u.optOutSharing === false
-        nf <- NewsFeeds if uf.feedId === nf.id
-        nfa <- NewsFeedArticles if unixTimestampFn(nfa.pubDate.get) >= unixTimestampFn(yesterday) && nfa.feedId === uf.feedId
-      } yield nfa
-
-    val length = Query(articleQuery.length).first
-    if (length > 0) {
-      val rng = new util.Random()
-      val randId = rng.nextInt(length)
-      articleQuery.drop(randId).firstOption match {
-        case Some(a) => Some(NewsFeedArticleInfo(a, false, false))
-        case _ => None
-      }
-    } else None
-  }*/
-  
-  def getLatestPostsForUser(implicit session: Session, userId: Int) : List[NewsFeedArticleInfo] = {
+  def getLatestPostsForUser(userId: Int)(implicit session: Session) : List[NewsFeedArticleInfo] = {
     val userOptedOut = Query(Users).filter(_.id === userId).first.optOutSharing
     
     val articleQuery = 
@@ -369,7 +347,7 @@ class DataTables(val driver: ExtendedProfile) {
     articleQuery.take(Constants.ITEMS_PER_PAGE).list.map(NewsFeedArticleInfo(_, false, false))
   }
   
-  def getMaxPostIdForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, latestPostDate: Long) : Long = {
+  def getMaxPostIdForFeed(userId: Int, feedId: Int, unreadOnly: Boolean, latestPostDate: Long)(implicit session: Session) : Long = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
@@ -425,7 +403,7 @@ class DataTables(val driver: ExtendedProfile) {
     feed_posts.list((userId, feedId, latestPostDate)).head
   }
   
-  def getPostsForFeeds(implicit session: Session, userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Int): List[NewsFeedArticleInfo] = {
+  def getPostsForFeeds(userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Int)(implicit session: Session): List[NewsFeedArticleInfo] = {
     val q = if (unreadOnly) {
       for {
         (nfa, (uf, ua)) <- NewsFeedArticles join (UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId && a.articleRead === false)) on ((na, ufa) => na.feedId === ufa._1.feedId && (ufa._2.articleId.isNull || ufa._2.articleId === na.id))
@@ -453,7 +431,7 @@ class DataTables(val driver: ExtendedProfile) {
      })
   }
   
-  def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+  def getPostsForFeed(userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
@@ -525,7 +503,7 @@ class DataTables(val driver: ExtendedProfile) {
     })
   }
   
-  def getMaxPostIdForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, latestPostDate: Long) : Long = {
+  def getMaxPostIdForAllFeeds(userId: Int, unreadOnly: Boolean, latestPostDate: Long)(implicit session: Session) : Long = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
@@ -575,7 +553,7 @@ class DataTables(val driver: ExtendedProfile) {
     feed_posts.list((userId, latestPostDate)).head
   }
   
-  def getPostsForAllFeeds(implicit session: Session, userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+  def getPostsForAllFeeds(userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
@@ -643,7 +621,7 @@ class DataTables(val driver: ExtendedProfile) {
     })
   }
   
-  def getSavedPosts(implicit session: Session, userId: Int, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
+  def getSavedPosts(userId: Int, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session) : List[NewsFeedArticleInfo] = {
     implicit val getNewsFeedArticleResult = GetResult(r => NewsFeedArticle(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
 
     val feed_posts = if (driver.isInstanceOf[H2Driver]) {
@@ -679,7 +657,7 @@ class DataTables(val driver: ExtendedProfile) {
     })
   }
   
-  def setPostStatusForAllPosts(implicit session: Session, userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
+  def setPostStatusForAllPosts(userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean)(implicit session: Session) : Boolean = {
     val feedPostsQuery = if (driver.isInstanceOf[H2Driver]) {
       Q.query[(Int, Int, Long, Long), (Int, Option[Boolean])]("""
             select "nfa"."id", "ua"."articleRead"
@@ -715,7 +693,7 @@ class DataTables(val driver: ExtendedProfile) {
     true
   }
   
-  def setPostStatusForAllPosts(implicit session: Session, userId: Int, from: Int, upTo: Int, unread: Boolean) : Boolean = {
+  def setPostStatusForAllPosts(userId: Int, from: Int, upTo: Int, unread: Boolean)(implicit session: Session) : Boolean = {
       val feedPostsQuery = if (driver.isInstanceOf[H2Driver]) {
         Q.query[(Int, Long, Long), (Int, Option[Boolean])]("""
             select "nfa"."id", "ua"."articleRead"
@@ -749,7 +727,7 @@ class DataTables(val driver: ExtendedProfile) {
       true
     }
   
-  def setPostStatus(implicit session: Session, userId: Int, feedId: Int, postId: Int, unread: Boolean) : Boolean = {
+  def setPostStatus(userId: Int, feedId: Int, postId: Int, unread: Boolean)(implicit session: Session) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
@@ -771,7 +749,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def setPostStatus(implicit session: Session, userId: Int, postId: Int, unread: Boolean) : Boolean = {
+  def setPostStatus(userId: Int, postId: Int, unread: Boolean)(implicit session: Session) : Boolean = {
     val post_exists = for {
       nfa <- NewsFeedArticles if nfa.id === postId
       uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
@@ -796,7 +774,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def savePost(implicit session: Session, userId: Int, feedId: Int, postId: Int) : Boolean = {
+  def savePost(userId: Int, feedId: Int, postId: Int)(implicit session: Session) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
@@ -818,7 +796,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def unsavePost(implicit session: Session, userId: Int, feedId: Int, postId: Int) : Boolean = {
+  def unsavePost(userId: Int, feedId: Int, postId: Int)(implicit session: Session) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
@@ -840,11 +818,11 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def getUserSessionById(implicit session: Session, sessionId: String) : UserSession = {
+  def getUserSessionById(sessionId: String)(implicit session: Session) : UserSession = {
     (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess).first
   }
   
-  def getUserSession(implicit session: Session, sessionId: String, ip: String) : Option[UserSession] = {
+  def getUserSession(sessionId: String, ip: String)(implicit session: Session) : Option[UserSession] = {
     val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
     q.firstOption match {
       case Some(s) => {
@@ -855,23 +833,23 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def getUserName(implicit session: Session, userId: Int) : String = {
+  def getUserName(userId: Int)(implicit session: Session) : String = {
     val q = for { u <- Users if u.id === userId } yield u.username
     q.firstOption.getOrElse("")
   }
   
-  def getUserInfo(implicit session: Session, userId: Int) : User = {
+  def getUserInfo(userId: Int)(implicit session: Session) : User = {
     val q = for { u <- Users if u.id === userId } yield u
     q.first
   }
   
-  def setOptOut(implicit session: Session, userId: Int, optOut: Boolean) {
-    val user = getUserInfo(session, userId)
+  def setOptOut(userId: Int, optOut: Boolean)(implicit session: Session) {
+    val user = getUserInfo(userId)
     val q = for { u <- Users if u.id === userId } yield u
     q.update(User(user.id, user.username, user.password, user.email, user.friendlyName, optOut, user.isAdmin))
   }
   
-  def invalidateSession(implicit session: Session, sessionId: String) {
+  def invalidateSession(sessionId: String)(implicit session: Session) {
     val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
     q.firstOption match {
         case Some(s) => q.delete
@@ -879,11 +857,11 @@ class DataTables(val driver: ExtendedProfile) {
       }
   }
   
-  def startUserSession(implicit session: Session, sessionId: String, email: String, ip: String, friendlyName: String) {
-   startUserSession(session, sessionId, email, email, ip, friendlyName) 
+  def startUserSession(sessionId: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {
+   startUserSession(sessionId, email, email, ip, friendlyName) 
   }
   
-  def startUserSession(implicit session: Session, sessionId: String, username: String, email: String, ip: String, friendlyName: String) {
+  def startUserSession(sessionId: String, username: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {
     val q = for { u <- Users if u.username === username } yield u
     val userId = q.firstOption match {
       case Some(u) => {
@@ -897,7 +875,7 @@ class DataTables(val driver: ExtendedProfile) {
     UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
   }
   
-  def updateOrInsertFeed(implicit session: Session, feedUrl: String, feed: XmlFeed) : NewsFeed = {
+  def updateOrInsertFeed(feedUrl: String, feed: XmlFeed)(implicit session: Session) : NewsFeed = {
     val feedQuery = Query(NewsFeeds)
     val newsFeed = 
       for { f <- NewsFeeds if f.feedUrl === feedUrl } yield
@@ -971,12 +949,12 @@ class DataTables(val driver: ExtendedProfile) {
       }*/
       
       // Now update/insert each individual post in the feed.
-      for { p <- feed.entries } insertOrUpdateEntry(session, newsFeedId, p)
+      for { p <- feed.entries } insertOrUpdateEntry(newsFeedId, p)
       
       (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f).first
   }
   
-  private def insertOrUpdateEntry(implicit session: Session, feedId: Int, p: (NewsFeedArticle, List[String])) {
+  private def insertOrUpdateEntry(feedId: Int, p: (NewsFeedArticle, List[String]))(implicit session: Session) {
       val newPost = p._1
     
       // Insert or update article as needed.
@@ -1051,7 +1029,7 @@ class DataTables(val driver: ExtendedProfile) {
       }*/
   }
 
-  def logFeedFailure(implicit session: Session, feedUrl: String, message: String) {
+  def logFeedFailure(feedUrl: String, message: String)(implicit session: Session) {
     val feed = for { nf <- NewsFeeds if nf.feedUrl === feedUrl } yield nf
     feed.firstOption match {
       case Some(f) => {
@@ -1062,13 +1040,13 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def deleteOldSessions(implicit session: Session) {
+  def deleteOldSessions()(implicit session: Session) {
     val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7*1000)
     val oldSessions = for { us <- UserSessions if unixTimestampFn(us.lastAccess) < unixTimestampFn(Some(oneWeekAgo)) } yield us
     oldSessions.delete
   }
   
-  def deleteOldFailLogs(implicit session: Session) {
+  def deleteOldFailLogs()(implicit session: Session) {
     val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7*1000)
     val oldFailLogs = for { fl <- FeedFailureLogs if unixTimestampFn(fl.failureDate) < unixTimestampFn(Some(oneWeekAgo)) } yield fl
     oldFailLogs.delete

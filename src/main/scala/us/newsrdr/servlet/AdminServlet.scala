@@ -30,11 +30,11 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(session, sessionId, request.getRemoteAddr()).isDefined)
+      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
     }
   }
   
-  def adminWrapper[T](f: (Session, User) => T) : Any = {
+  def adminWrapper[T](f: (User) => T) : Any = {
     contentType="text/html"
     val sess = session;
     val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
@@ -48,8 +48,8 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
     authenticationRequired(dao, session.getId, db, request, { 
       val userSession = session
       db withSession { implicit session: Session =>
-        val sess = dao.getUserSessionById(session, userSession.getId())
-        val userInfo = dao.getUserInfo(session, sess.userId)
+        val sess = dao.getUserSessionById(userSession.getId())
+        val userInfo = dao.getUserInfo(sess.userId)
         
         if (!userInfo.isAdmin && userInfo.id.get != 1)
         {
@@ -57,7 +57,7 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
         }
         else
         {
-          f(session, userInfo)
+          f(userInfo)
         }
       }
     }, {
@@ -67,14 +67,14 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   }
   
   get("/") {
-    adminWrapper((session: Session, userInfo: User) => {
-        val statistics = dao.getSiteStatistics(session)
+    adminWrapper((userInfo: User) => { implicit session: Session =>
+        val statistics = dao.getSiteStatistics()
         ssp("/admin",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "site admin", "siteStats" -> statistics)
     })
   }
   
   get("/maint/rebalance") {
-    adminWrapper((session: Session, userInfo: User) => {
+    adminWrapper((userInfo: User) => { implicit session: Session =>
       val maint = new us.newsrdr.tasks.ServerMaintenanceJob
       maint.rebalanceJobs
       redirect("/admin/")
@@ -82,55 +82,55 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   }
   
   get("/blog") {
-    adminWrapper((session: Session, userInfo: User) => {
-        val postList = dao.getBlogPosts(session, 0)
+    adminWrapper((userInfo: User) => { implicit session: Session =>
+        val postList = dao.getBlogPosts(0)
         ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> 0)
     })
   }
   
   get("/blog/page/:page") {
-    adminWrapper((session: Session, userInfo: User) => {
+    adminWrapper((userInfo: User) => { implicit session: Session =>
         val offset = Integer.parseInt(params.get("page").getOrElse("0"))
-        val postList = dao.getBlogPosts(session, offset * Constants.ITEMS_PER_PAGE)
+        val postList = dao.getBlogPosts(offset * Constants.ITEMS_PER_PAGE)
         ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> offset)
     })
   }
   
   get("/blog/post/:id/delete") {
     val postId = Integer.parseInt(params.get("id").get)
-    adminWrapper((session: Session, userInfo: User) => {
+    adminWrapper((userInfo: User) => { implicit session: Session =>
       db withTransaction {
-        dao.deleteBlogPost(session, postId)
+        dao.deleteBlogPost(postId)
       }
       redirect("/admin/blog")
     })
   }
   
   get("/blog/post/:id/edit") {
-    adminWrapper((session: Session, userInfo: User) => {
-      val post = dao.getBlogPostById(session, Integer.parseInt(params.get("id").get))
+    adminWrapper((userInfo: User) => { implicit session: Session =>
+      val post = dao.getBlogPostById(Integer.parseInt(params.get("id").get))
       ssp("/admin_blog_edit",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "edit blog post", "post" -> post)
     })
   }
   
   post("/blog/post/:id/save") {
-    adminWrapper((session: Session, userInfo: User) => {
+    adminWrapper((userInfo: User) => { implicit session: Session =>
         val subject = params.get("subject").get
         val body = params.get("body").get
         val postId = Integer.parseInt(params.get("id").get)
         db withTransaction {
-            dao.editBlogPost(session, postId, subject, body)
+            dao.editBlogPost(postId, subject, body)
         }
         redirect("/admin/blog")
     })
   }
   
   post("/blog/post") {
-    adminWrapper((session: Session, userInfo: User) => {
+    adminWrapper((userInfo: User) => { implicit session: Session =>
         val subject = params.get("subject").get
         val body = params.get("body").get
         db withTransaction {
-            dao.insertBlogPost(session, userInfo.id.get, subject, body)
+            dao.insertBlogPost(userInfo.id.get, subject, body)
         }
         redirect("/admin/blog")
     })
