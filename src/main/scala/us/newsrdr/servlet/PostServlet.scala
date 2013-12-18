@@ -54,6 +54,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     authenticationRequired(dao, session.getId, db, request, {
       val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
       val userId = getUserId(dao, db, session.getId, request).get
+      val feedList = multiParams("feeds").map(Integer.parseInt(_)).toList
       
       val latestPostDate = params.get("latest_post_date") match {
             case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
@@ -73,7 +74,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
         ArticleListWithMaxId(
             latestPostId,
-            dao.getPostsForAllFeeds(session, userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
+            dao.getPostsForFeeds(session, userId, feedList, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
         )
       })
     }, {

@@ -63,7 +63,11 @@ class AsyncResult
         this._ajax = new XMLHttpRequest
         queryString = ""
         for k,v of data
-            queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(v.toString()) + "&"
+            if Array.isArray(v)
+                for i in v
+                    queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(i.toString()) + "&"
+            else
+                queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(v.toString()) + "&"
         if url.indexOf("?") >= 0
             url = url + "&" + queryString
         else
@@ -238,6 +242,35 @@ NR.API.GetAllPosts = (pageNumber = 0, newestPostDate = "", newestPostId = "", un
         unread_only: unreadOnly
     }, successFn, failFn
 
+#############################################################################
+# Retrieves posts for multiple feeds
+# Input: 
+#     * feeds: array of feed IDs
+#     * pageNumber: page number of posts to retrieve (default: first page)
+#     * newestPostId: the largest post ID to show.
+#     * newestPostDate: the date of the newest post to show.
+#     * unreadOnly: whether to retrieve only unread posts (default: true)
+# Output: on success, a list of NewsFeedArticleInfo objects:
+#     {
+#         'article': {
+#             'id': ...,
+#             'feedId': ...,
+#             'title': ...,
+#         },
+#         'unread': ...,
+#         'saved': ...
+#     }
+#############################################################################
+NR.API.GetAllPostsInMultipleFeeds = (feeds, pageNumber = 0, newestPostDate = "", newestPostId = "", unreadOnly = true, successFn, failFn) ->
+    NR.API.verifyInitialized()
+    new AsyncResult "GET", "/posts", {
+        feeds: feeds,
+        page: pageNumber,
+        latest_post_id: newestPostId,
+        latest_post_date: newestPostDate,
+        unread_only: unreadOnly
+    }, successFn, failFn
+    
 #############################################################################
 # Retrieves saved posts for the given user.
 # Input: 

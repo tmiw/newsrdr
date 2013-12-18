@@ -96,6 +96,13 @@ class SimpleMVC.Collection extends SimpleMVC.Event
     each: (fn) =>
         fn.call(this, i) for i in this._coll
     
+    filter: (fn) =>
+        result = []
+        for i in this._coll
+            if fn.call(this, i)
+                result.push i
+        result
+        
     count: (cFn) =>
         _counter = 0
         this.each (i) -> 
