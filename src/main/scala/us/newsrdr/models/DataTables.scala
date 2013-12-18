@@ -158,7 +158,7 @@ class DataTables(val driver: ExtendedProfile) {
     {
       uaTuple match {
         case (Some(id), Some(uId), Some(aId), Some(aRead), Some(aSaved)) => Some(UserArticle(Some(id), uId, aId, aRead, aSaved))
-        case (None, _, _, _, _) => None
+        case (_, _, _, _, _) => None
       }
     }
     
