@@ -19,7 +19,7 @@ class DataTables(val driver: ExtendedProfile) {
   val OLDEST_POST_DIFFERENCE_SEC = OLDEST_POST_DIFFERENCE_MS / 1000
   
   // UNIX_TIMESTAMP support
-  val unixTimestampFn = SimpleFunction.unary[Timestamp, Int]("UNIX_TIMESTAMP")
+  val unixTimestampFn = SimpleFunction.unary[Option[Timestamp], Long]("UNIX_TIMESTAMP")
   
   case class FeedFailureLog(
     id: Option[Int],
@@ -150,6 +150,17 @@ class DataTables(val driver: ExtendedProfile) {
     def articleSaved = column[Boolean]("articleSaved")
     
     def * = id.? ~ userId ~ articleId ~ articleRead ~ articleSaved <> (UserArticle, UserArticle.unapply _)
+    def maybe = id.? ~ userId.? ~ articleId.? ~ articleRead.? ~ articleSaved.? <> (
+        tupleToArticle _,
+        (ua: Option[UserArticle]) => None)
+        
+    def tupleToArticle(uaTuple: (Option[Int], Option[Int], Option[Int], Option[Boolean], Option[Boolean])): Option[UserArticle] = 
+    {
+      uaTuple match {
+        case (Some(id), Some(uId), Some(aId), Some(aRead), Some(aSaved)) => Some(UserArticle(Some(id), uId, aId, aRead, aSaved))
+        case (None, _, _, _, _) => None
+      }
+    }
     
     def article = foreignKey("userArticleIdKey", articleId, NewsFeedArticles)(_.id)
     def user = foreignKey("userArticleUserIdKey", userId, Users)(_.id)
@@ -200,8 +211,8 @@ class DataTables(val driver: ExtendedProfile) {
     SiteStatistics(
         (for{t <- Users} yield t).list.count(_ => true), 
         (for{t <- NewsFeeds} yield t).list.count(_ => true),
-        (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(lastWeek)} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true),
-        (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(yesterday)} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true))
+        (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(lastWeek))} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true),
+        (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(yesterday))} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true))
   }
   
   def getBlogPosts(implicit session: Session, offset: Int) : List[BlogEntry] = {
@@ -412,6 +423,33 @@ class DataTables(val driver: ExtendedProfile) {
     }
     
     feed_posts.list((userId, feedId, latestPostDate)).head
+  }
+  
+  def getPostsForFeeds(implicit session: Session, userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Int): List[NewsFeedArticleInfo] = {
+    val q = if (unreadOnly) {
+      for {
+        nfa <- NewsFeedArticles if nfa.id <= latestPostId && unixTimestampFn(nfa.pubDate) < latestPostDate
+        (uf, ua) <- UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId && a.articleRead === false && a.articleId === nfa.id)
+                    if uf.userId === userId && uf.feedId === nfa.feedId && uf.feedId.inSet(feedIds) &&
+                       unixTimestampFn(nfa.pubDate) > unixTimestampFn(uf.addedDate) - (60*60*24*14).toLong
+      } yield (nfa, ua.maybe)
+    } else {
+      for {
+        nfa <- NewsFeedArticles if nfa.id <= latestPostId && unixTimestampFn(nfa.pubDate) < latestPostDate
+        (uf, ua) <- UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId && a.articleId === nfa.id)
+                    if uf.userId === userId && uf.feedId === nfa.feedId && uf.feedId.inSet(feedIds) &&
+                       unixTimestampFn(nfa.pubDate) > unixTimestampFn(uf.addedDate) - (60*60*24*14).toLong
+      } yield (nfa, ua.maybe)
+    }
+    
+    q.sortBy(p => p._1.pubDate.desc)
+     .drop(offset)
+     .take(maxEntries)
+     .list
+     .map(p => {
+       if (p._2.isEmpty) NewsFeedArticleInfo(p._1, true, false)
+       else NewsFeedArticleInfo(p._1, p._2.get.articleRead == false, p._2.get.articleSaved)
+     })
   }
   
   def getPostsForFeed(implicit session: Session, userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long) : List[NewsFeedArticleInfo] = {
@@ -1025,13 +1063,13 @@ class DataTables(val driver: ExtendedProfile) {
   
   def deleteOldSessions(implicit session: Session) {
     val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7*1000)
-    val oldSessions = for { us <- UserSessions if unixTimestampFn(us.lastAccess) < unixTimestampFn(oneWeekAgo) } yield us
+    val oldSessions = for { us <- UserSessions if unixTimestampFn(us.lastAccess) < unixTimestampFn(Some(oneWeekAgo)) } yield us
     oldSessions.delete
   }
   
   def deleteOldFailLogs(implicit session: Session) {
     val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7*1000)
-    val oldFailLogs = for { fl <- FeedFailureLogs if unixTimestampFn(fl.failureDate) < unixTimestampFn(oneWeekAgo) } yield fl
+    val oldFailLogs = for { fl <- FeedFailureLogs if unixTimestampFn(fl.failureDate) < unixTimestampFn(Some(oneWeekAgo)) } yield fl
     oldFailLogs.delete
   }
 }
