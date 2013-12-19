@@ -81,7 +81,7 @@ case class NewsFeedInfo(
 )
 
 case class NewsFeedArticle(
-    id: Option[Int],
+    id: Option[Long],
     feedId: Int,
     title: String,
     link: String,
@@ -132,7 +132,7 @@ case class UserSession(
 case class UserArticle(
     id: Option[Int],
     userId: Int,
-    articleId: Int,
+    articleId: Long,
     articleRead: Boolean,
     articleSaved: Boolean)
 

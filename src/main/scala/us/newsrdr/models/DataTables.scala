@@ -84,7 +84,7 @@ class DataTables(val driver: ExtendedProfile) {
   }
   
   object NewsFeedArticles extends Table[NewsFeedArticle]("NewsFeedArticles") {
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def feedId = column[Int]("feedId")
     def title = column[String]("title")
     def link = column[String]("link")
@@ -108,9 +108,9 @@ class DataTables(val driver: ExtendedProfile) {
     def feed = foreignKey("feedIdKey", feedId, NewsFeeds)(_.id)
   }
   
-  object NewsFeedArticleCategories extends Table[(Int, Int, Int)]("NewsFeedArticleCategories") {
+  object NewsFeedArticleCategories extends Table[(Int, Long, Int)]("NewsFeedArticleCategories") {
       def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-      def articleId = column[Int]("articleIdentifier")
+      def articleId = column[Long]("articleIdentifier")
       def categoryId = column[Int]("categoryId")
     
       def * = id ~ articleId ~ categoryId
@@ -145,7 +145,7 @@ class DataTables(val driver: ExtendedProfile) {
   object UserArticles extends Table[UserArticle]("UserArticles") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def userId = column[Int]("userId")
-    def articleId = column[Int]("articleId")
+    def articleId = column[Long]("articleId")
     def articleRead = column[Boolean]("articleRead")
     def articleSaved = column[Boolean]("articleSaved")
     
@@ -154,7 +154,7 @@ class DataTables(val driver: ExtendedProfile) {
         tupleToArticle _,
         (ua: Option[UserArticle]) => None)
         
-    def tupleToArticle(uaTuple: (Option[Int], Option[Int], Option[Int], Option[Boolean], Option[Boolean])): Option[UserArticle] = 
+    def tupleToArticle(uaTuple: (Option[Int], Option[Int], Option[Long], Option[Boolean], Option[Boolean])): Option[UserArticle] = 
     {
       uaTuple match {
         case (Some(id), Some(uId), Some(aId), Some(aRead), Some(aSaved)) => Some(UserArticle(Some(id), uId, aId, aRead, aSaved))
@@ -318,7 +318,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def getFeedByPostId(postId: Int)(implicit session: Session) : NewsFeed = {
+  def getFeedByPostId(postId: Long)(implicit session: Session) : NewsFeed = {
     val feed = for {
       (nfa, nf) <- NewsFeedArticles innerJoin NewsFeeds on (_.feedId === _.id) if nfa.id === postId
     } yield nf
@@ -403,7 +403,7 @@ class DataTables(val driver: ExtendedProfile) {
     feed_posts.list((userId, feedId, latestPostDate)).head
   }
   
-  def getPostsForFeeds(userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Int)(implicit session: Session): List[NewsFeedArticleInfo] = {
+  def getPostsForFeeds(userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session): List[NewsFeedArticleInfo] = {
     val q = if (unreadOnly) {
       for {
         (nfa, (uf, ua)) <- NewsFeedArticles join (UserFeeds leftJoin UserArticles on ((f,a) => f.userId === a.userId && a.articleRead === false)) on ((na, ufa) => na.feedId === ufa._1.feedId && (ufa._2.articleId.isNull || ufa._2.articleId === na.id))
@@ -659,7 +659,7 @@ class DataTables(val driver: ExtendedProfile) {
   
   def setPostStatusForAllPosts(userId: Int, feedId: Int, from: Int, upTo: Int, unread: Boolean)(implicit session: Session) : Boolean = {
     val feedPostsQuery = if (driver.isInstanceOf[H2Driver]) {
-      Q.query[(Int, Int, Long, Long), (Int, Option[Boolean])]("""
+      Q.query[(Int, Int, Long, Long), (Long, Option[Boolean])]("""
             select "nfa"."id", "ua"."articleRead"
             from "NewsFeedArticles" "nfa"
             inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
@@ -671,7 +671,7 @@ class DataTables(val driver: ExtendedProfile) {
                     unix_timestamp("nfa"."pubDate") >= ? and
                       ("ua"."articleRead" is null or "ua"."articleRead" = 0)""")
     } else {
-      Q.query[(Int, Int, Long, Long), (Int, Option[Boolean])]("""
+      Q.query[(Int, Int, Long, Long), (Long, Option[Boolean])]("""
             select nfa.id, ua.articleRead
             from NewsFeedArticles nfa
             inner join UserFeeds uf on uf.feedId = nfa.feedId
@@ -689,13 +689,13 @@ class DataTables(val driver: ExtendedProfile) {
     
     val updateQuery = for { ua <- UserArticles if ua.articleId inSetBind feedPostsToUpdate } yield ua.articleRead
     updateQuery.update(!unread)
-    feedPostsToAdd.foreach((p: Int) => UserArticles.insert(UserArticle(None, userId, p, !unread, false)))
+    feedPostsToAdd.foreach((p: Long) => UserArticles.insert(UserArticle(None, userId, p, !unread, false)))
     true
   }
   
   def setPostStatusForAllPosts(userId: Int, from: Int, upTo: Int, unread: Boolean)(implicit session: Session) : Boolean = {
       val feedPostsQuery = if (driver.isInstanceOf[H2Driver]) {
-        Q.query[(Int, Long, Long), (Int, Option[Boolean])]("""
+        Q.query[(Int, Long, Long), (Long, Option[Boolean])]("""
             select "nfa"."id", "ua"."articleRead"
             from "NewsFeedArticles" "nfa"
             inner join "UserFeeds" "uf" on "uf"."feedId" = "nfa"."feedId"
@@ -706,7 +706,7 @@ class DataTables(val driver: ExtendedProfile) {
                       unix_timestamp("nfa"."pubDate") >= ? and
                       ("ua"."articleRead" is null or "ua"."articleRead" = 0)""")
       } else {
-        Q.query[(Int, Long, Long), (Int, Option[Boolean])]("""
+        Q.query[(Int, Long, Long), (Long, Option[Boolean])]("""
             select nfa.id, ua.articleRead
             from NewsFeedArticles nfa
             inner join UserFeeds uf on uf.feedId = nfa.feedId
@@ -723,11 +723,11 @@ class DataTables(val driver: ExtendedProfile) {
       
       val updateQuery = for { ua <- UserArticles if ua.articleId inSetBind feedPostsToUpdate } yield ua.articleRead
       updateQuery.update(!unread)
-      feedPostsToAdd.foreach((p: Int) => UserArticles.insert(UserArticle(None, userId, p, !unread, false)))
+      feedPostsToAdd.foreach((p: Long) => UserArticles.insert(UserArticle(None, userId, p, !unread, false)))
       true
     }
   
-  def setPostStatus(userId: Int, feedId: Int, postId: Int, unread: Boolean)(implicit session: Session) : Boolean = {
+  def setPostStatus(userId: Int, feedId: Int, postId: Long, unread: Boolean)(implicit session: Session) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
@@ -749,7 +749,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def setPostStatus(userId: Int, postId: Int, unread: Boolean)(implicit session: Session) : Boolean = {
+  def setPostStatus(userId: Int, postId: Long, unread: Boolean)(implicit session: Session) : Boolean = {
     val post_exists = for {
       nfa <- NewsFeedArticles if nfa.id === postId
       uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId
@@ -774,7 +774,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def savePost(userId: Int, feedId: Int, postId: Int)(implicit session: Session) : Boolean = {
+  def savePost(userId: Int, feedId: Int, postId: Long)(implicit session: Session) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {
@@ -796,7 +796,7 @@ class DataTables(val driver: ExtendedProfile) {
     }
   }
   
-  def unsavePost(userId: Int, feedId: Int, postId: Int)(implicit session: Session) : Boolean = {
+  def unsavePost(userId: Int, feedId: Int, postId: Long)(implicit session: Session) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
       my_feed.firstOption match {
         case Some(_) => {

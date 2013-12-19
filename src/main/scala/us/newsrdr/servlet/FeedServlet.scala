@@ -316,7 +316,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           
           ArticleListWithMaxId(
               latestPostId,
-              dao.getPostsForFeed(userId, id, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId.toInt)
+              dao.getPostsForFeed(userId, id, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
           )
         })
       }, {
