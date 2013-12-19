@@ -68,7 +68,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         }
         
         val latestPostId = params.get("latest_post_id") match {
-            case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+            //case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
             case _ => Long.MaxValue // dao.getMaxPostIdForAllFeeds(userId, unreadOnly, latestPostDate)
         }
         
