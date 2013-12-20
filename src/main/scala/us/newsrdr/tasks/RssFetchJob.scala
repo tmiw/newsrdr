@@ -19,7 +19,7 @@ class RssFetchJob extends Job {
     while (count < 3)
     {
       try {
-        return BackgroundJobManager.db.withSession(f)
+        return BackgroundJobManager.db.withTransaction(f)
       } catch {
         case e:java.sql.SQLException => {
           if (e.toString().contains("Lock wait timeout exceeded"))
@@ -64,7 +64,7 @@ class RssFetchJob extends Job {
           // Hold off on updating again for 2x the previous interval (max 24 hours).
           // This will reduce the amount of load/bandwidth on the server if the outage
           // is longer than expected.
-          BackgroundJobManager.db.withSession { implicit session: Session =>
+          BackgroundJobManager.db.withTransaction { implicit session: Session =>
             val feed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)
             feed match {
               case Some(f) => {
