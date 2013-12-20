@@ -734,7 +734,7 @@ class DataTables(val driver: ExtendedProfile) {
         val feed_posts = for {
           (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
                      if nfa.feedId === feedId && ua.articleId === postId
-          uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+          //uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
         } yield ua
         feed_posts.firstOption match {
           case Some(x) => {
@@ -758,8 +758,7 @@ class DataTables(val driver: ExtendedProfile) {
     post_exists.firstOption match {
       case Some(article) => {
         val feed_posts = for {
-          (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-                     if ua.articleId === postId && ua.userId === userId
+          ua <- UserArticles if ua.articleId === postId && ua.userId === userId
         } yield ua
         feed_posts.firstOption match {
           case Some(x) => {
