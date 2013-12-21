@@ -290,6 +290,24 @@ class DataTables(val driver: ExtendedProfile) {
       (for { (fp, fq) <- feed_posts2 if fq.getOrElse(false) == false } yield fp ).length
   }
   
+  def deleteAllOldPosts()(implicit session: Session) {
+    val allFeeds = for { nf <- NewsFeeds } yield nf
+    allFeeds.list.map(f => {
+      val oldPosts = (for { nfa <- NewsFeedArticles if nfa.feedId === f.id } yield nfa).drop(2000)
+      oldPosts.map(a => {
+        val isSaved = (for { ua <- UserArticles if ua.articleId === a.id && ua.articleSaved === true } yield ua).firstOption
+        if (isSaved.isEmpty) {
+          val singlePost = Query(NewsFeedArticles).filter(_.id === a.id)
+          singlePost.delete
+          true
+        } else {
+          false
+        }
+      })
+      false
+    })
+  }
+  
   def getFeedFromUrl(url: String)(implicit session: Session) : Option[NewsFeed] = {
     val feedQuery = for { f <- NewsFeeds if f.feedUrl === url || f.link === url } yield f
     feedQuery.firstOption
