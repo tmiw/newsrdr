@@ -165,6 +165,8 @@ class MultipleFeedsException(feedList: List[AddFeedEntry]) extends Exception
   def getFeedList = feedList
 }
 
+class NotModifiedException extends Exception
+
 object XmlFeedFactory {
   val parser = XML.withSAXParser(new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl().newSAXParser())
   val xpathParser = new org.ccil.cowan.tagsoup.Parser()
@@ -176,7 +178,7 @@ object XmlFeedFactory {
   f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
   val MyXML = XML.withSAXParser(f.newSAXParser())
   
-  private def fetch[T](url: String, fn: java.io.InputStream => T) : (String, T) = {
+  private def fetch[T](url: String, lastUpdatedTime: Long, fn: java.io.InputStream => T) : (String, T) = {
     var count = 0
     var code = 0
     var currentUrl = url
@@ -195,6 +197,7 @@ object XmlFeedFactory {
         conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
         conn.setInstanceFollowRedirects(true)
         conn.setRequestProperty("User-Agent", "newsrdr (http://newsrdr.us/)")
+        conn.setIfModifiedSince(lastUpdatedTime)
         conn.connect()
  
         code = conn.getResponseCode() 
@@ -203,11 +206,15 @@ object XmlFeedFactory {
           // Didn't automatically redirect (went from http->https or vice versa). Compensate here.
           currentUrl = conn.getHeaderField("Location")
         }
-      } while (count < 5 && code >= 300 && code <= 399)
+      } while (count < 5 && code >= 300 && code <= 399 && code != 304)
     
       if (count >= 5)
       {
         throw new RuntimeException("Too many redirects!")
+      }
+      else if (code == 304)
+      {
+        throw new NotModifiedException
       }
       else if (code > 299 || code < 200)
       {
@@ -274,7 +281,7 @@ object XmlFeedFactory {
     val transformer = TransformerFactory.newInstance().newTransformer()
     transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     
-    val (currentUrl, htmlNode) = fetch(url, (stream) => {
+    val (currentUrl, htmlNode) = fetch(url, 0, (stream) => {
       val result = new DOMResult()
       val contentStream = new ManualCloseBufferedStream(stream)
       contentStream.mark(1024*1024*3)
@@ -348,9 +355,9 @@ object XmlFeedFactory {
     </rss>
   }
   
-  def load(url: String) : XmlFeed = {
+  def load(url: String, lastUpdatedTime: Long) : XmlFeed = {
     var doc : String = ""
-    val (currentUrl, xmlDoc) = fetch(url, (stream) => {
+    val (currentUrl, xmlDoc) = fetch(url, lastUpdatedTime, (stream) => {
       val contentStream = new ManualCloseBufferedStream(stream)
       contentStream.mark(1024*1024*3)
       
@@ -383,7 +390,7 @@ object XmlFeedFactory {
     val feedCount = feedLinks.count(_ => true)
     if (feedCount == 1 && !feedLinks.head.attribute("href").map(_.text).head.equals(url))
     {
-      load(new java.net.URL(new java.net.URL(currentUrl), feedLinks.head.attribute("href").map(_.text).head).toString())
+      load(new java.net.URL(new java.net.URL(currentUrl), feedLinks.head.attribute("href").map(_.text).head).toString(), lastUpdatedTime)
     }
     else if (feedCount > 1)
     {

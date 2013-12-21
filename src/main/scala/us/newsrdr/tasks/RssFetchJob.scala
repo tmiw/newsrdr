@@ -39,8 +39,14 @@ class RssFetchJob extends Job {
   
   def fetch(feedUrl: String, log: Boolean): NewsFeed = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
+    val currentFeed = BackgroundJobManager.db withSession { implicit session: Session => BackgroundJobManager.dao.getFeedFromUrl(feedUrl) }
+    val lastUpdatedTime = (
+      if (currentFeed.isDefined) currentFeed.get.lastUpdate
+      else new java.sql.Timestamp(0)
+    ).getTime()
+    
     try {
-      val feed = XmlFeedFactory.load(feedUrl)      
+      val feed = XmlFeedFactory.load(feedUrl, lastUpdatedTime)      
       val ret = preventDeadlock { implicit session: Session =>
         // Update feed's contents with whatever we've fetched from the server.
         // If it doesn't already exist, create.
@@ -52,6 +58,10 @@ class RssFetchJob extends Job {
     }
     catch
     {
+      case e:NotModifiedException => {
+        // Not modified; this isn't an error.
+        if (currentFeed.isDefined) currentFeed.get else null
+      }
       case e:Exception => {
         if (log == false) {
           throw e
