@@ -60,7 +60,9 @@ class RssFetchJob extends Job {
     {
       case e:NotModifiedException => {
         // Not modified; this isn't an error.
-        if (currentFeed.isDefined) currentFeed.get else null
+        val ret = if (currentFeed.isDefined) currentFeed.get else null
+        BackgroundJobManager.rescheduleFeedJob(feedUrl, 60*60)
+        ret
       }
       case e:Exception => {
         if (log == false) {
