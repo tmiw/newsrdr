@@ -733,7 +733,7 @@ class DataTables(val driver: ExtendedProfile) {
         case Some(_) => {
         val feed_posts = for {
           (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-                     if nfa.feedId === feedId && ua.articleId === postId
+                     if nfa.feedId === feedId && ua.articleId === postId && ua.userId == userId
           //uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
         } yield ua
         feed_posts.firstOption match {
@@ -778,14 +778,12 @@ class DataTables(val driver: ExtendedProfile) {
       my_feed.firstOption match {
         case Some(_) => {
         val feed_posts = for {
-          (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-                     if nfa.feedId === feedId && ua.articleId === postId
-          uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+          ua <- UserArticles if ua.articleId === postId && ua.userId == userId
+          //uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
         } yield ua
         feed_posts.firstOption match {
           case Some(x) => {
-            val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
-            single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, x.articleRead, true))
+            feed_posts.update(UserArticle(x.id, x.userId, x.articleId, x.articleRead, true))
           }
           case None => UserArticles.insert(UserArticle(None, userId, postId, false, true))
         }
@@ -800,14 +798,12 @@ class DataTables(val driver: ExtendedProfile) {
       my_feed.firstOption match {
         case Some(_) => {
         val feed_posts = for {
-          (nfa, ua) <- NewsFeedArticles leftJoin UserArticles on (_.id === _.articleId)
-                     if nfa.feedId === feedId && ua.articleId === postId
-          uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
+          ua <- UserArticles if ua.articleId === postId && ua.userId == userId
+          //uf <- UserFeeds if uf.userId === userId && nfa.feedId === uf.feedId && uf.userId === ua.userId
         } yield ua
         feed_posts.firstOption match {
           case Some(x) => {
-            val single_feed_post = for { ua <- UserArticles if ua.userId === x.userId && ua.articleId === x.articleId } yield ua
-            single_feed_post.update(UserArticle(x.id, x.userId, x.articleId, x.articleRead, false))
+            feed_posts.update(UserArticle(x.id, x.userId, x.articleId, x.articleRead, false))
           }
           case None => UserArticles.insert(UserArticle(None, userId, postId, false, false))
         }
