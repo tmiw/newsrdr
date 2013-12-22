@@ -271,7 +271,14 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   get("/auth/login") {
     // Show list of login choices
     contentType="text/html"
-    ssp("/login", "title" -> "login" )
+      
+    if (session.getAttribute("redirectUrlOnLogin") == null)
+    {
+      session.setAttribute("redirectUrlOnLogin", "/news/")
+    }
+    val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
+    
+    ssp("/login", "title" -> "login", "redirectUrl" -> redirectUrl )
   }
   
   get("/about") {
