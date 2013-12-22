@@ -79,7 +79,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
            dao.startUserSession(sId, username, userInfo.get.email, request.getRemoteAddr(), userInfo.get.friendlyName)
          }
          session.setAttribute("authService", "newsrdr")
-         AuthApiResult(true, None)
+         NoDataApiResult(true, None)
        }
      }
     }
@@ -413,6 +413,11 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
         {
           implicit val formats = Serialization.formats(NoTypeHints)
           val today = new java.util.Date().getTime()
+          val email = if (authService == "newsrdr") {
+            user.email
+          } else {
+            ""
+          }
           val bootstrappedFeeds = write(dao.getSubscribedFeeds(userId).map(x => {
             NewsFeedInfo(
                   x._1, 
@@ -421,7 +426,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
                   if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
             )
           }))
-          ssp("/app", "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId )
+          ssp("/app", "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId, "email" -> email )
         }
       }
     }, {

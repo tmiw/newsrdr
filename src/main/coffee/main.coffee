@@ -145,6 +145,41 @@ class NR.Application extends SimpleMVC.Controller
            </center>
          </div>')
     
+    submitUpdateProfileBox: () =>
+        good = false
+        
+        if event?
+            event.preventDefault()
+        
+        if $('#profileEmail').val().length == 0
+            noty({ text: "Email is required.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" })
+        else if !$('#profileEmail').val().match(/^[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+@[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+/)
+            noty({ text: "Email address is invalid.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" })
+        else
+            if $('#profilePassword').val().length > 0
+                if $('#profilePassword').val().length < 8
+                    noty({ text: "Password must be at least eight characters long.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" })
+                else if $('#profilePassword').val() != $('#profilePassword2').val()
+                    noty({ text: "Both passwords must match in order to reset your password.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" })
+                else
+                    good = true
+            else
+                good = true
+        
+        if good == true
+            successWrapper = (data) =>
+                noty({ text: "Profile updated.", layout: "topRight", timeout: 2000, dismissQueue: true, type: "success" })
+                this.profileModel.email = $('#profileEmail').val()
+            
+            NR.API.UpdateProfile(
+                $('#profileEmail').val(), 
+                $('#profilePassword').val(),
+                $('#profilePassword2').val(), 
+                successWrapper, 
+                this._apiError)
+            
+            $("#updateProfile").modal('hide')
+    
     submitAddFeedBox: =>
         if event?
             event.preventDefault()
@@ -280,7 +315,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     # o/O (open current article in new window)
                     this._handleOpenArticleKeys e
                     
-    constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop = false) ->
+    constructor: (bootstrappedFeeds, bootstrappedPosts, optedOut, suppressLeftAndTop, email = "") ->
         super()
 
         NR.API.Initialize()
@@ -294,11 +329,17 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         this.localSettings.optedOut = optedOut
         
         if not suppressLeftAndTop
+            this.profileModel = new NR.Models.ProfileModel
+            this.profileModel.email = email
+              
             this.topNavView = new NR.Views.TopNavBar
             this.topNavView.model = this.localSettings
             this.welcomeView = new NR.Views.WelcomeBlock
             this.newsFeedView = new NR.Views.NewsFeedListing this.feedList
-            
+        
+            if email != ""
+                $("#updateProfileLink").parent().removeClass "disabled"
+                
             for i in bootstrappedFeeds
                 feed = new NR.Models.NewsFeedInfo
                 for k,v of i

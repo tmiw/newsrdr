@@ -394,7 +394,15 @@ class NR.Views.TopNavBar extends SimpleMVC.View
         e.preventDefault()
         if not $("#showOnlyUnreadLink").parent().hasClass("disabled")
             window.app.toggleShowUnread()
-    
+            
+    @event "click", "#updateProfileLink", (e) ->
+        e.preventDefault()
+        if not $("#updateProfileLink").parent().hasClass("disabled")
+            $("#profileEmail").val(window.app.profileModel.email)
+            $("#profilePassword").val("")
+            $("#profilePassword2").val("")
+            $("#updateProfile").modal()
+            
     @event "click", "#optOutSharingLink", (e) ->
         window.app.toggleOptOut()
         e.preventDefault()

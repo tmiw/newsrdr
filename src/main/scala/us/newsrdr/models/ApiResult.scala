@@ -34,9 +34,6 @@ object Constants {
 
 class ApiResult(success: Boolean, error_string: Option[String])
 
-case class AuthApiResult(success: Boolean, error_string: Option[String])
-  extends ApiResult(success, error_string)
-
 case class StringDataApiResult(success: Boolean, error_string: Option[String], data: String)
   extends ApiResult(success, error_string)
 

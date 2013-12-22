@@ -167,6 +167,15 @@ NR.API.Register = (username, password, password2, email, successFn, failureFn) -
     new AsyncResult "POST", "/user", {username: username, password: password, password2: password2, email: email}, successFn, failureFn
 
 #############################################################################
+# Updates profile for a newsrdr account.
+# Input: new email (and an optional password) + success/failure functions
+# Output: none.
+#############################################################################
+NR.API.UpdateProfile = (email, password = "", password2 = "", successFn, failureFn) ->
+    NR.API.verifyInitialized()
+    new AsyncResult "POST", "/user/profile", {email: email, password: password, password2: password2}, successFn, failureFn
+    
+#############################################################################
 # Resets password for a newsrdr account.
 # Input: username + success/failure functions
 # Output: email is sent to user with new password.

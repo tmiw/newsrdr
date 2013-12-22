@@ -894,6 +894,16 @@ class DataTables(val driver: ExtendedProfile) {
     q.update(AuthenticationTools.hashPassword(password))
   }
   
+  def setPassword(uId: Int, password: String)(implicit session: Session) = {
+    val q = for { u <- Users if u.id === uId } yield u.password
+    q.update(AuthenticationTools.hashPassword(password))
+  }
+  
+  def setEmail(uId: Int, email: String)(implicit session: Session) = {
+    val q = for { u <- Users if u.id === uId } yield u.email
+    q.update(email)
+  }
+  
   def startUserSession(sessionId: String, username: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {
     val q = for { u <- Users if u.username === username } yield u
     val userId = q.firstOption match {

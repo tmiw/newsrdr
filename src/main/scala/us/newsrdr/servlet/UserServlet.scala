@@ -71,6 +71,59 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     }
   }
   
+  val getProfile =
+    (apiOperation[Unit]("getProfile")
+        summary "Retrieves account profile."
+        notes "Retrieves account profile.")
+  get("/profile", operation(getProfile))
+  {
+    authenticationRequired(dao, session.getId, db, request, {
+      val userId = getUserId(dao, db, session.getId, request).get
+      
+      // Only for newsrdr accounts.
+      if (session.getAttribute("authService").toString() != "newsrdr") halt(401)
+      
+      db withSession { implicit s: Session =>
+        val email = dao.getUserInfo(userId).email
+        StringDataApiResult(true, None, email)
+      }
+    }, {
+      halt(401)
+    })
+  }
+  
+  val updateProfile =
+    (apiOperation[Unit]("updateProfile")
+        summary "Updates account profile."
+        notes "Updates account profile.")
+  
+  post("/profile", operation(updateProfile)) {
+    authenticationRequired(dao, session.getId, db, request, {
+      val userId = getUserId(dao, db, session.getId, request).get
+      val password = params.get("password")
+      val password2 = params.get("password2")
+      val email = params.getOrElse("email", halt(422))
+    
+      // Only for newsrdr accounts.
+      if (session.getAttribute("authService").toString() != "newsrdr") halt(401)
+      
+      // Password is optional, but if provided, will be reset.
+      if (password.isDefined)
+      {
+        if (password2.isEmpty || password.get != password2.get || (password.get.length < 8 && password.get.length > 0)) halt(422)
+      }
+    
+      db withTransaction { implicit s: Session => 
+        dao.setEmail(userId, email)
+        if (password.isDefined && password.get.length > 0) dao.setPassword(userId, password.get)
+      }
+      
+      NoDataApiResult(true, None)
+    }, {
+      halt(401)
+    })
+  }
+  
   val resetPassword =
     (apiOperation[Unit]("resetPassword")
         summary "Resets password"

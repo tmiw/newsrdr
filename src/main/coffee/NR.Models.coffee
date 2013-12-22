@@ -5,6 +5,9 @@ else
     
 NR.Models = {} 
 
+class NR.Models.ProfileModel extends SimpleMVC.Model
+    @fields "email"
+    
 class NR.Models.MultipleFeedEntry extends SimpleMVC.Model
     @fields "title", "url"
     
