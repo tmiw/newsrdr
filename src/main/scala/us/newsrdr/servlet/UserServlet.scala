@@ -6,6 +6,7 @@ import servlet.{MultipartConfig, SizeConstraintExceededException, FileUploadSupp
 import scala.slick.session.Database
 import us.newsrdr.models._
 import us.newsrdr.tasks._
+import us.newsrdr._
 import scala.slick.session.{Database, Session}
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s._
@@ -15,8 +16,11 @@ import org.scalatra.swagger._
 import scala.xml._
 import scala.collection._
 import scala.util.matching.Regex
+import javax.mail._
+import javax.mail.internet._
+import java.util.Properties
 
-class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
+class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport
   with GZipSupport {
 
@@ -65,6 +69,55 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       }
       NoDataApiResult(ret, None)
     }
+  }
+  
+  val resetPassword =
+    (apiOperation[Unit]("resetPassword")
+        summary "Resets password"
+        notes "Resets password.")
+  post("/resetPassword", operation(resetPassword)) {
+    val username = params.getOrElse("username", halt(422))
+    if (username.length() == 0) halt(422)
+    
+    try {
+      val newRandomPassword = AuthenticationTools.randomPassword
+      val email = db withSession { implicit s: Session =>
+        dao.getUserInfoByUsername(username).get.email
+      }
+      db withTransaction { implicit s: Session => 
+        dao.setPassword(username, newRandomPassword)
+      }
+      
+      // Send email to owner
+      val session = Session.getDefaultInstance(props)
+      val message = new MimeMessage(session)
+
+      // TODO: i18n
+      message.setFrom(new InternetAddress(props.get("us.newsrdr.email-to").toString()))
+      message.setRecipients(javax.mail.Message.RecipientType.TO, email)
+      message.setSubject("[newsrdr.us] Password reset")
+      message.setText("Someone (probably you) has requested the password for your account be reset.\r\n" +
+      		"Your new password is: " + newRandomPassword + "\r\n" +
+      		"\r\n" +
+      		"Visit http://newsrdr.us/auth/login to log in.")
+   
+      val tr = session.getTransport("smtp")
+      if (props.get("mail.smtp.auth") == "true")
+      {
+        tr.connect(props.get("mail.smtp.user").toString(), props.get("mail.smtp.password").toString())
+      }
+      else
+      {
+        tr.connect()
+      }
+      message.saveChanges()
+      tr.sendMessage(message, message.getAllRecipients())
+      tr.close()
+    } catch {
+      case _:Exception => { /* ignore so we don't tip off hackers. */ }
+    }
+    
+    NoDataApiResult(true, None)
   }
   
   val optOut =

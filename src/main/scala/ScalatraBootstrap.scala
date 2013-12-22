@@ -49,7 +49,7 @@ class ScalatraBootstrap extends LifeCycle {
     context.mount(new NewsReaderServlet(dao, db, appProperties), "/*")
     context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")
     context.mount(new PostServlet(dao, db, swagger), "/posts/*")
-    context.mount(new UserServlet(dao, db, swagger), "/user/*")
+    context.mount(new UserServlet(dao, db, appProperties, swagger), "/user/*")
     context.mount(new AdminServlet(dao, db), "/admin/*")
     context.mount(new SavedPostsServlet(dao, db, swagger), "/saved/*")
     context.mount(new BlogServlet(dao, db, swagger), "/blog/*")

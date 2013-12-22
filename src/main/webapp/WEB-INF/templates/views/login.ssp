@@ -18,7 +18,9 @@
         <p class="lead">Or enter your username and password below:</p>
         <p>
         <form class="form-inline" role="form" onsubmit="return attemptLogin();">
-          <div class="alert alert-danger" id="authFailureMessage">Incorrect username or password.</div>
+          <div class="alert alert-success" id="authResetMessage">Check your email for your new password.</div>
+          <div class="alert alert-danger" id="authValidationMessage">Username and password are required.</div>
+          <div class="alert alert-danger" id="authFailureMessage">Incorrect username or password. <a class="alert-link" href="javascript:resetPassword()">Click here</a> to reset your password.</div>
           <div class="form-group">
             <label class="sr-only" for="username">Username</label>
             <input type="text" class="form-control" id="username" placeholder="Username">
@@ -33,7 +35,7 @@
         <p class="lead">No account yet? Register now:</p>
         <p>
         <form class="form-horizontal" role="form" onsubmit="return attemptRegister();">
-          <div class="alert alert-danger" id="registerFailureMessage">Cannot register account. Please check your username and try again.</div>
+          <div class="alert alert-danger" id="registerFailureMessage">Cannot register account. Please try another username.</div>
           <div class="form-group">
             <label for="newUsername" class="col-sm-2 control-label">Username</label>
             <div class="col-sm-10">
@@ -71,8 +73,10 @@
 <script src="/js/NR.API.js"></script>
 <script type="text/javascript">
 NR.API.Initialize();
+$("#authValidationMessage").hide();
 $("#authFailureMessage").hide();
 $("#registerFailureMessage").hide();
+$("#authResetMessage").hide();
 
 attemptRegister = function() {
     var newUsername = document.getElementById("newUsername").value;
@@ -127,15 +131,40 @@ attemptRegister = function() {
 attemptLogin = function() {
     var username = document.getElementById("username").value;
     var password = document.getElementById("password").value;
+    var validated = true;
     
+    $("#authValidationMessage").hide();
     $("#authFailureMessage").hide();
-    NR.API.Login(username, password, function() {
-        location.href = "<%= redirectUrl %>";
-    }, function() {
-        $("#authFailureMessage").show();
-    });
+    $("#authResetMessage").hide();
+    
+    if (username == "" || password == "") {
+        $("#authValidationMessage").show();
+        validated = false;
+    }
+    
+    if (validated)
+    {
+        NR.API.Login(username, password, function() {
+            location.href = "<%= redirectUrl %>";
+        }, function() {
+            $("#authFailureMessage").show();
+        });
+    }
     
     return false;
 };
+
+resetPassword = function() {
+    $("#authValidationMessage").hide();
+    $("#authFailureMessage").hide();
+    $("#authResetMessage").hide();
+    
+    var username = document.getElementById("username").value;
+    NR.API.ResetPassword(username, function() {
+        $("#authResetMessage").show();
+    }, function() {
+        $("#authResetMessage").show();
+    });
+}
 
 </script>
