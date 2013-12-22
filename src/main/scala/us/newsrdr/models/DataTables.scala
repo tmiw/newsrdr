@@ -908,7 +908,7 @@ class DataTables(val driver: ExtendedProfile) {
     val q = for { u <- Users if u.username === username } yield u
     val userId = q.firstOption match {
       case Some(u) => {
-        q.update(User(u.id, u.username, u.password, email, friendlyName, false, u.isAdmin))
+        q.update(User(u.id, u.username, u.password, email, friendlyName, u.optOutSharing, u.isAdmin))
         u.id.get
       }
       case None => {
