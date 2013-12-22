@@ -60,7 +60,7 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     db withTransaction { implicit s: Session => 
       val ret = dao.createUser(username, password, email)
       if (ret) {
-        dao.startUserSession(sId, username, email, request.getRemoteAddr(), email)
+        dao.startUserSession(sId, username, email, request.getRemoteAddr(), username)
         session.setAttribute("authService", "newsrdr")
       }
       NoDataApiResult(ret, None)
