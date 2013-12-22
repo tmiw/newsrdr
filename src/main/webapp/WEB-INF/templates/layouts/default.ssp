@@ -43,14 +43,7 @@ newsrdr: a news reader without the extra fluff</title>
                 <% if (loggedIn) { %>
                 <li><a href="/news/">Your News</a></li>
                 <% } else { %>
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Login/Register <b class="caret"></b></a>
-                  <ul class="dropdown-menu">
-                    <li><a href="/auth/login/google">via Google account</a></li>
-                    <li><a href="/auth/login/fb">via Facebook</a></li>
-                    <li><a href="/auth/login/twitter">via Twitter</a></li>
-                  </ul>
-                </li>
+                <li><a href="/auth/login">Login/Register</a></li>
                 <% } %>
                 <li class="dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Developers <b class="caret"></b></a>

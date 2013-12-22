@@ -32,6 +32,7 @@ object NewsrdrBuild extends Build {
         "org.scalatra" %% "scalatra-swagger"  % ScalatraVersion,
         "org.json4s"   %% "json4s-native" % "3.2.4",
         "javax.mail" % "mail" % "1.4.7",
+        "com.lambdaworks" % "scrypt" % "1.4.0",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "org.twitter4j" % "twitter4j-stream" % "3.0.3",
         "org.openid4java" % "openid4java-consumer" % "0.9.6",

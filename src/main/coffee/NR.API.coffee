@@ -145,6 +145,17 @@ NR.API.Initialize = ->
     NR.API._initialized = true
 
 #############################################################################
+# Logs user into newsrdr. Note that this is only for people who've created
+# their own accounts (vs. using Google+/Facebook/Twitter).
+# Input: username and password + success/failure functions
+# Output: none. Success function = username and password are correct, else
+#         failure function is called.
+#############################################################################
+NR.API.Login = (username, password, successFn, failureFn) ->
+    NR.API.verifyInitialized()
+    new AsyncResult "POST", "/auth/login/newsrdr", {username: username, password: password}, successFn, failureFn
+    
+#############################################################################
 # Retrieves a list of feeds from the server.
 # Input: success and failure functions
 # Output: on success, a list of NewsFeedInfo objects:

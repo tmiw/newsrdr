@@ -12,24 +12,24 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read, write}
-import dispatch._, Defaults._
+import org.json4s.{DefaultFormats, Formats}
+import org.json4s.JsonDSL._
+import org.scalatra.json._
+import dispatch._
+import Defaults._
 import dispatch.url
-
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.auth.RequestToken;
-
+import twitter4j.Twitter
+import twitter4j.TwitterException
+import twitter4j.TwitterFactory
+import twitter4j.auth.RequestToken
 import javax.mail._
 import javax.mail.internet._
 import java.util.Properties
-
-// Swagger support
 import org.scalatra.swagger._
-
 import scala.collection._
+import us.newsrdr.AuthenticationTools
 
-class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with AuthOpenId with GZipSupport {
+class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with NativeJsonSupport with AuthOpenId with GZipSupport {
   val manager = new ConsumerManager
   
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
@@ -57,6 +57,36 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   get("/extensions") {
     contentType = "text/html"
     ssp("/extensions", "title" -> "Browser Extensions")
+  }
+  
+  post("/auth/login/newsrdr") {
+    contentType = formats("json")
+    
+    val sId = session.getId()
+    val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
+    
+    // newsrdr account login is different because login is handled via AJAX.
+    // If true is returned here /auth/login will set location.href to the correct redirect URL.
+    db withSession { implicit session: Session =>
+      dao.getUserSession(sId, request.getRemoteAddr()) match {
+        case Some(sess) => AuthApiResult(true, None)
+        case None => {
+          val username = params.getOrElse("username", halt(422))
+          val password = params.getOrElse("password", halt(422))
+          
+          val userInfo = dao.getUserInfoByUsername(username)
+          if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401)
+          else {
+            if (AuthenticationTools.validatePassword(userInfo.get, password)) {
+              db withTransaction { implicit session: Session =>
+                dao.startUserSession(sId, username, userInfo.get.email, userInfo.get.friendlyName)
+              }
+              AuthApiResult(true, None)
+            } else halt(401)
+          }
+        }
+      }
+    }
   }
   
   get("/auth/login/google") {

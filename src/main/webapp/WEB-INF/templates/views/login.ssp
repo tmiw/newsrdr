@@ -1,3 +1,5 @@
+<%@ val redirectUrl : String = "/news/" %>
+
 <div class="container">
 <div class="jumbotron">
       <div class="container">
@@ -13,6 +15,41 @@
             <li><a class="btn btn-default" href="/auth/login/fb">Facebook account</a></li>
             <li><a class="btn btn-default" href="/auth/login/twitter">Twitter account</a></li>
         </ul></p>
+        <p class="lead">Or enter your username and password below:</p>
+        <p>
+        <form class="form-inline" role="form" onsubmit="return attemptLogin();">
+          <div class="alert alert-danger" id="authFailureMessage">Incorrect username or password.</div>
+          <div class="form-group">
+            <label class="sr-only" for="username">Username</label>
+            <input type="text" class="form-control" id="username" placeholder="Username">
+          </div>
+          <div class="form-group">
+            <label class="sr-only" for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password">
+          </div>
+          <button type="submit" class="btn btn-default">Login</button>
+        </form>
+        </p>
       </div>
     </div>
 </div>
+
+<script src="/js/NR.API.js"></script>
+<script type="text/javascript">
+NR.API.Initialize();
+$("#authFailureMessage").hide();
+
+attemptLogin = function() {
+    var username = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
+    
+    NR.API.Login(username, password, function() {
+        location.href = "<%= redirectUrl %>";
+    }, function() {
+        $("#authFailureMessage").show();
+    });
+    
+    return false;
+}
+
+</script>

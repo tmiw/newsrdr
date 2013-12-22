@@ -851,6 +851,11 @@ class DataTables(val driver: ExtendedProfile) {
     q.firstOption.getOrElse("")
   }
   
+  def getUserInfoByUsername(username: String)(implicit session: Session) : Option[User] = {
+    val q = for { u <- Users if u.username === username } yield u
+    q.firstOption
+  }
+  
   def getUserInfo(userId: Int)(implicit session: Session) : User = {
     val q = for { u <- Users if u.id === userId } yield u
     q.first
