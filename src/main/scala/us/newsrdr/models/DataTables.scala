@@ -1,6 +1,7 @@
 package us.newsrdr.models
 
 import us.newsrdr.tasks._
+import us.newsrdr._
 import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
 import scala.slick.jdbc.meta.{MTable}
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
@@ -876,7 +877,16 @@ class DataTables(val driver: ExtendedProfile) {
   }
   
   def startUserSession(sessionId: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {
-   startUserSession(sessionId, email, email, ip, friendlyName) 
+    startUserSession(sessionId, email, email, ip, friendlyName) 
+  }
+  
+  def createUser(username: String, password: String, email: String)(implicit session: Session) = {
+    val q = for { u <- Users if u.username === username } yield u
+    if (q.firstOption.isDefined) { false }
+    else {
+      Users.insert(User(None, username, AuthenticationTools.hashPassword(password), email, username, false, false))
+      true
+    }
   }
   
   def startUserSession(sessionId: String, username: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {

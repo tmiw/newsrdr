@@ -154,7 +154,18 @@ NR.API.Initialize = ->
 NR.API.Login = (username, password, successFn, failureFn) ->
     NR.API.verifyInitialized()
     new AsyncResult "POST", "/auth/login/newsrdr", {username: username, password: password}, successFn, failureFn
-    
+
+#############################################################################
+# Creates a new newsrdr account.
+# Input: username, password, password (again) and email address
+#        + success/failure functions
+# Output: none. Success function = user registered, else
+#         failure function is called.
+#############################################################################
+NR.API.Register = (username, password, password2, email, successFn, failureFn) ->
+    NR.API.verifyInitialized()
+    new AsyncResult "POST", "/user", {username: username, password: password, password2: password2, email: email}, successFn, failureFn
+
 #############################################################################
 # Retrieves a list of feeds from the server.
 # Input: success and failure functions

@@ -62,7 +62,10 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
       }
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI())
-      redirect(Constants.LOGIN_URI + "/" + authService)
+      if (authService != "newsrdr")
+        redirect(Constants.LOGIN_URI + "/" + authService)
+      else
+        redirect(Constants.LOGIN_URI)
     })
   }
   

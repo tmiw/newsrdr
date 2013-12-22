@@ -67,25 +67,21 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     
     // newsrdr account login is different because login is handled via AJAX.
     // If true is returned here /auth/login will set location.href to the correct redirect URL.
-    db withSession { implicit session: Session =>
-      dao.getUserSession(sId, request.getRemoteAddr()) match {
-        case Some(sess) => AuthApiResult(true, None)
-        case None => {
-          val username = params.getOrElse("username", halt(422))
-          val password = params.getOrElse("password", halt(422))
+    db withSession { implicit s: Session =>
+     val username = params.getOrElse("username", halt(422))
+     val password = params.getOrElse("password", halt(422))
           
-          val userInfo = dao.getUserInfoByUsername(username)
-          if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401)
-          else {
-            if (AuthenticationTools.validatePassword(userInfo.get, password)) {
-              db withTransaction { implicit session: Session =>
-                dao.startUserSession(sId, username, userInfo.get.email, userInfo.get.friendlyName)
-              }
-              AuthApiResult(true, None)
-            } else halt(401)
-          }
-        }
-      }
+     val userInfo = dao.getUserInfoByUsername(username)
+     if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401)
+     else {
+       if (AuthenticationTools.validatePassword(userInfo.get, password)) {
+         db withTransaction { implicit s: Session =>
+           dao.startUserSession(sId, username, userInfo.get.email, request.getRemoteAddr(), userInfo.get.friendlyName)
+         }
+         session.setAttribute("authService", "newsrdr")
+         AuthApiResult(true, None)
+       }
+     }
     }
   }
   
@@ -190,7 +186,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     
     val sId = session.getId()
     db withTransaction { implicit session: Session =>
-      dao.startUserSession(sId, "tw:" + twitter.getId(), "", twitter.getScreenName())
+      dao.startUserSession(sId, "tw:" + twitter.getId(), request.getRemoteAddr(), twitter.getScreenName())
     }
     redirect("/auth/login/twitter")
   }
@@ -377,7 +373,10 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       }
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
-      redirect(Constants.LOGIN_URI + "/" + authService)
+      if (authService != "newsrdr")
+        redirect(Constants.LOGIN_URI + "/" + authService)
+      else
+        redirect(Constants.LOGIN_URI)
     })
   }
   
@@ -405,7 +404,10 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
         if (userId.toString != uidAsString)
         {
           sess.setAttribute("redirectUrlOnLogin", "/news/" + userId.toString + qs)
-          redirect(Constants.LOGIN_URI + "/" + authService)
+          if (authService != "newsrdr")
+            redirect(Constants.LOGIN_URI + "/" + authService)
+          else
+            redirect(Constants.LOGIN_URI)
         }
         else
         {
@@ -439,7 +441,10 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
         }
       } else {
         session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
-        redirect(Constants.LOGIN_URI + "/" + authService)
+        if (authService != "newsrdr")
+            redirect(Constants.LOGIN_URI + "/" + authService)
+          else
+            redirect(Constants.LOGIN_URI)
       }
     })
   }

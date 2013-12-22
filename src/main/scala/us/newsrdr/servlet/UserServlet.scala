@@ -7,22 +7,14 @@ import scala.slick.session.Database
 import us.newsrdr.models._
 import us.newsrdr.tasks._
 import scala.slick.session.{Database, Session}
-
-// JSON-related libraries
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s._
 import org.json4s.JsonDSL._
-
-// JSON handling support from Scalatra
 import org.scalatra.json._
-
-// Swagger support
 import org.scalatra.swagger._
-
-// XML support
 import scala.xml._
-
 import scala.collection._
+import scala.util.matching.Regex
 
 class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) extends NewsrdrStack
   with NativeJsonSupport with SwaggerSupport with ApiExceptionWrapper with AuthOpenId with FileUploadSupport
@@ -43,6 +35,35 @@ class UserServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
       super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
+    }
+  }
+  
+  val register =
+    (apiOperation[Unit]("register")
+        summary "Registers new account"
+        notes "Registers a new account.")
+        
+  post("/", operation(register)) {
+    val username = params.getOrElse("username", halt(422))
+    val password = params.getOrElse("password", halt(422))
+    val password2 = params.getOrElse("password2", halt(422))
+    val email = params.getOrElse("email", halt(422))
+    val sId = session.getId()
+    
+    if (username.length() == 0 || password.length() < 8 ||
+        password2.length() == 0 || email.length() == 0) halt(422)
+    
+    if (password != password2) halt(422)
+    
+    if ("^[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+@[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+".r.findFirstIn(email).isEmpty) halt(422)
+    
+    db withTransaction { implicit s: Session => 
+      val ret = dao.createUser(username, password, email)
+      if (ret) {
+        dao.startUserSession(sId, username, email, request.getRemoteAddr(), email)
+        session.setAttribute("authService", "newsrdr")
+      }
+      NoDataApiResult(ret, None)
     }
   }
   
