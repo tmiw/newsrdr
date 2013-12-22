@@ -34,7 +34,7 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
     }
   }
   
-  def adminWrapper[T](f: (User) => T) : Any = {
+  def adminWrapper[T](f: (Session, User) => T) : Any = {
     contentType="text/html"
     val sess = session;
     val qs = if (request.getQueryString() == null) { "" } else { "?" + request.getQueryString() }
@@ -57,7 +57,7 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
         }
         else
         {
-          f(userInfo)
+          f(session, userInfo)
         }
       }
     }, {
@@ -70,14 +70,14 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   }
   
   get("/") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
-        val statistics = dao.getSiteStatistics()
+    adminWrapper((session: Session, userInfo: User) => {
+        val statistics = dao.getSiteStatistics()(session)
         ssp("/admin",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "site admin", "siteStats" -> statistics)
     })
   }
   
   get("/maint/rebalance") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
+    adminWrapper((session: Session, userInfo: User) => {
       val maint = new us.newsrdr.tasks.ServerMaintenanceJob
       maint.rebalanceJobs
       redirect("/admin/")
@@ -85,55 +85,55 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   }
   
   get("/blog") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
-        val postList = dao.getBlogPosts(0)
+    adminWrapper((session: Session, userInfo: User) => {
+        val postList = dao.getBlogPosts(0)(session)
         ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> 0)
     })
   }
   
   get("/blog/page/:page") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
+    adminWrapper((session: Session, userInfo: User) => {
         val offset = Integer.parseInt(params.get("page").getOrElse("0"))
-        val postList = dao.getBlogPosts(offset * Constants.ITEMS_PER_PAGE)
+        val postList = dao.getBlogPosts(offset * Constants.ITEMS_PER_PAGE)(session)
         ssp("/admin_blog",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "blog admin", "postList" -> postList, "offset" -> offset)
     })
   }
   
   get("/blog/post/:id/delete") {
     val postId = Integer.parseInt(params.get("id").get)
-    adminWrapper((userInfo: User) => { implicit session: Session =>
+    adminWrapper((session: Session, userInfo: User) => {
       db withTransaction {
-        dao.deleteBlogPost(postId)
+        dao.deleteBlogPost(postId)(session)
       }
       redirect("/admin/blog")
     })
   }
   
   get("/blog/post/:id/edit") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
-      val post = dao.getBlogPostById(Integer.parseInt(params.get("id").get))
+    adminWrapper((session: Session, userInfo: User) => {
+      val post = dao.getBlogPostById(Integer.parseInt(params.get("id").get))(session)
       ssp("/admin_blog_edit",  "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "edit blog post", "post" -> post)
     })
   }
   
   post("/blog/post/:id/save") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
+    adminWrapper((session: Session, userInfo: User) => {
         val subject = params.get("subject").get
         val body = params.get("body").get
         val postId = Integer.parseInt(params.get("id").get)
         db withTransaction {
-            dao.editBlogPost(postId, subject, body)
+            dao.editBlogPost(postId, subject, body)(session)
         }
         redirect("/admin/blog")
     })
   }
   
   post("/blog/post") {
-    adminWrapper((userInfo: User) => { implicit session: Session =>
+    adminWrapper((session: Session, userInfo: User) => {
         val subject = params.get("subject").get
         val body = params.get("body").get
         db withTransaction {
-            dao.insertBlogPost(userInfo.id.get, subject, body)
+            dao.insertBlogPost(userInfo.id.get, subject, body)(session)
         }
         redirect("/admin/blog")
     })
