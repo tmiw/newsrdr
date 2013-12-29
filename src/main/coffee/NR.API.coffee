@@ -69,7 +69,7 @@ class AsyncResult
             else
                 queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(v.toString()) + "&"
         
-        if method == "GET"
+        if method == "GET" || method == "DELETE"
             if url.indexOf("?") >= 0
                 url = url + "&" + queryString
             else
@@ -114,7 +114,7 @@ class AsyncResult
             document.dispatchEvent event
         
         this._ajax.open method, NR.API._rootURL + url, true
-        if method != "GET"
+        if method != "GET" && method != "DELETE"
             this._ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
             this._ajax.send(queryString)
         else
