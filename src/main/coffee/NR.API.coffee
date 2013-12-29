@@ -68,10 +68,12 @@ class AsyncResult
                     queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(i.toString()) + "&"
             else
                 queryString = queryString + encodeURIComponent(k.toString()) + "=" + encodeURIComponent(v.toString()) + "&"
-        if url.indexOf("?") >= 0
-            url = url + "&" + queryString
-        else
-            url = url + "?" + queryString
+        
+        if method == "GET"
+            if url.indexOf("?") >= 0
+                url = url + "&" + queryString
+            else
+                url = url + "?" + queryString
         
         this._ajax.addEventListener 'readystatechange', =>
             if this._ajax.readyState is 4 # complete
@@ -112,7 +114,11 @@ class AsyncResult
             document.dispatchEvent event
         
         this._ajax.open method, NR.API._rootURL + url, true
-        this._ajax.send()
+        if method != "GET"
+            this._ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            this._ajax.send(queryString)
+        else
+            this._ajax.send()
     
     #############################################################################
     # Aborts the request.
