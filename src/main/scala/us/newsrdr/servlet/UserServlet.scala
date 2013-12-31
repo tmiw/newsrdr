@@ -35,6 +35,12 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     contentType = formats("json")
   }
   
+  error {
+    case e: Exception => {
+      NoDataApiResult(false, Some("server_error"))
+    }
+  }
+  
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>

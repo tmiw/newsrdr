@@ -37,6 +37,9 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         window.top.window.app.finishedUploadingFeedList({{success: "false", error_string: "too_big"}});
       </script>
     }
+    case e: Exception => {
+      NoDataApiResult(false, Some("server_error"))
+    }
   }
   
   override protected val applicationName = Some("feeds")

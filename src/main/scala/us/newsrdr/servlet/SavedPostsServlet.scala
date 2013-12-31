@@ -47,6 +47,12 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
     contentType = formats("json")
   }
   
+  error {
+    case e: Exception => {
+      NoDataApiResult(false, Some("server_error"))
+    }
+  }
+  
   get("/:uid") {
     contentType="text/html"
     
