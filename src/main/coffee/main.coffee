@@ -515,14 +515,14 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
     finishedUploadingFeedList: (result) =>
         if (!result.success)
             errorText = "Error encountered while uploading file."
-            if (result.reason == "forgot_file")
+            if (result.error_string == "forgot_file")
                 errorText = "Please select a file and try again."
-            else if (result.reason == "cant_parse")
+            else if (result.error_string == "cant_parse")
                 errorText = "The file provided is not a valid OPML file. Select another file and try again."
-            else if (result.reason == "not_authorized")
+            else if (result.error_string == "not_authorized")
                 # Force user to login screen.
                 location.reload();
-            else if (result.reason == "too_big")
+            else if (result.error_string == "too_big")
                 errorText = "The file provided is too big to be parsed. Select another file and try again."
 
             noty({ text: errorText, layout: "topRight", timeout: 2000, dismissQueue: true, type: "error" });

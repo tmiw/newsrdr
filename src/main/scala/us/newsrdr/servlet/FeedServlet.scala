@@ -34,7 +34,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     case e: SizeConstraintExceededException => {
       contentType = "text/html"
       <script language="javascript">
-        window.top.window.AppController.UploadForm.done({{success: "false", reason: "too_big"}});
+        window.top.window.app.finishedUploadingFeedList({{success: "false", error_string: "too_big"}});
       </script>
     }
   }
@@ -190,10 +190,10 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
                                        .map(_.attribute("xmlUrl").get)
                                        .map(_.text))))
               } catch {
-                case _:Exception => compact(render(("success" -> false) ~ ("reason" -> "cant_parse")))
+                case _:Exception => compact(render(("success" -> false) ~ ("error_string" -> "cant_parse")))
               }
             } 
-            case None => compact(render(("success" -> false) ~ ("reason" -> "forgot_file")))
+            case None => compact(render(("success" -> false) ~ ("error_string" -> "forgot_file")))
           }
           <script language="javascript">
             window.top.window.app.finishedUploadingFeedList({xml.Unparsed(jsonResult)});
@@ -201,7 +201,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       }
     }, {
       <script language="javascript">
-        window.top.window.AppController.UploadForm.done({{success: "false", reason: "not_authorized"}});
+        window.top.window.app.finishedUploadingFeedList({{success: "false", error_string: "not_authorized"}});
       </script>
     })
   }
