@@ -68,11 +68,11 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     // newsrdr account login is different because login is handled via AJAX.
     // If true is returned here /auth/login will set location.href to the correct redirect URL.
     db withSession { implicit s: Session =>
-     val username = params.getOrElse("username", halt(422))
-     val password = params.getOrElse("password", halt(422))
+     val username = params.getOrElse("username", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+     val password = params.getOrElse("password", halt(422, NoDataApiResult(false, Some("validation_failed"))))
           
      val userInfo = dao.getUserInfoByUsername(username)
-     if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401)
+     if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401, NoDataApiResult(false, Some("auth_failed")))
      else {
        if (AuthenticationTools.validatePassword(userInfo.get, password)) {
          db withTransaction { implicit s: Session =>

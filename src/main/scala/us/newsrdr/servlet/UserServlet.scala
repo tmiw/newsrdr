@@ -54,16 +54,16 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
         notes "Registers a new account.")
         
   post("/", operation(register)) {
-    val username = params.getOrElse("username", halt(422))
-    val password = params.getOrElse("password", halt(422))
-    val password2 = params.getOrElse("password2", halt(422))
-    val email = params.getOrElse("email", halt(422))
+    val username = params.getOrElse("username", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+    val password = params.getOrElse("password", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+    val password2 = params.getOrElse("password2", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+    val email = params.getOrElse("email", halt(422, NoDataApiResult(false, Some("validation_failed"))))
     val sId = session.getId()
     
     if (username.length() == 0 || password.length() < 8 ||
-        password2.length() == 0 || email.length() == 0) halt(422)
+        password2.length() == 0 || email.length() == 0) halt(422, NoDataApiResult(false, Some("validation_failed")))
     
-    if (password != password2) halt(422)
+    if (password != password2) halt(422, NoDataApiResult(false, Some("validation_failed")))
     
     if ("^[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+@[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+".r.findFirstIn(email).isEmpty) halt(422)
     
@@ -87,14 +87,14 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
       val userId = getUserId(dao, db, session.getId, request).get
       
       // Only for newsrdr accounts.
-      if (session.getAttribute("authService").toString() != "newsrdr") halt(401)
+      if (session.getAttribute("authService").toString() != "newsrdr") halt(401, NoDataApiResult(false, Some("auth_failed")))
       
       db withSession { implicit s: Session =>
         val email = dao.getUserInfo(userId).email
         StringDataApiResult(true, None, email)
       }
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -108,15 +108,15 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
       val userId = getUserId(dao, db, session.getId, request).get
       val password = params.get("password")
       val password2 = params.get("password2")
-      val email = params.getOrElse("email", halt(422))
+      val email = params.getOrElse("email", halt(422, NoDataApiResult(false, Some("validation_failed"))))
     
       // Only for newsrdr accounts.
-      if (session.getAttribute("authService").toString() != "newsrdr") halt(401)
+      if (session.getAttribute("authService").toString() != "newsrdr") halt(401, NoDataApiResult(false, Some("auth_failed")))
       
       // Password is optional, but if provided, will be reset.
       if (password.isDefined)
       {
-        if (password2.isEmpty || password.get != password2.get || (password.get.length < 8 && password.get.length > 0)) halt(422)
+        if (password2.isEmpty || password.get != password2.get || (password.get.length < 8 && password.get.length > 0)) halt(422, NoDataApiResult(false, Some("validation_failed")))
       }
     
       db withTransaction { implicit s: Session => 
@@ -126,7 +126,7 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
       
       NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -135,8 +135,8 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
         summary "Resets password"
         notes "Resets password.")
   post("/resetPassword", operation(resetPassword)) {
-    val username = params.getOrElse("username", halt(422))
-    if (username.length() == 0) halt(422)
+    val username = params.getOrElse("username", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+    if (username.length() == 0) halt(422, NoDataApiResult(false, Some("validation_failed")))
     
     try {
       val newRandomPassword = AuthenticationTools.randomPassword
@@ -193,7 +193,7 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
         NoDataApiResult(true, None)
       }
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -211,7 +211,7 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
         NoDataApiResult(true, None)
       }
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
 }

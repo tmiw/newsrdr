@@ -106,7 +106,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           }
         }
       }, {
-        halt(401)
+        halt(401, NoDataApiResult(false, Some("auth_failed")))
       })
     }
   }
@@ -217,7 +217,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
    
   post("/", operation(postFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
-      val url = params.getOrElse("url", halt(422))
+      val url = params.getOrElse("url", halt(422, NoDataApiResult(false, Some("validation_failed"))))
       val userId = getUserId(dao, db, session.getId, request).get
       
       // TODO: handle possible exceptions and output error data.
@@ -258,7 +258,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         }
       }
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -270,7 +270,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:id", operation(deleteFeeds)) {
     authenticationRequired(dao, session.getId, db, request, {
-      val id = params.getOrElse("id", halt(422))
+      val id = params.getOrElse("id", halt(422, NoDataApiResult(false, Some("validation_failed"))))
       var userId = getUserId(dao, db, session.getId, request).get
       
       // TODO: handle possible exceptions and output error data.
@@ -282,7 +282,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       
       NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -297,7 +297,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   get("/:id/posts", operation(getPostsForFeed)) {
       authenticationRequired(dao, session.getId, db, request, {
-        val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+        val id = Integer.parseInt(params.getOrElse("id", halt(422, NoDataApiResult(false, Some("validation_failed")))))
         val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
         val userId = getUserId(dao, db, session.getId, request).get
         
@@ -323,7 +323,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
           )
         })
       }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -337,10 +337,10 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:id/posts", operation(markAllReadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-      val id = Integer.parseInt(params.getOrElse("id", halt(422)))
+      val id = Integer.parseInt(params.getOrElse("id", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       val userId = getUserId(dao, db, session.getId, request).get
       val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
-      val from = Integer.parseInt(params.getOrElse("from", halt(422)))
+      val from = Integer.parseInt(params.getOrElse("from", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       
       db withTransaction { implicit session: Session =>
         dao.setPostStatusForAllPosts(userId, id, from, upTo, false) match {
@@ -351,7 +351,7 @@ class FeedServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       
       NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
 }

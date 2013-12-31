@@ -85,7 +85,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         )
       })
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("validation_failed")))
     })
   }
   
@@ -97,7 +97,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:pid", operation(markReadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-      var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+      var pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       var userId = getUserId(dao, db, session.getId, request).get
       
       db withTransaction { implicit session: Session =>
@@ -109,7 +109,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       
       NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -124,7 +124,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     authenticationRequired(dao, session.getId, db, request, {
       val userId = getUserId(dao, db, session.getId, request).get
       val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
-      val from = Integer.parseInt(params.getOrElse("from", halt(422)))
+      val from = Integer.parseInt(params.getOrElse("from", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       
       db withTransaction { implicit session: Session =>
         dao.setPostStatusForAllPosts(userId, from, upTo, false) match {
@@ -135,7 +135,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       
       NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -146,7 +146,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         parameter pathParam[Int]("pid").description("The ID of the post."))
   put("/:pid", operation(markUnreadCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-      var pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+      var pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       var userId = getUserId(dao, db, session.getId, request).get
       
       db withTransaction { implicit session: Session =>
@@ -158,7 +158,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       
       NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -171,8 +171,8 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   put("/:pid/saved", operation(saveCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-        val id = Integer.parseInt(params.getOrElse("feedId", halt(422)))
-        val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+        val id = Integer.parseInt(params.getOrElse("feedId", halt(422, NoDataApiResult(false, Some("validation_failed")))))
+        val pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
         val userId = getUserId(dao, db, session.getId, request).get
         
         db withTransaction { implicit session: Session =>
@@ -184,7 +184,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
         NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
   
@@ -196,8 +196,8 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
   delete("/:pid/saved", operation(saveCommand)) {
     authenticationRequired(dao, session.getId, db, request, {
-        val id = Integer.parseInt(params.getOrElse("feedId", halt(422)))
-        val pid = Integer.parseInt(params.getOrElse("pid", halt(422)))
+        val id = Integer.parseInt(params.getOrElse("feedId", halt(422, NoDataApiResult(false, Some("validation_failed")))))
+        val pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
         val userId = getUserId(dao, db, session.getId, request).get
         
         db withTransaction { implicit session: Session =>
@@ -209,7 +209,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
         NoDataApiResult(true, None)
     }, {
-      halt(401)
+      halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
   }
 }
