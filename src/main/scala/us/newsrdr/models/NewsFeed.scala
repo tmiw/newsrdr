@@ -198,6 +198,8 @@ object XmlFeedFactory {
         conn.setInstanceFollowRedirects(true)
         conn.setRequestProperty("User-Agent", "newsrdr (http://newsrdr.us/)")
         conn.setIfModifiedSince(lastUpdatedTime)
+        conn.setReadTimeout(60*1000)
+        conn.setConnectTimeout(10*1000)
         conn.connect()
  
         code = conn.getResponseCode() 
@@ -362,22 +364,27 @@ object XmlFeedFactory {
       contentStream.mark(1024*1024*3)
       
       var xmlDoc : xml.Elem = null
+      var success = false
+      
       try {
         MyXML.synchronized {
           MyXML.parser.reset()
           xmlDoc = MyXML.load(contentStream)
         }
       } catch {
-        case _:Exception => {
+        case _:SAXException => {
           contentStream.reset()
           parser.synchronized {
             xmlDoc = parser.load(contentStream)
           }
         }
       } finally {
-        contentStream.reset()
-        val s = new java.util.Scanner(contentStream).useDelimiter("\\A")
-        doc = if (s.hasNext()) { s.next() } else { "" }
+        if (success)
+        {
+          contentStream.reset()
+          val s = new java.util.Scanner(contentStream).useDelimiter("\\A")
+          doc = if (s.hasNext()) { s.next() } else { "" }
+        }
       }
       
       xmlDoc
