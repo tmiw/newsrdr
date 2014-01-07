@@ -370,12 +370,14 @@ object XmlFeedFactory {
         MyXML.synchronized {
           MyXML.parser.reset()
           xmlDoc = MyXML.load(contentStream)
+          success = true
         }
       } catch {
         case _:SAXException => {
           contentStream.reset()
           parser.synchronized {
             xmlDoc = parser.load(contentStream)
+            success = true
           }
         }
       } finally {
