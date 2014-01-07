@@ -37,7 +37,7 @@ img { max-width: 100%; height: auto; }
     #feedPanel.affix {
         position: fixed;
         top: 5px;
-        width: 20%;
+        width: 19%;
     }
     
     #feedPanel.affix-top {
