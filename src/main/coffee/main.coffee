@@ -284,6 +284,22 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
            window.open article.article.link, "_blank"
            if this.authedUser && article? && article.unread
                this.togglePostAsRead article
+           
+           this.currentArticle = this.currentArticle + 1
+
+           if not this.currentArticle || this.currentArticle < 0
+               this.currentArticle = 0
+           else if this.currentArticle == this.articleList.length - 1
+               this.fetchMorePosts()   
+           else if this.currentArticle > this.articleList.length - 1
+               this.currentArticle = this.articleList.length - 1
+                        
+           newArticle = this.articleList.at this.currentArticle
+           newArticleId = newArticle.article.id;
+           newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
+           $('html, body').animate({
+                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
+           }, 500)
                 
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation
