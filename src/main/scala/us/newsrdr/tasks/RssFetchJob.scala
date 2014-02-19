@@ -37,6 +37,31 @@ class RssFetchJob extends Job {
     throw new RuntimeException("Could not break deadlock.")
   }
   
+  private def reduceFeedUpdateFrequency(today: java.sql.Timestamp, feedUrl: String) {
+    // Hold off on updating again for 2x the previous interval (max 24 hours).
+    // This will reduce the amount of load/bandwidth on the server if the feed
+    // is not frequently updated.
+    BackgroundJobManager.db.withTransaction { implicit session: Session =>
+      val feed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)
+      feed match {
+        case Some(f) => {
+          val timeDiff = 2 * (today.getTime() - f.lastUpdate.getTime()) / 1000
+          val newInterval = 
+            if (timeDiff > 60*60*24)
+            {
+              60*60*24
+            }
+            else
+            {
+              timeDiff
+            }
+          BackgroundJobManager.rescheduleFeedJob(feedUrl, newInterval.asInstanceOf[Int])
+        }
+        case _ => ()
+      }
+    }
+  }
+  
   def fetch(feedUrl: String, log: Boolean): NewsFeed = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
     val currentFeed = BackgroundJobManager.db withSession { implicit session: Session => BackgroundJobManager.dao.getFeedFromUrl(feedUrl) }
@@ -59,9 +84,10 @@ class RssFetchJob extends Job {
     catch
     {
       case e:NotModifiedException => {
-        // Not modified; this isn't an error.
+        // Not modified; this isn't an error, but we should probably check less
+        // often if this feed is infrequently updated.
         val ret = if (currentFeed.isDefined) currentFeed.get else null
-        BackgroundJobManager.rescheduleFeedJob(feedUrl, 60*60)
+        reduceFeedUpdateFrequency(today, feedUrl)
         ret
       }
       case e:Exception => {
@@ -72,30 +98,7 @@ class RssFetchJob extends Job {
           preventDeadlock { implicit session: Session =>
             BackgroundJobManager.dao.logFeedFailure(feedUrl, e.getMessage())
           }
-          
-          // Hold off on updating again for 2x the previous interval (max 24 hours).
-          // This will reduce the amount of load/bandwidth on the server if the outage
-          // is longer than expected.
-          BackgroundJobManager.db.withTransaction { implicit session: Session =>
-            val feed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)
-            feed match {
-              case Some(f) => {
-                val timeDiff = 2 * (today.getTime() - f.lastUpdate.getTime()) / 1000
-                val newInterval = 
-                  if (timeDiff > 60*60*24)
-                  {
-                    60*60*24
-                  }
-                  else
-                  {
-                    timeDiff
-                  }
-                BackgroundJobManager.rescheduleFeedJob(feedUrl, newInterval.asInstanceOf[Int])
-              }
-              case _ => ()
-            }
-          }
-          
+          reduceFeedUpdateFrequency(today, feedUrl)
           null
         }
       }
