@@ -65,7 +65,7 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     
     if (password != password2) halt(422, NoDataApiResult(false, Some("validation_failed")))
     
-    if ("^[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+@[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+".r.findFirstIn(email).isEmpty) halt(422)
+    if ("^[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+@[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+".r.findFirstIn(email).isEmpty) halt(422, NoDataApiResult(false, Some("validation_failed")))
     
     db withTransaction { implicit s: Session => 
       val ret = dao.createUser(username, password, email)
