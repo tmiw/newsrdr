@@ -18,7 +18,9 @@
 #for (i <- postList)
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title"><a href="<%= i.article.link %>" target="_blank"><%= unescape(i.article.title) %></a></h3>
+        <h3 class="panel-title"><a href="<%= i.article.link %>" target="_blank">
+            {{#i.article.titleEmpty}}(no subject){{/i.article.titleEmpty}}
+            {{#i.article.title}}<%= unescape(i.article.title) %>{{/i.article.title}}</a></h3>
         <% if (i.article.author.getOrElse("").length() > 0) { %>
         <div><em>by <%= i.article.author %></em></div>
         <% } %>

@@ -9,6 +9,8 @@ class NR.Application extends SimpleMVC.Controller
             post = new NR.Models.NewsFeedArticleInfo
             for k,v of i
                 post[k] = v
+                if k == "article"
+                    v.titleEmpty = !v.title
             #if (!this.localSettings.showOnlyUnread || (this.localSettings.showOnlyUnread && post.unread))
             #    if post.unread
             #        this._seenUnread = this._seenUnread + 1
