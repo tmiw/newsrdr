@@ -41,7 +41,8 @@ object NewsFeedFuncs {
         None,
         None,
         None,
-        new java.sql.Timestamp(new java.util.Date().getTime())
+        new java.sql.Timestamp(new java.util.Date().getTime()),
+        ""
     )
   }
 }
@@ -70,7 +71,8 @@ case class NewsFeed(
     //skipHours
     //skipDays
     
-    lastUpdate: Timestamp
+    lastUpdate: Timestamp,
+    hash: String
     )
 
 case class NewsFeedInfo(
@@ -411,18 +413,21 @@ object XmlFeedFactory {
     }
     else
     {
+      val md = java.security.MessageDigest.getInstance("SHA-1")
+      val ha = new sun.misc.BASE64Encoder().encode(md.digest(doc.getBytes()))
+
       val feed = 
         if ((xmlDoc \\ "entry").count(x => true) > 0)
         {
           // Atom feed
-          new AtomFeed
+          new AtomFeed(ha)
         }
         else if (
             (xmlDoc \\ "rss").count(x => true) > 0 ||
             (xmlDoc \\ "rdf").count(x => true) > 0 ||
             (xmlDoc \\ "RDF").count(x => true) > 0)
         {
-          new RSSFeed
+          new RSSFeed(ha)
         }
         else
         {
@@ -440,7 +445,7 @@ object XmlFeedFactory {
   private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
 }
 
-abstract class XmlFeed extends XmlFeedParser {
+abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
     var feedProperties : NewsFeed = _
     var feedCategories : List[String] = _
     var entries : List[(NewsFeedArticle, List[String])] = _
@@ -498,7 +503,7 @@ abstract class XmlFeed extends XmlFeedParser {
     }
 }
 
-class RSSFeed extends XmlFeed {
+class RSSFeed(base64Hash: String) extends XmlFeed(base64Hash) {
     def fillFeedProperties(root: Elem, url: String) = {
         val channel = (root \\ "channel")
         
@@ -520,7 +525,8 @@ class RSSFeed extends XmlFeed {
             generateOptionValue((channel \ "image" \ "url").text),
             generateOptionValue((channel \ "image" \ "title").text),
             generateOptionValue((channel \ "image" \ "link").text),
-            new java.sql.Timestamp(new java.util.Date().getTime())
+            new java.sql.Timestamp(new java.util.Date().getTime()),
+            base64Hash
             )
         
         feedCategories = (channel \ "category").map(_.text).toList
@@ -553,7 +559,7 @@ class RSSFeed extends XmlFeed {
     }
 }
 
-class AtomFeed extends XmlFeed {
+class AtomFeed(base64Hash: String) extends XmlFeed(base64Hash) {
     def fillFeedProperties(root: Elem, url: String) = {
         val channel = (root \\ "feed")
         
@@ -575,7 +581,8 @@ class AtomFeed extends XmlFeed {
             None,
             None,
             None,
-            new java.sql.Timestamp(new java.util.Date().getTime())
+            new java.sql.Timestamp(new java.util.Date().getTime()),
+            base64Hash
             )
         
         feedCategories = (channel \ "category").map(_.text).toList

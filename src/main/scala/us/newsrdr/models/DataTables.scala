@@ -67,10 +67,12 @@ class DataTables(val driver: ExtendedProfile) {
     def imageTitle = column[Option[String]]("imageTitle")
     def imageLink = column[Option[String]]("imageLink")
     
+    def hash = column[String]("hash")
+    
     def * = 
       id.? ~ title ~ link ~ description ~ feedUrl ~ language ~ copyright ~ managingEditor ~ 
       webMaster ~ pubDate ~ lastBuildDate ~ generator ~ docs ~ ttl ~ imageUrl ~ 
-      imageTitle ~ imageLink ~ lastUpdate <> (NewsFeed, NewsFeed.unapply _)
+      imageTitle ~ imageLink ~ lastUpdate ~ hash <> (NewsFeed, NewsFeed.unapply _)
   }
   
   object NewsFeedCategories extends Table[(Int, Int, Int)]("NewsFeedCategories") {
@@ -924,10 +926,12 @@ class DataTables(val driver: ExtendedProfile) {
       for { f <- NewsFeeds if f.feedUrl === feedUrl } yield
       (f.copyright ~ f.description ~ f.docs ~ f.generator ~ f.imageLink ~
        f.imageTitle ~ f.imageUrl ~ f.language ~ f.lastBuildDate ~ f.link ~
-       f.managingEditor ~ f.pubDate ~ f.title ~ f.ttl ~ f.webMaster ~ f.lastUpdate)
+       f.managingEditor ~ f.pubDate ~ f.title ~ f.ttl ~ f.webMaster ~ f.lastUpdate ~ f.hash)
       
     newsFeed.firstOption match {
       case Some(fd) => {
+        if (fd._17 == feed.feedProperties.hash) throw new NotModifiedException
+        
         newsFeed.update(
           (feed.feedProperties.copyright, 
            feed.feedProperties.description,
@@ -944,12 +948,13 @@ class DataTables(val driver: ExtendedProfile) {
            feed.feedProperties.title, 
            feed.feedProperties.ttl, 
            feed.feedProperties.webMaster,
-         new java.sql.Timestamp(new java.util.Date().getTime())))
+           new java.sql.Timestamp(new java.util.Date().getTime()),
+           feed.feedProperties.hash))
         }
         case None => {
           (NewsFeeds.feedUrl ~ NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
            NewsFeeds.imageTitle ~ NewsFeeds.imageUrl ~ NewsFeeds.language ~ NewsFeeds.lastBuildDate ~ NewsFeeds.link ~
-           NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster ~ NewsFeeds.lastUpdate).insert(
+           NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster ~ NewsFeeds.lastUpdate ~ NewsFeeds.hash).insert(
             feedUrl,
             feed.feedProperties.copyright, 
             feed.feedProperties.description,
@@ -966,7 +971,8 @@ class DataTables(val driver: ExtendedProfile) {
             feed.feedProperties.title, 
             feed.feedProperties.ttl, 
             feed.feedProperties.webMaster,
-            new java.sql.Timestamp(new java.util.Date().getTime())
+            new java.sql.Timestamp(new java.util.Date().getTime()),
+            feed.feedProperties.hash
           )
         }
       }
