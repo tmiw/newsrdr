@@ -497,8 +497,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     successWrapper,
                     errorWrapper)
             else
-                NR.API.GetAllPostsInMultipleFeeds(
-                    this.feedList.filter((i) -> i.numUnread > 0).map((i) -> i.id),
+                NR.API.GetAllPosts(
                     0, 
                     lastArticleId, 
                     this._maxId,
