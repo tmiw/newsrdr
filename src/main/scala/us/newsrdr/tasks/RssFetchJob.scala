@@ -9,8 +9,15 @@ import scala.xml.transform._
 
 class RssFetchJob extends Job {
   def execute(ctxt: JobExecutionContext) {
-    val feedUrl = ctxt.getMergedJobDataMap().getString("url").toString()
-    fetch(feedUrl, true)
+    val isDown = BackgroundJobManager.db.withSession { implicit session: Session =>
+      BackgroundJobManager.dao.isSiteDown
+    }
+    
+    if (!isDown)
+    {
+      val feedUrl = ctxt.getMergedJobDataMap().getString("url").toString()
+      fetch(feedUrl, true)
+    }
   }
   
   private def preventDeadlock[T](f: Session => T) : T = {

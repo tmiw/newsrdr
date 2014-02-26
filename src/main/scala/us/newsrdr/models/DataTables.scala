@@ -22,13 +22,24 @@ class DataTables(val driver: ExtendedProfile) {
   // UNIX_TIMESTAMP support
   val unixTimestampFn = SimpleFunction.unary[Option[Timestamp], Long]("UNIX_TIMESTAMP")
   
+  case class SiteSetting(
+      id: Option[Int],
+      isDown: Boolean)
+  
+  object SiteSettings extends Table[SiteSetting]("SiteSettings") {
+    def id = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
+    def isDown = column[Boolean]("isDown")
+    
+    def * = id ~ isDown <> (SiteSetting, SiteSetting.unapply _)
+  }
+  
   case class FeedFailureLog(
     id: Option[Int],
       feedId: Int,
       failureDate: Timestamp,
       failureMessage: String)
     
-    object FeedFailureLogs extends Table[FeedFailureLog]("FeedFailureLogs") {
+  object FeedFailureLogs extends Table[FeedFailureLog]("FeedFailureLogs") {
     def id = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
     def feedId = column[Int]("feedId")
     def failureDate = column[Timestamp]("failureDate")
@@ -204,11 +215,17 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == FeedFailureLogs.tableName)) FeedFailureLogs.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == BlogEntries.tableName)) BlogEntries.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == SiteSettings.tableName)) SiteSettings.ddl.create
   }
 
+  def isSiteDown()(implicit session: Session) : Boolean = {
+    val q = for { s <- SiteSettings } yield s.isDown
+    q.firstOption.getOrElse(false)
+  }
+  
   def getSiteStatistics()(implicit session: Session) : SiteStatistics = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
-      val lastWeek = new java.sql.Timestamp(today.getTime() - 60*60*24*7*1000)
+    val lastWeek = new java.sql.Timestamp(today.getTime() - 60*60*24*7*1000)
     val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
     
     SiteStatistics(
