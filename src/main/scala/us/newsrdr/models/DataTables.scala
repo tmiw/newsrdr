@@ -96,32 +96,7 @@ class DataTables(val driver: ExtendedProfile) {
       def feed = foreignKey("feedIdentifierKey", feedId, NewsFeeds)(_.id)
       def category = foreignKey("categoryIdKey", categoryId, Categories)(_.id)
   }
-  
-  /*object NewsFeedArticles extends Table[NewsFeedArticle]("NewsFeedArticles") {
-    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-    def feedId = column[Int]("feedId")
-    def title = column[String]("title")
-    def link = column[String]("link")
-    def description = column[String]("description")
     
-    def author = column[Option[String]]("author")
-    def comments = column[Option[String]]("comments")
-    def enclosureUrl = column[Option[String]]("enclosureUrl")
-    def enclosureLength = column[Option[Int]]("enclosureLength")
-    def enclosureType = column[Option[String]]("enclosureType")
-    def guid = column[Option[String]]("guid")
-    def isGuidPermalink = column[Option[Boolean]]("isGuidPermalink")
-    def pubDate = column[Option[Timestamp]]("pubDate")
-    def source = column[Option[String]]("source")
-    
-    def * = 
-      id.? ~ feedId ~ title ~ link ~ description ~ author ~ comments ~
-      enclosureUrl ~ enclosureLength ~ enclosureType ~ guid ~ isGuidPermalink ~
-      pubDate ~ source <> (NewsFeedArticle, NewsFeedArticle.unapply _)
-      
-    def feed = foreignKey("feedIdKey", feedId, NewsFeeds)(_.id)
-  }*/
-  
   object UserNewsFeedArticles extends Table[UserNewsFeedArticle]("UserNewsFeedArticles") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def userId = column[Int]("userId")
@@ -152,17 +127,6 @@ class DataTables(val driver: ExtendedProfile) {
     def user = foreignKey("userIdKey", userId, Users)(_.id)
   }
   
-  /*object NewsFeedArticleCategories extends Table[(Int, Long, Int)]("NewsFeedArticleCategories") {
-      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-      def articleId = column[Long]("articleIdentifier")
-      def categoryId = column[Int]("categoryId")
-    
-      def * = id ~ articleId ~ categoryId
-    
-      def article = foreignKey("articleIdentifierKey", articleId, NewsFeedArticles)(_.id)
-      def category = foreignKey("categoryFeedIdKey", categoryId, Categories)(_.id)
-  }*/
-  
   object Users extends Table[User]("Users") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def username = column[String]("username")
@@ -185,30 +149,6 @@ class DataTables(val driver: ExtendedProfile) {
     def bIdx1 = index("userSessionKey", userId ~ sessionId, unique = true)
     def user = foreignKey("userSessionUserKey", userId, Users)(_.id)
   }
-  
-  /*object UserArticles extends Table[UserArticle]("UserArticles") {
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def userId = column[Int]("userId")
-    def articleId = column[Long]("articleId")
-    def articleRead = column[Boolean]("articleRead")
-    def articleSaved = column[Boolean]("articleSaved")
-    
-    def * = id.? ~ userId ~ articleId ~ articleRead ~ articleSaved <> (UserArticle, UserArticle.unapply _)
-    def maybe = id.? ~ userId.? ~ articleId.? ~ articleRead.? ~ articleSaved.? <> (
-        tupleToArticle _,
-        (ua: Option[UserArticle]) => None)
-        
-    def tupleToArticle(uaTuple: (Option[Int], Option[Int], Option[Long], Option[Boolean], Option[Boolean])): Option[UserArticle] = 
-    {
-      uaTuple match {
-        case (Some(id), Some(uId), Some(aId), Some(aRead), Some(aSaved)) => Some(UserArticle(Some(id), uId, aId, aRead, aSaved))
-        case (_, _, _, _, _) => None
-      }
-    }
-    
-    def article = foreignKey("userArticleIdKey", articleId, NewsFeedArticles)(_.id)
-    def user = foreignKey("userArticleUserIdKey", userId, Users)(_.id)
-  }*/
   
   object UserFeeds extends Table[UserFeed]("UserFeeds") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
@@ -316,24 +256,6 @@ class DataTables(val driver: ExtendedProfile) {
     
     (for { (fp, fq) <- feed_posts2 if fq == false } yield fp ).length
   }
-  
-  /*def deleteAllOldPosts()(implicit session: Session) {
-    val allFeeds = for { nf <- NewsFeeds } yield nf
-    allFeeds.list.map(f => {
-      val oldPosts = (for { nfa <- NewsFeedArticles if nfa.feedId === f.id } yield nfa).drop(2000)
-      oldPosts.map(a => {
-        val isSaved = (for { ua <- UserArticles if ua.articleId === a.id && ua.articleSaved === true } yield ua).firstOption
-        if (isSaved.isEmpty) {
-          val singlePost = Query(NewsFeedArticles).filter(_.id === a.id)
-          singlePost.delete
-          true
-        } else {
-          false
-        }
-      })
-      false
-    })
-  }*/
   
   def getFeedFromUrl(url: String)(implicit session: Session) : Option[NewsFeed] = {
     val feedQuery = for { f <- NewsFeeds if f.feedUrl === url || f.link === url } yield f
@@ -472,7 +394,8 @@ class DataTables(val driver: ExtendedProfile) {
   def setPostStatusForAllPosts(userId: Int, feedId: Int, from: Long, upTo: Long, unread: Boolean)(implicit session: Session) : Boolean = {
     val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.feedId === feedId && 
                                                             unixTimestampFn(unfa.pubDate) <= from &&
-                                                            unixTimestampFn(unfa.pubDate) >= upTo } yield unfa.isRead
+                                                            unixTimestampFn(unfa.pubDate) >= upTo &&
+                                                            unfa.isRead === unread } yield unfa.isRead
     feedPostsQuery.update(!unread)
     true
   }
@@ -480,7 +403,8 @@ class DataTables(val driver: ExtendedProfile) {
   def setPostStatusForAllPosts(userId: Int, from: Long, upTo: Long, unread: Boolean)(implicit session: Session) : Boolean = {
     val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                             unixTimestampFn(unfa.pubDate) <= from &&
-                                                            unixTimestampFn(unfa.pubDate) >= upTo } yield unfa.isRead
+                                                            unixTimestampFn(unfa.pubDate) >= upTo &&
+                                                            unfa.isRead === unread } yield unfa.isRead
     feedPostsQuery.update(!unread)
     true
   }
@@ -491,7 +415,8 @@ class DataTables(val driver: ExtendedProfile) {
       case Some(_) => {
         val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                                    unfa.feedId === feedId &&
-                                                                   unfa.id === postId  } yield unfa.isRead
+                                                                   unfa.id === postId &&
+                                                                   unfa.isRead === unread } yield unfa.isRead
         feedPostsQuery.update(!unread)
         true
       }
@@ -504,7 +429,8 @@ class DataTables(val driver: ExtendedProfile) {
     my_feed.firstOption match {
       case Some(_) => {
         val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
-                                                                   unfa.id === postId  } yield unfa.isRead
+                                                                   unfa.id === postId &&
+                                                                   unfa.isRead === unread } yield unfa.isRead
         feedPostsQuery.update(!unread)
         true
       }
@@ -771,23 +697,6 @@ class DataTables(val driver: ExtendedProfile) {
               false
             )
       }
-      
-      // Update feed categories.
-      /*val categoryIds = p._2.map(c => {
-      val feedQuery = for { fc <- Categories if fc.name === c } yield fc
-      feedQuery.firstOption match {
-        case Some(cat) => (entryId, cat.id.get)
-        case None => { 
-          val newId = (Categories.name) returning Categories.id insert(c)
-          (entryId, newId)
-        }
-      }
-      })
-      val postCategories = for { nfc <- NewsFeedArticleCategories if nfc.articleId === entryId } yield nfc
-      postCategories.delete
-      for { c <- categoryIds } {
-        (NewsFeedArticleCategories.articleId ~ NewsFeedArticleCategories.categoryId).insert(c)
-      }*/
   }
 
   def logFeedFailure(feedUrl: String, message: String)(implicit session: Session) {
