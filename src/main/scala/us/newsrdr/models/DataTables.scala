@@ -228,17 +228,31 @@ class DataTables(val driver: ExtendedProfile) {
     }
   
   def getSubscribedFeeds(userId: Int)(implicit session: Session) : List[(NewsFeed, Int)] = {
-    val feedList = for { 
-      f <- NewsFeeds
-      uf <- UserFeeds if f.id === uf.feedId && uf.userId === userId
-    } yield f
+    implicit val getNewsFeedResult = GetResult(
+        r => NewsFeed(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<,
+                      r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
     
-    val countList = feedList.list.map(f => {
-      val q = for { unfa <- UserNewsFeedArticles if unfa.feedId === f.id && unfa.userId === userId && unfa.isRead === false } yield unfa
-      (f, Query(q.length).first)
-    })
-    
-    countList.sortBy(_._1.title)
+    val queryString = if (driver.isInstanceOf[H2Driver]) {
+       """
+       select "nf".*, (
+         select count("id") from "UserNewsFeedArticles" where "feedId" = "uf"."feedId" and "userId" = ? and "isRead" = false
+       ) as unread 
+       from "NewsFeeds" "nf"
+       inner join "UserFeeds" "uf" on "nf"."id" = "uf"."feedId"
+       where "uf"."userId" = ?
+     """
+   } else {
+     """
+       select nf.*, (
+         select count(id) from UserNewsFeedArticles where feedId = uf.feedId and userId = ? and isRead = false
+       ) as unread 
+       from NewsFeeds nf
+       inner join UserFeeds uf on nf.id = uf.feedId
+       where uf.userId = ?
+     """
+   }
+   val unreadCountQuery = Q.query[(Int, Int), (NewsFeed, Int)](queryString)
+   unreadCountQuery.list(userId, userId)
   }
   
   def getUnreadCountForFeed(userId: Int, feedId: Int)(implicit session: Session) : Int = {
