@@ -16,7 +16,7 @@ class RssFetchJob extends Job {
     if (!isDown)
     {
       val feedUrl = ctxt.getMergedJobDataMap().getString("url").toString()
-      fetch(feedUrl, true)
+      fetch(None, feedUrl, true)
     }
   }
   
@@ -69,7 +69,7 @@ class RssFetchJob extends Job {
     }
   }
   
-  def fetch(feedUrl: String, log: Boolean): NewsFeed = {
+  def fetch(userId: Option[Int], feedUrl: String, log: Boolean): NewsFeed = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
     val currentFeed = BackgroundJobManager.db withSession { implicit session: Session => BackgroundJobManager.dao.getFeedFromUrl(feedUrl) }
     val lastUpdatedTime = (
@@ -82,7 +82,8 @@ class RssFetchJob extends Job {
       val ret = preventDeadlock { implicit session: Session =>
         // Update feed's contents with whatever we've fetched from the server.
         // If it doesn't already exist, create.
-        BackgroundJobManager.dao.updateOrInsertFeed(feedUrl, feed)
+        if (userId.isDefined) BackgroundJobManager.dao.updateOrInsertFeed(userId.get, feedUrl, feed)
+        else BackgroundJobManager.dao.updateOrInsertFeed(feedUrl, feed)
       }
       
       BackgroundJobManager.rescheduleFeedJob(feedUrl, 60*60)

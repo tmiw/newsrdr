@@ -103,6 +103,30 @@ case class NewsFeedArticle(
     source: Option[String]
     )
 
+case class UserNewsFeedArticle(
+    id: Option[Long],
+    userId: Int,
+    feedId: Int,
+    title: String,
+    link: String,
+    description: String,
+    
+    // optional per RSS2.0 specification
+    
+    author: Option[String],
+    // category
+    comments: Option[String],
+    enclosureUrl: Option[String],
+    enclosureLength: Option[Int],
+    enclosureType: Option[String],
+    guid: Option[String],
+    isGuidPermalink: Option[Boolean],
+    pubDate: Option[Timestamp],
+    source: Option[String],
+    isRead: Boolean,
+    isSaved: Boolean
+)
+
 case class NewsFeedArticleInfo(
     article: NewsFeedArticle,
     unread: Boolean,
