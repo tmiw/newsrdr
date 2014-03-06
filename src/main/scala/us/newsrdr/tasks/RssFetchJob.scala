@@ -95,7 +95,6 @@ class RssFetchJob extends Job {
         // Not modified; this isn't an error, but we should probably check less
         // often if this feed is infrequently updated.
         val ret = if (currentFeed.isDefined) currentFeed.get else null
-        reduceFeedUpdateFrequency(today, feedUrl)
         ret
       }
       case e:Exception => {
