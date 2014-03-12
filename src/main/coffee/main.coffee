@@ -241,9 +241,11 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             newArticle = this.articleList.at this.currentArticle
             newArticleId = newArticle.article.id;
             newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
+            this.scrollDisabled = true
+            objSelf = this
             $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
-            }, 500)
+            }, 500, "swing", () -> objSelf.scrollDisabled = false)
             e.preventDefault()
     
     _handleFeedKeys: (e) =>
@@ -276,9 +278,6 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
            article = this.articleList.at this.currentArticle
            articleId = article.article.id;
            articleOffset = $("a[name='article" + articleId + "']").offset()
-           $('html, body').animate({
-               scrollTop: articleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
-           }, 500)
            e.preventDefault()
             
            window.open article.article.link, "_blank"
@@ -297,9 +296,11 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
            newArticle = this.articleList.at this.currentArticle
            newArticleId = newArticle.article.id;
            newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
+           this.scrollDisabled = true
+           objSelf = this
            $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
-           }, 500)
+           }, 500, "swing", () -> objSelf.scrollDisabled = false)
                 
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation
@@ -339,6 +340,27 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         NR.API.Initialize()
         
         this._initializeKeyboardNavigation()
+        
+        # Initialize scroll handler (to enable "where you left off" scrolling if you're
+        # switching between keyboard navigation and mouse navigation)
+        objSelf = this
+        $(window).scroll(() ->
+            clearTimeout($.data(this, 'scrollTimer'));
+            $.data(this, 'scrollTimer', setTimeout(() ->
+                if not objSelf.scrollDisabled
+                    scrollTop = $(window).scrollTop()
+                    windowHeight = $(window).height()
+                    first = false
+                    index = 0
+                    $(".newsArticle").each(() ->
+                        offset = $(this).offset()
+                        if scrollTop <= offset.top and ($(this).height() + offset.top) < (scrollTop + windowHeight) and first == false
+                            first = true
+                            objSelf.currentArticle = index
+                        index = index + 1
+                    )
+                ))
+        )
         
         this.authedUser = not suppressLeftAndTop
         this.feedList = new SimpleMVC.Collection
