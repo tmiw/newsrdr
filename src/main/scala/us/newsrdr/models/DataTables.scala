@@ -331,6 +331,11 @@ class DataTables(val driver: ExtendedProfile) {
                           x.pubDate, x.source), false, false))
   }
   
+  def getLinkForPost(postId: Long)(implicit session: Session): String = {
+    val query = for { unfa <- UserNewsFeedArticles if unfa.id === postId } yield unfa.link;
+    query.first
+  }
+  
   def getPostsForFeeds(userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session): List[NewsFeedArticleInfo] = {
     val feed_posts = if (unreadOnly) {
       for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.feedId.inSet(feedIds) && 

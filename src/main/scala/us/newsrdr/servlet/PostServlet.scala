@@ -89,6 +89,19 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
     })
   }
   
+  get("/:pid/link") {
+      db withSession { implicit session: Session =>
+        val pid = Integer.parseInt(params.getOrElse("pid", halt(404, "not found")))
+        try {
+          redirect(dao.getLinkForPost(pid))
+        } catch {
+          case e:Exception => {
+            halt(404, "not found")
+          }
+        }
+      }  
+  }
+  
   val markReadCommand =
     (apiOperation[Unit]("markRead")
         summary "Marks the given post as read."

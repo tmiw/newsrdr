@@ -317,7 +317,7 @@
 <script type="text/template" id="template-newsArticle">
 <div class="panel panel-default article-panel unread">
     <div class="panel-heading">
-        <h3 class="panel-title"><a name="article{{article.id}}"></a><a href="{{{article.link}}}" target="_blank">
+        <h3 class="panel-title"><a name="article{{article.id}}"></a><a href="/posts/{{article.id}}/link" target="_blank">
             {{#article.titleEmpty}}(no subject){{/article.titleEmpty}}
             {{#article.title}}{{{article.title}}}{{/article.title}}</a></h3>
         {{#article.author}}<div><em>by {{article.author}}</em></div>{{/article.author}}
