@@ -293,7 +293,7 @@
 </script>
 
 <script type="text/template" id="template-title">
-{{#numUnread}}({{numUnread}}) {{/numUnread}}{{#allSelected}}all feeds | {{/allSelected}}{{#feedSelected}}{{feedTitle}} | {{/feedSelected}}newsrdr: a news reader without the extra fluff
+{{#numUnread}}({{numUnread}}) {{/numUnread}}{{#allSelected}}all feeds | {{/allSelected}}{{#feedSelected}}{{feedTitle}} | {{/feedSelected}}newsrdr: a news reader without the stuff you don't need
 </script>
 
 <script type="text/template" id="template-newsFeed">

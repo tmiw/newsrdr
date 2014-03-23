@@ -9,7 +9,7 @@
 #if (!title.isEmpty())
 ${title} | 
 #end
-newsrdr: a news reader without the extra fluff</title>
+newsrdr: a news reader without the stuff you don't need</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="newsrdr is a Web based RSS/Atom news reader that allows you to follow the latest news from your favorite websites in one place." />
