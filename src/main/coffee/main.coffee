@@ -11,10 +11,6 @@ class NR.Application extends SimpleMVC.Controller
                 post[k] = v
                 if k == "article"
                     v.titleEmpty = !v.title
-            #if (!this.localSettings.showOnlyUnread || (this.localSettings.showOnlyUnread && post.unread))
-            #    if post.unread
-            #        this._seenUnread = this._seenUnread + 1
-            #    this.articleList.add post
             this.articleList.add post
             
     _apiError: (type, desc, data) =>
@@ -191,7 +187,6 @@ class NR.Application extends SimpleMVC.Controller
 
     navigate: (uri, executeFn = false, addState = true) =>
         ret = super uri, executeFn, addState
-        #if ret
         $("#ad-body").html("<!-- newsrdr-new-site -->
 <div id='div-gpt-ad-1379655552510-0' style='width:728px; height:90px;'>
 <script type='text/javascript'>
@@ -482,14 +477,6 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this._maxId = data.id
                 this._postPage = this._postPage + 1
                 this._processFeedPosts data.list
-                #if (this._seenUnread - this._lastSeenUnread) < 10 && this.localSettings.showOnlyUnread
-                #    if this.newsFeedView? && this._seenUnread < this.newsFeedView.getSelectedUnread()
-                #        this.fetchMorePosts()
-                #    else
-                #        this._enableFetch = false
-                #        this._lastSeenUnread = null
-                #else
-                #    this._lastSeenUnread = null
         
         if not this._lastSeenUnread?
             this._lastSeenUnread = this._seenUnread
