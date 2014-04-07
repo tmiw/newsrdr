@@ -232,10 +232,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this.fetchMorePosts()   
             else if this.currentArticle > this.articleList.length - 1
                 this.currentArticle = this.articleList.length - 1
-                        
+                scrollToBottom = true
+                
             newArticle = this.articleList.at this.currentArticle
             newArticleId = newArticle.article.id;
             newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
+            if scrollToBottom
+                newArticleOffset = $("a[name='bottom']").offset()
             this.scrollDisabled = true
             objSelf = this
             $('html, body').animate({
@@ -287,10 +290,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                this.fetchMorePosts()   
            else if this.currentArticle > this.articleList.length - 1
                this.currentArticle = this.articleList.length - 1
-                        
+               scrollToBottom = true
+               
            newArticle = this.articleList.at this.currentArticle
            newArticleId = newArticle.article.id;
            newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
+           if scrollToBottom
+                newArticleOffset = $("a[name='bottom']").offset()
            this.scrollDisabled = true
            objSelf = this
            $('html, body').animate({
