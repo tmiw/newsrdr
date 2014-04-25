@@ -233,7 +233,9 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             else if this.currentArticle > this.articleList.length - 1
                 this.currentArticle = this.articleList.length - 1
                 scrollToBottom = true
-                
+            
+            $(".newsArticle .article-panel").removeClass "selected-article"
+            $(".newsArticle:eq(" + this.currentArticle + ")  .article-panel").addClass "selected-article"
             newArticle = this.articleList.at this.currentArticle
             newArticleId = newArticle.article.id;
             newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
@@ -291,7 +293,9 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
            else if this.currentArticle > this.articleList.length - 1
                this.currentArticle = this.articleList.length - 1
                scrollToBottom = true
-               
+           
+           $(".newsArticle .article-panel").removeClass "selected-article"
+           $(".newsArticle:eq(" + this.currentArticle + ") .article-panel").addClass "selected-article"
            newArticle = this.articleList.at this.currentArticle
            newArticleId = newArticle.article.id;
            newArticleOffset = $("a[name='article" + newArticleId + "']").offset()
@@ -353,15 +357,18 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     windowHeight = $(window).height()
                     first = false
                     index = 0
-                    $(".newsArticle").each(() ->
+                    $(".newsArticle .article-panel").removeClass "selected-article"
+                    $(".newsArticle .article-panel").each(() ->
                         offset = $(this).offset()
-                        if scrollTop <= offset.top and ($(this).height() + offset.top) < (scrollTop + windowHeight) and first == false
+                        if (scrollTop + $("#top-nav-bar").height()) <= (offset.top + $(this).height()) and first == false
                             first = true
                             objSelf.currentArticle = index
+                            $(this).addClass "selected-article"
                         index = index + 1
                     )
                 ))
-        )
+        
+        $(window).scroll(this._onScrollFn)
         
         this.authedUser = not suppressLeftAndTop
         this.feedList = new SimpleMVC.Collection
