@@ -243,9 +243,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 newArticleOffset = $("a[name='bottom']").offset()
             this.scrollDisabled = true
             objSelf = this
+            $(window).off("scroll", this._onScrollFn)
+            doneFn = () -> 
+                objSelf.scrollDisabled = false
+                $(window).scroll(objSelf._onScrollFn)
             $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
-            }, 500, "swing", () -> objSelf.scrollDisabled = false)
+            }, 500, "swing", () -> setTimeout(doneFn, 0))
             e.preventDefault()
     
     _handleFeedKeys: (e) =>
@@ -303,9 +307,13 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 newArticleOffset = $("a[name='bottom']").offset()
            this.scrollDisabled = true
            objSelf = this
+           $(window).off("scroll", this._onScrollFn)
+           doneFn = () -> 
+               objSelf.scrollDisabled = false
+               $(window).scroll(objSelf._onScrollFn)
            $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
-           }, 500, "swing", () -> objSelf.scrollDisabled = false)
+           }, 500, "swing", () -> setTimeout(doneFn, 0))
                 
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation
@@ -349,7 +357,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         # Initialize scroll handler (to enable "where you left off" scrolling if you're
         # switching between keyboard navigation and mouse navigation)
         objSelf = this
-        $(window).scroll(() ->
+        this._onScrollFn = () ->
             clearTimeout($.data(this, 'scrollTimer'));
             $.data(this, 'scrollTimer', setTimeout(() ->
                 if not objSelf.scrollDisabled
