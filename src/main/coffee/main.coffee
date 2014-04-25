@@ -248,7 +248,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 objSelf.scrollDisabled = false
                 $(window).scroll(objSelf._onScrollFn)
             $('html, body').animate({
-                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
+                scrollTop: newArticleOffset.top - $("#top-nav-bar").height()
             }, 500, "swing", () -> setTimeout(doneFn, 0))
             e.preventDefault()
     
@@ -312,7 +312,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                objSelf.scrollDisabled = false
                $(window).scroll(objSelf._onScrollFn)
            $('html, body').animate({
-                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - $("#ad-block").height() - $(".jumbotron").height()
+                scrollTop: newArticleOffset.top - $("#top-nav-bar").height()
            }, 500, "swing", () -> setTimeout(doneFn, 0))
                 
     _initializeKeyboardNavigation: ->
