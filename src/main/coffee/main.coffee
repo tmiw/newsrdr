@@ -250,7 +250,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
             }, 500, "swing", () ->
-                if newArticleOFfset.top != $("a[name='article" + newArticleId + "']").offset().top
+                if newArticleOffset.top != $("a[name='article" + newArticleId + "']").offset().top
                     $('html, body').animate({
                         scrollTop: $("a[name='article" + newArticleId + "']").offset().top - $("#top-nav-bar").height() - 10
                     }, 500, "swing", () -> doneFn))
@@ -317,8 +317,8 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                $(window).scroll(objSelf._onScrollFn)
            $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
-            }, 500, "swing", () ->
-                if newArticleOFfset.top != $("a[name='article" + newArticleId + "']").offset().top
+           }, 500, "swing", () ->
+                if newArticleOffset.top != $("a[name='article" + newArticleId + "']").offset().top
                     $('html, body').animate({
                         scrollTop: $("a[name='article" + newArticleId + "']").offset().top - $("#top-nav-bar").height() - 10
                     }, 500, "swing", () -> doneFn))
