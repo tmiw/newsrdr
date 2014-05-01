@@ -248,7 +248,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 objSelf.scrollDisabled = false
                 $(window).scroll(objSelf._onScrollFn)
             $('html, body').animate({
-                scrollTop: newArticleOffset.top - 52 - 8
+                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
             }, 500, "swing", () -> setTimeout(doneFn, 0))
             e.preventDefault()
     
@@ -312,7 +312,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                objSelf.scrollDisabled = false
                $(window).scroll(objSelf._onScrollFn)
            $('html, body').animate({
-                scrollTop: newArticleOffset.top - 52 - 8
+                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
            }, 500, "swing", () -> setTimeout(doneFn, 0))
                 
     _initializeKeyboardNavigation: ->
@@ -498,6 +498,11 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 this._maxId = data.id
                 this._postPage = this._postPage + 1
                 this._processFeedPosts data.list
+                
+                if this.currentArticle < 0
+                    this.currentArticle = 0
+                    $(".newsArticle .article-panel").removeClass "selected-article"
+                    $(".newsArticle:eq(" + this.currentArticle + ")  .article-panel").addClass "selected-article"
         
         if not this._lastSeenUnread?
             this._lastSeenUnread = this._seenUnread
