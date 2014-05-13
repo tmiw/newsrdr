@@ -214,10 +214,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
         # Scroll up/down one article.
         if this.articleList? && this.articleList.length > 0
             if ((kc == 75 || kc == 107) && this.currentArticle?)
-                # Mark current article as read before proceeding.
-                article = this.articleList.at this.currentArticle
-                if this.authedUser && article? && article.unread
-                    this.togglePostAsRead article
+                # Mark as read only if we are scrolling downward.
                 this.currentArticle = this.currentArticle - 1
             else if ((kc == 74 || kc == 106) && this.currentArticle <= this.articleList.length - 1)
                 article = this.articleList.at this.currentArticle
