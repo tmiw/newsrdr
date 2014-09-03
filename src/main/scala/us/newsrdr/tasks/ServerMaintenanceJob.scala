@@ -13,7 +13,7 @@ import org.quartz.SimpleScheduleBuilder._
 import org.quartz.DateBuilder._
 import org.quartz._
 
-class ServerMaintenanceJob extends Job {
+class RebalanceJob extends Job {
   def rebalanceJobs() {
     // rebalance jobs due to low resources on AWS VM.
     val scheduler = BackgroundJobManager.scheduler
@@ -58,6 +58,11 @@ class ServerMaintenanceJob extends Job {
     })
   }
   
+  def execute(ctxt: JobExecutionContext) {
+    rebalanceJobs
+  }
+}
+class ServerMaintenanceJob extends Job {
   private def deleteOldSessions() {
     BackgroundJobManager.db withSession { implicit session: Session =>
       BackgroundJobManager.dao.deleteOldSessions
@@ -71,7 +76,6 @@ class ServerMaintenanceJob extends Job {
   }
   
   def execute(ctxt: JobExecutionContext) {
-    //rebalanceJobs
     deleteOldSessions
     deleteOldFailLogs
   }

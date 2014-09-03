@@ -78,8 +78,7 @@ class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with Auth
   
   get("/maint/rebalance") {
     adminWrapper((session: Session, userInfo: User) => {
-      val maint = new us.newsrdr.tasks.ServerMaintenanceJob
-      maint.rebalanceJobs
+      us.newsrdr.tasks.BackgroundJobManager.scheduleRebalanceJob
       redirect("/admin/")
     })
   }

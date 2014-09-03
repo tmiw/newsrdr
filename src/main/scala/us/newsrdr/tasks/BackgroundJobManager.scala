@@ -138,6 +138,15 @@ object BackgroundJobManager {
     }
   }
   
+  def scheduleRebalanceJob {
+    val trigger = newTrigger().withIdentity("rebalance")
+                              .startNow()
+                              .build()
+    val job = newJob(classOf[RebalanceJob]).withIdentity("rebalance")
+                                                   .build()
+    scheduler.scheduleJob(job, trigger)
+  }
+  
   def rescheduleFeedJob(url: String, intervalInSeconds: Int) {
     val newName = getJobName(url)
     val t = new TriggerKey(newName)
