@@ -139,6 +139,11 @@ object BackgroundJobManager {
   }
   
   def scheduleRebalanceJob {
+    val oldTrigger = scheduler.getTrigger(new TriggerKey("rebalance"))
+    if (oldTrigger != null)
+    {
+      scheduler.deleteJob(new JobKey("rebalance"))
+    }
     val trigger = newTrigger().withIdentity("rebalance")
                               .startNow()
                               .build()
