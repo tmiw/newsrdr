@@ -15,6 +15,11 @@ import org.w3c.dom.NodeList
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 import javax.xml.transform.stream.StreamResult
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
+import javax.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.HttpsURLConnection
 
 case class Category(
     id: Option[Int],
@@ -204,6 +209,17 @@ object XmlFeedFactory {
   f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
   val MyXML = XML.withSAXParser(f.newSAXParser())
   
+  class NaiveTrustManager extends X509TrustManager {
+    override def checkClientTrusted(cert: Array[X509Certificate], authType: String) {
+    }
+
+    override def checkServerTrusted(cert: Array[X509Certificate], authType: String) {
+    }
+
+    override def getAcceptedIssuers = null
+
+  }
+  
   private def fetch[T](url: String, lastUpdatedTime: Long, fn: java.io.InputStream => T) : (String, T) = {
     var count = 0
     var code = 0
@@ -219,8 +235,20 @@ object XmlFeedFactory {
         {
           conn.disconnect()
         }
-      
+        
+        // Trusts all SSL certs.
+        // XXX: we really shouldn't do this but instead emit an error to the 
+        // user when the feed is first added.
+        val trustAllCerts = Array[TrustManager](new NaiveTrustManager())
+        val sslContext = SSLContext.getInstance( "SSL" )
+        val socketFactory = sslContext.getSocketFactory()
+        
         conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
+        if (conn.isInstanceOf[HttpsURLConnection])
+        {
+          conn.asInstanceOf[HttpsURLConnection].setSSLSocketFactory(socketFactory)
+        }
+        
         conn.setInstanceFollowRedirects(true)
         conn.setRequestProperty("User-Agent", "newsrdr (http://newsrdr.us/)")
         conn.setIfModifiedSince(lastUpdatedTime)
@@ -466,7 +494,7 @@ object XmlFeedFactory {
     }
   }
   
-  private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
+  private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value))))).isDefined
 }
 
 abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
