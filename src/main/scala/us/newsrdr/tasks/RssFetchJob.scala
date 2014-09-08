@@ -103,7 +103,7 @@ class RssFetchJob extends Job {
         } else {
           // log to error log
           preventDeadlock { implicit session: Session =>
-            BackgroundJobManager.dao.logFeedFailure(feedUrl, e.getMessage())
+            BackgroundJobManager.dao.logFeedFailure(feedUrl, e.toString())
           }
           reduceFeedUpdateFrequency(today, feedUrl)
           null
