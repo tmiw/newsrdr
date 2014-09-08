@@ -494,7 +494,7 @@ object XmlFeedFactory {
     }
   }
   
-  private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value))))).isDefined
+  private def attributeEquals(name: String, value: String)(node: Node) = node.attribute(name).filter(_.text==value).isDefined
 }
 
 abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
