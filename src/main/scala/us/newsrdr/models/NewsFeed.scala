@@ -17,7 +17,7 @@ import scala.util.control.Breaks._
 import javax.xml.transform.stream.StreamResult
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
-import javax.security.cert.X509Certificate
+import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.HttpsURLConnection
 
