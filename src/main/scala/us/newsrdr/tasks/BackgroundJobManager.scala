@@ -41,7 +41,8 @@ class QuartzWatchdogThread extends java.lang.Thread {
 
 object BackgroundJobManager {
   val CLEANUP_JOB_NAME = "newsrdr_cleanup"
-  
+  val REBALANCE_JOB_NAME = "rebalance"
+
   var db : Database = _
   var dao : DataTables = _
   var scheduler : Scheduler = null

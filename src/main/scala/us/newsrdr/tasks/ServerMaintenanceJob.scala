@@ -35,7 +35,8 @@ class RebalanceJob extends Job {
     var startSeconds = START_TIME
 
     triggerList.toList.foreach(t => {
-      if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME)) {
+      if (!t.getName().equals(BackgroundJobManager.CLEANUP_JOB_NAME) &&
+          !t.getName().equals(BackgroundJobManager.REBALANCE_JOB_NAME)) {
         val oldTrigger = scheduler.getTrigger(t)
         val builder = oldTrigger.getTriggerBuilder()
           
