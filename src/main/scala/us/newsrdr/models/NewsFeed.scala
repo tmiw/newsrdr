@@ -527,6 +527,10 @@ abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
             org.joda.time.format.DateTimeFormat.forPattern("E, d MMM y HH:mm:ss  0").getParser(),
             org.joda.time.format.DateTimeFormat.forPattern("E,  d MMM y HH:mm:ss 0").getParser(),
             org.joda.time.format.DateTimeFormat.forPattern("E,  d MMM y HH:mm:ss  0").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("E, dd MMM y HH:mm:ss 'UTC'").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("E, dd MMM y HH:mm:ss  'UTC").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("E,  dd MMM y HH:mm:ss 'UTC'").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("E,  dd MMM y HH:mm:ss  'UTC'").getParser(),
             org.joda.time.format.DateTimeFormat.forPattern("dd MMM y HH:mm:ss Z").getParser(),
             ISODateTimeFormat.dateTimeParser().getParser()
           ).toArray
