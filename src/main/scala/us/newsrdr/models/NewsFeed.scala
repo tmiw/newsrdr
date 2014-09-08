@@ -236,16 +236,17 @@ object XmlFeedFactory {
           conn.disconnect()
         }
         
-        // Trusts all SSL certs.
-        // XXX: we really shouldn't do this but instead emit an error to the 
-        // user when the feed is first added.
-        val trustAllCerts = Array[TrustManager](new NaiveTrustManager())
-        val sslContext = SSLContext.getInstance( "SSL" )
-        val socketFactory = sslContext.getSocketFactory()
-        
         conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
         if (conn.isInstanceOf[HttpsURLConnection])
         {
+          // Trusts all SSL certs.
+          // XXX: we really shouldn't do this but instead emit an error to the 
+          // user when the feed is first added.
+          val trustAllCerts = Array[TrustManager](new NaiveTrustManager())
+          val sslContext = SSLContext.getInstance( "SSL" )
+          sslContext.init(null, null, null)
+          val socketFactory = sslContext.getSocketFactory()
+        
           conn.asInstanceOf[HttpsURLConnection].setSSLSocketFactory(socketFactory)
         }
         
