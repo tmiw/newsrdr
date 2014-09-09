@@ -20,6 +20,8 @@ import javax.net.ssl.X509TrustManager
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.HttpsURLConnection
+import java.net.URLConnection
+import java.net.HttpURLConnection
 
 case class Category(
     id: Option[Int],
@@ -220,6 +222,31 @@ object XmlFeedFactory {
 
   }
   
+  // Trusts all SSL certs.
+  // XXX: we really shouldn't do this but instead emit an error to the 
+  // user when the feed is first added.
+  val trustAllCerts = Array[TrustManager](new NaiveTrustManager())
+  val sslContext = SSLContext.getInstance( "SSL" )
+  sslContext.init(null, null, null)
+  val socketFactory = sslContext.getSocketFactory()
+  
+  // Because the timeouts below don't work if we receive some data,
+  // we need this thread class to shut us down.
+  class InterruptThread(thd : Thread, conn : URLConnection) extends Runnable {
+    override def run() {
+      try {
+        Thread.sleep(60000)
+      } catch {
+        case e : InterruptedException => {
+          // ignore
+        }
+      }
+      
+      val httpConn = conn.asInstanceOf[HttpURLConnection]
+      httpConn.disconnect()
+    }
+  }
+  
   private def fetch[T](url: String, lastUpdatedTime: Long, fn: java.io.InputStream => T) : (String, T) = {
     var count = 0
     var code = 0
@@ -236,17 +263,9 @@ object XmlFeedFactory {
           conn.disconnect()
         }
         
-        conn = urlObj.openConnection().asInstanceOf[java.net.HttpURLConnection]
+        conn = urlObj.openConnection().asInstanceOf[HttpURLConnection]
         if (conn.isInstanceOf[HttpsURLConnection])
-        {
-          // Trusts all SSL certs.
-          // XXX: we really shouldn't do this but instead emit an error to the 
-          // user when the feed is first added.
-          val trustAllCerts = Array[TrustManager](new NaiveTrustManager())
-          val sslContext = SSLContext.getInstance( "SSL" )
-          sslContext.init(null, null, null)
-          val socketFactory = sslContext.getSocketFactory()
-        
+        {        
           conn.asInstanceOf[HttpsURLConnection].setSSLSocketFactory(socketFactory)
         }
         
@@ -255,6 +274,8 @@ object XmlFeedFactory {
         conn.setIfModifiedSince(lastUpdatedTime)
         conn.setReadTimeout(60*1000)
         conn.setConnectTimeout(10*1000)
+        val timeoutTimer = new Thread(new InterruptThread(Thread.currentThread(), conn))
+        timeoutTimer.start()
         conn.connect()
  
         code = conn.getResponseCode() 
