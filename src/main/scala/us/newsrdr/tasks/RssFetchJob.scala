@@ -78,7 +78,15 @@ class RssFetchJob extends Job {
     ).getTime()
     
     try {
-      val feed = XmlFeedFactory.load(feedUrl, lastUpdatedTime)      
+      val feed = try {
+        XmlFeedFactory.load(feedUrl, lastUpdatedTime)
+      } catch {
+        case e : MultipleFeedsException => {
+          // If logging (e.g. automated task), choose first feed from list.
+          if (log) XmlFeedFactory.load(e.getFeedList(0).url, lastUpdatedTime)
+          else throw e
+        }
+      }
       val ret = preventDeadlock { implicit session: Session =>
         // Update feed's contents with whatever we've fetched from the server.
         // If it doesn't already exist, create.
