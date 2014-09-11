@@ -236,14 +236,13 @@ object XmlFeedFactory {
     override def run() {
       try {
         Thread.sleep(60000)
+        val httpConn = conn.asInstanceOf[HttpURLConnection]
+        httpConn.disconnect()
       } catch {
         case e : InterruptedException => {
           // ignore
         }
       }
-      
-      val httpConn = conn.asInstanceOf[HttpURLConnection]
-      httpConn.disconnect()
     }
   }
   
@@ -252,6 +251,7 @@ object XmlFeedFactory {
     var code = 0
     var currentUrl = url
     var conn : java.net.HttpURLConnection = null
+    var timeoutTimer : Thread = null
     
     try {
       do {
@@ -260,6 +260,7 @@ object XmlFeedFactory {
       
         if (conn != null)
         {
+          timeoutTimer.interrupt()
           conn.disconnect()
         }
         
@@ -274,7 +275,7 @@ object XmlFeedFactory {
         conn.setIfModifiedSince(lastUpdatedTime)
         conn.setReadTimeout(60*1000)
         conn.setConnectTimeout(10*1000)
-        val timeoutTimer = new Thread(new InterruptThread(Thread.currentThread(), conn))
+        timeoutTimer = new Thread(new InterruptThread(Thread.currentThread(), conn))
         timeoutTimer.start()
         conn.connect()
  
@@ -302,6 +303,7 @@ object XmlFeedFactory {
       case e:Exception => {
         if (conn != null)
         {
+          timeoutTimer.interrupt()
           conn.disconnect()
         }
         throw e
@@ -314,6 +316,7 @@ object XmlFeedFactory {
     
     if (contentSize > maxContentSize)
     {
+      timeoutTimer.interrupt()
       conn.disconnect()
       throw new RuntimeException("Feed too large.")
     }
@@ -326,6 +329,7 @@ object XmlFeedFactory {
     }
     finally
     {
+      timeoutTimer.interrupt()
       stream.close()
     }
   }
