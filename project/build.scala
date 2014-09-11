@@ -36,7 +36,7 @@ object NewsrdrBuild extends Build {
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "org.twitter4j" % "twitter4j-stream" % "3.0.3",
         "org.openid4java" % "openid4java-consumer" % "0.9.6",
-        "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2",
+        "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2.1",
         "com.github.nscala-time" %% "nscala-time" % "0.4.2",
         "ch.qos.logback" % "logback-classic" % "1.0.6" % "runtime",
         "com.typesafe.slick" %% "slick" % "1.0.1",
