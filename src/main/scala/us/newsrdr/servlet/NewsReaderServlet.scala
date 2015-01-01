@@ -4,10 +4,6 @@ import org.scalatra._
 import scalate.ScalateSupport
 import us.newsrdr.models._
 import scala.slick.session.{Database, Session}
-import org.openid4java.consumer._
-import org.openid4java.discovery._
-import org.openid4java.message.ax._
-import org.openid4java.message._
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
@@ -30,8 +26,6 @@ import scala.collection._
 import us.newsrdr.AuthenticationTools
 
 class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with NativeJsonSupport with AuthOpenId with GZipSupport {
-  val manager = new ConsumerManager
-  
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>
@@ -63,7 +57,6 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     contentType = formats("json")
     
     val sId = session.getId()
-    val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
     
     // newsrdr account login is different because login is handled via AJAX.
     // If true is returned here /auth/login will set location.href to the correct redirect URL.
@@ -87,7 +80,6 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   
   get("/auth/login/google") {
     val sId = session.getId()
-    val setAttribute = (x : DiscoveryInformation) => session.setAttribute("discovered", x)
     
     if (session.getAttribute("redirectUrlOnLogin") == null)
     {
@@ -99,19 +91,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       dao.getUserSession(sId, request.getRemoteAddr()) match {
         case Some(sess) => redirect(redirectUrl)
         case None => {
-          val discoveries = manager.discover("https://www.google.com/accounts/o8/id")
-          val discovered = manager.associate(discoveries)
-          setAttribute(discovered)
-          val authReq = 
-            manager.authenticate(
-                discovered, 
-                Constants.getAuthenticatedURL(request, "google"))
-          val fetch = FetchRequest.createFetchRequest()
-          fetch.addAttribute("email", "http://schema.openid.net/contact/email",true)
-          fetch.addAttribute("firstname", "http://axschema.org/namePerson/first", true)
-          fetch.addAttribute("lastname", "http://axschema.org/namePerson/last", true)
-          authReq.addExtension(fetch)
-          redirect(authReq.getDestinationUrl(true))    
+          redirect(Constants.getGoogleLoginURL(request))   
         }
       }
     }
@@ -233,35 +213,44 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   }
   
   get("/auth/authenticated/google") {
-    val openidResp = new org.openid4java.message.ParameterList(request.getParameterMap())
-    val discovered = session.getAttribute("discovered").asInstanceOf[DiscoveryInformation]
-    val receivingURL = new StringBuffer(Constants.getAuthenticatedURL(request, "google")) //request.getRequestURL()
-    val queryString = request.getQueryString()
-    if (queryString != null && queryString.length() > 0)
-        receivingURL.append("?").append(request.getQueryString())
-
-    val verification = manager.verify(receivingURL.toString(), openidResp, discovered)
-    val verified = verification.getVerifiedId()
-    if (verified != null) {
-      val authSuccess = verification.getAuthResponse().asInstanceOf[AuthSuccess]
-      if (authSuccess.hasExtension(AxMessage.OPENID_NS_AX)){
-        val fetchResp = authSuccess.getExtension(AxMessage.OPENID_NS_AX).asInstanceOf[FetchResponse]
-        val emails = fetchResp.getAttributeValues("email")
-        val email = emails.get(0).asInstanceOf[String]
-        val firstName = fetchResp.getAttributeValue("firstname")
-        val lastName = fetchResp.getAttributeValue("lastname")
-        
-        // email is username for now
-        val sId = session.getId()
-        session.setAttribute("authService", "google")
-        db withTransaction { implicit session: Session =>
-          dao.startUserSession(sId, email, request.getRemoteAddr(), firstName + " " + lastName)
-        }
-        redirect("/auth/login/google")
+      val codeToTokenSvc = dispatch.url("https://accounts.google.com/o/oauth2/token") << 
+        Map("client_id" -> Constants.GOOGLE_CLIENT_ID,
+            "redirect_uri" -> Constants.getAuthenticatedURL(request, "google"),
+            "client_secret" -> Constants.GOOGLE_CLIENT_SECRET,
+            "code" -> params.get("code").get,
+            "grant_type" -> "authorization_code")
+      val resultFuture = dispatch.Http(codeToTokenSvc OK as.String)
+      val result = resultFuture()
+      
+      val tokenJson = parse(result)
+      val t = (tokenJson \\ "access_token").extract[String]
+      val e = (tokenJson \\ "expires_in").extract[Integer]
+      
+      session.setAttribute("authService", "google")
+      session.setAttribute("googleToken", t)
+      session.setAttribute("googleTokenExpires", new java.util.Date().getTime() + e*1000)
+      
+      val getEmailSvc = dispatch.url("https://www.googleapis.com/plus/v1/people/me") <<?
+        Map("access_token" -> t)
+      val emailFuture = dispatch.Http(getEmailSvc OK as.String)
+      val emailJsonString = emailFuture()
+      
+      implicit val formats = DefaultFormats 
+      val emailJson = parse(emailJsonString)
+      val emailList = for {
+        JObject(child) <- (emailJson \\ "emails")
+        JField("type", JString(emailType)) <- child
+        JField("value", JString(emailValue)) <- child
+        if emailType.equals("account")
+      } yield emailValue
+      val email = emailList(0)
+      val realName = (emailJson \\ "displayName").extract[String]
+      
+      val sId = session.getId()
+      db withTransaction { implicit session: Session =>
+        dao.startUserSession(sId, email, request.getRemoteAddr(), realName)
       }
-    } else {
-      "not verified"
-    }
+      redirect("/auth/login/google")
   }
   
   get("/auth/login") {

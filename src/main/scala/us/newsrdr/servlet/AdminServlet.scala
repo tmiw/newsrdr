@@ -4,10 +4,6 @@ import org.scalatra._
 import scalate.ScalateSupport
 import us.newsrdr.models._
 import scala.slick.session.{Database, Session}
-import org.openid4java.consumer._
-import org.openid4java.discovery._
-import org.openid4java.message.ax._
-import org.openid4java.message._
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
@@ -25,8 +21,6 @@ import org.scalatra.swagger._
 import scala.collection._
 
 class AdminServlet(dao: DataTables, db: Database) extends NewsrdrStack with AuthOpenId with GZipSupport {
-  val manager = new ConsumerManager
-  
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
     db withSession { implicit session: Session =>

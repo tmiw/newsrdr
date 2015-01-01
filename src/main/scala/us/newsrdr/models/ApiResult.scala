@@ -6,6 +6,8 @@ object Constants {
   val AUTHENTICATED_URI = "/auth/authenticated"
   val FB_CLIENT_ID = "1375893982640236"
   val FB_CLIENT_SECRET = "INSERT SECRET HERE"
+  val GOOGLE_CLIENT_ID = "51702830260-9ndmkn8e7enmqmkclmoock2b8loran59.apps.googleusercontent.com"
+  val GOOGLE_CLIENT_SECRET = "INSERT SECRET HERE"
   
   def getURL(request: javax.servlet.http.HttpServletRequest, uri: String) : String = {
     var protocol = request.isSecure() match {
@@ -23,6 +25,13 @@ object Constants {
     }
     
     (protocol + request.getServerName() + ":" + request.getServerPort().toString() + Constants.AUTHENTICATED_URI + "/" + service)
+  }
+  
+  def getGoogleLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
+    // TODO: CSRF verification using state variable.
+    "https://accounts.google.com/o/oauth2/auth?scope=email&state=xyz&redirect_uri=" +
+    getAuthenticatedURL(request, "google") +
+    "&response_type=code&client_id=" + GOOGLE_CLIENT_ID + "&access_type=online"
   }
   
   def getFacebookLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
