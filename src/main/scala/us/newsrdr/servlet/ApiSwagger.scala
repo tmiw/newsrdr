@@ -8,11 +8,6 @@ import us.newsrdr.models._
 
 import scala.slick.session.{Database, Session}
 
-import org.openid4java.consumer._
-import org.openid4java.discovery._
-import org.openid4java.message.ax._
-import org.openid4java.message._
-
 class ResourcesApp(implicit val swagger: Swagger) extends ScalatraServlet with NativeSwaggerBase {
   implicit override val jsonFormats: Formats = DefaultFormats
 }
