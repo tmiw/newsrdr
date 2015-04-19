@@ -79,11 +79,11 @@ class RssFetchJob extends Job {
     
     try {
       val feed = try {
-        XmlFeedFactory.load(feedUrl, lastUpdatedTime, log)
+        XmlFeedFactory.load(feedUrl, lastUpdatedTime, false)
       } catch {
         case e : MultipleFeedsException => {
           // If logging (e.g. automated task), choose first feed from list.
-          if (log) XmlFeedFactory.load(e.getFeedList(0).url, lastUpdatedTime, log)
+          if (log) XmlFeedFactory.load(e.getFeedList(0).url, lastUpdatedTime, false)
           else throw e
         }
       }
