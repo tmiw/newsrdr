@@ -176,7 +176,7 @@ case class UserFeed(
     addedDate: Timestamp)
 
 trait XmlFeedParser {
-  def fillFeedProperties(root: Elem, url: String)
+  def fillFeedProperties(root: Elem, url: String, prefetchImages: Boolean)
 }
 
 // necessary because SAX closes this on error even when the entire thing hasn't been read.
@@ -246,7 +246,7 @@ object XmlFeedFactory {
     }
   }
   
-  private def fetch[T](url: String, lastUpdatedTime: Long, fn: java.io.InputStream => T) : (String, T) = {
+  def fetch[T](url: String, lastUpdatedTime: Long, fn: (String, java.io.InputStream) => T) : (String, T) = {
     var count = 0
     var code = 0
     var currentUrl = url
@@ -324,7 +324,7 @@ object XmlFeedFactory {
     val stream = conn.getInputStream()
     try
     {
-      val result = fn(stream)
+      val result = fn(contentType, stream)
       (currentUrl, result)
     }
     finally
@@ -363,7 +363,7 @@ object XmlFeedFactory {
     val transformer = TransformerFactory.newInstance().newTransformer()
     transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     
-    val (currentUrl, htmlNode) = fetch(url, 0, (stream) => {
+    val (currentUrl, htmlNode) = fetch(url, 0, (cType, stream) => {
       val result = new DOMResult()
       val contentStream = new ManualCloseBufferedStream(stream)
       contentStream.mark(1024*1024*3)
@@ -437,9 +437,9 @@ object XmlFeedFactory {
     </rss>
   }
   
-  def load(url: String, lastUpdatedTime: Long) : XmlFeed = {
+  def load(url: String, lastUpdatedTime: Long, prefetchImages: Boolean) : XmlFeed = {
     var doc : String = ""
-    val (currentUrl, xmlDoc) = fetch(url, lastUpdatedTime, (stream) => {
+    val (currentUrl, xmlDoc) = fetch(url, lastUpdatedTime, (cType, stream) => {
       val contentStream = new ManualCloseBufferedStream(stream)
       contentStream.mark(1024*1024*3)
       
@@ -479,7 +479,7 @@ object XmlFeedFactory {
     val feedCount = feedLinks.count(_ => true)
     if (feedCount == 1 && !feedLinks.head.attribute("href").map(_.text).head.equals(url))
     {
-      load(new java.net.URL(new java.net.URL(currentUrl), feedLinks.head.attribute("href").map(_.text).head).toString(), lastUpdatedTime)
+      load(new java.net.URL(new java.net.URL(currentUrl), feedLinks.head.attribute("href").map(_.text).head).toString(), lastUpdatedTime, prefetchImages)
     }
     else if (feedCount > 1)
     {
@@ -512,7 +512,7 @@ object XmlFeedFactory {
           throw new HasNoFeedsException(doc)
         }
     
-      feed.fillFeedProperties(xmlDoc, url)
+      feed.fillFeedProperties(xmlDoc, url, prefetchImages)
       val now = new java.sql.Timestamp(new java.util.Date().getTime())
       feed.entries = 
         feed.entries.sortBy(_._1.pubDate.getOrElse(now).getTime())
@@ -583,10 +583,32 @@ abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
         if (!x.isEmpty) x
         else orY
     }
+    
+    protected def replaceImagesWithBase64(prefetch: Boolean, x: String) : String = {
+      if (prefetch)
+      {
+        val rgx = """(<img[^>]+src=)([^ >]+)""".r
+        rgx replaceAllIn (x, m => {
+          val urlWithoutQuotes = """['"]""".r replaceAllIn (m group 2, "")
+          try {
+            (m group 1) + '"' + XmlFeedFactory.fetch(urlWithoutQuotes, 0, (cType, stream) => {
+              val binStream = Stream.continually(stream.read).takeWhile(_ != -1).map(_.toByte)
+              val bytes = binStream.toArray
+              val b64 = new sun.misc.BASE64Encoder().encode(bytes)
+              "data:" + cType + ";base64," + b64
+            })._2 + '"'
+          } catch {
+            case _ => (m group 1) + (m group 2)
+          }
+        })
+      }
+      else
+        x
+    }
 }
 
 class RSSFeed(base64Hash: String) extends XmlFeed(base64Hash) {
-    def fillFeedProperties(root: Elem, url: String) = {
+    def fillFeedProperties(root: Elem, url: String, prefetchImages: Boolean) = {
         val channel = (root \\ "channel")
         
         feedProperties = NewsFeed(
@@ -613,11 +635,11 @@ class RSSFeed(base64Hash: String) extends XmlFeed(base64Hash) {
         
         feedCategories = (channel \ "category").map(_.text).toList
         
-        entries = (root \\ "item").map(createArticle).toList
+        entries = (root \\ "item").map(createArticle(prefetchImages)).toList
     }
     
-    private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
-      var articleText = useEitherOrString((x \\ "encoded").filter(_.prefix == "content").take(1).text, (x \\ "description").take(1).text)
+    private def createArticle(prefetchImages: Boolean)(x : Node) : (NewsFeedArticle, List[String]) = {
+      var articleText = replaceImagesWithBase64(prefetchImages, useEitherOrString((x \\ "encoded").filter(_.prefix == "content").take(1).text, (x \\ "description").take(1).text))
         var article = NewsFeedArticle(
             None,
             0,
@@ -642,7 +664,7 @@ class RSSFeed(base64Hash: String) extends XmlFeed(base64Hash) {
 }
 
 class AtomFeed(base64Hash: String) extends XmlFeed(base64Hash) {
-    def fillFeedProperties(root: Elem, url: String) = {
+    def fillFeedProperties(root: Elem, url: String, prefetchImages: Boolean) = {
         val channel = (root \\ "feed")
         
         feedProperties = NewsFeed(
@@ -669,11 +691,11 @@ class AtomFeed(base64Hash: String) extends XmlFeed(base64Hash) {
         
         feedCategories = (channel \ "category").map(_.text).toList
         
-        entries = (root \\ "entry").map(createArticle).toList
+        entries = (root \\ "entry").map(createArticle(prefetchImages)).toList
     }
     
-    private def createArticle(x : Node) : (NewsFeedArticle, List[String]) = {
-        val content = useEitherOrString(getHtmlContent(x, "content"), getHtmlContent(x, "summary"))
+    private def createArticle(prefetchImages: Boolean)(x : Node) : (NewsFeedArticle, List[String]) = {
+        val content = replaceImagesWithBase64(prefetchImages, useEitherOrString(getHtmlContent(x, "content"), getHtmlContent(x, "summary")))
         val pubTime = useEitherOrString((x \\ "published").text.trim(), (x \\ "updated").text.trim())
         val link = useEitherOrString(getHtmlLink(x, "link"), (x \\ "id").text)
         
