@@ -731,7 +731,7 @@ class DataTables(val driver: ExtendedProfile) {
   
   def deleteOldPosts()(implicit session: Session) {
     val threeMonthsAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*30*3*1000)
-    val matchingOldPosts = for { unfa <- UserNewsFeedArticles if unixTimestampFn(unfa.pubDate) < unixTimestampFn(Some(threeMonthsAgo)) && unfa.isSaved != true } yield unfa
+    val matchingOldPosts = for { unfa <- UserNewsFeedArticles if unixTimestampFn(unfa.pubDate) < unixTimestampFn(Some(threeMonthsAgo)) && unfa.isSaved === false } yield unfa
     matchingOldPosts.delete
   }
   
