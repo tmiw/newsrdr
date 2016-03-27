@@ -85,7 +85,7 @@ newsrdr: a news reader without the stuff you don't need</title>
     <div id="footer">
     	<div class="container">
     	    <p class="pull-right"><a href="#">Back to top</a></p>
-        	<p>&copy; 2013 Mooneer Salem. &middot; <a href="/privacy_policy">Privacy</a> &middot; <a href="https://github.com/tmiw/newsrdr">Source code</a></p>
+        	<p>&copy; 2016 Mooneer Salem. &middot; <a href="/privacy_policy">Privacy</a> &middot; <a href="https://github.com/tmiw/newsrdr">Source code</a></p>
     	</div>
     </div>
     <script src="/static/js/bootstrap.min.js"></script>
