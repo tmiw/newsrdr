@@ -77,9 +77,9 @@ class ServerMaintenanceJob extends Job {
   }
   
   private def deleteOldPosts {
-    BackgroundJobManager.db withSession { implicit session: Session =>
-      BackgroundJobManager.dao.deleteOldPosts
-    }
+    //BackgroundJobManager.db withSession { implicit session: Session =>
+    //  BackgroundJobManager.dao.deleteOldPosts
+    //}
   }
   
   def execute(ctxt: JobExecutionContext) {
