@@ -188,7 +188,7 @@ class DataTables(val driver: JdbcProfile) {
   val BlogEntries = TableQuery[BlogEntries]
   
   private def executeNow[R](query: slick.dbio.DBIOAction[R, slick.dbio.NoStream, Nothing])(implicit db: Database) : R = {
-    Await.result(db.run(query), Duration.Inf)
+    Await.result(db.run(query), 5 second)
   }
   
   def create()(implicit db: Database) = {
