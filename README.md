@@ -1,11 +1,11 @@
-# news.rdr #
+# newsrdr #
 
 ## Build & Run ##
 
 ```sh
-$ cd news.rdr
+$ cd newsrdr
 $ ./sbt
-> container:start
+> jetty:start
 > browse
 ```
 
