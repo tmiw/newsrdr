@@ -2,7 +2,7 @@ package us.newsrdr.tasks
 
 import javax.servlet.ServletContext
 import us.newsrdr.models.DataTables
-import scala.slick.session.Database
+import slick.jdbc.JdbcBackend.{Database, Session}
 import org.quartz.impl.StdSchedulerFactory
 import org.quartz.JobBuilder._
 import org.quartz.TriggerBuilder._
@@ -11,7 +11,6 @@ import org.quartz.CronScheduleBuilder._
 import org.quartz.DateBuilder._
 import org.quartz._
 import org.scalatra._
-import scala.slick.session.Session
 
 class QuartzWatchdogThread extends java.lang.Thread {
     private var isExiting = false
@@ -104,9 +103,7 @@ object BackgroundJobManager {
     {
       // Quartz has a maximum length that we have to follow. Encode the feed ID instead,
       // and make the background task retrieve the real feed URL.
-      db.withSession { implicit session: Session =>
-          "feed_fetch_" + dao.getFeedFromUrl(url).get.id.toString()
-      }
+      "feed_fetch_" + dao.getFeedFromUrl(url)(db).get.id.toString()
     }
     else
     {

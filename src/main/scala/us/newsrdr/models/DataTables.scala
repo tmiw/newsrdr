@@ -2,21 +2,24 @@ package us.newsrdr.models
 
 import us.newsrdr.tasks._
 import us.newsrdr._
-import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
-import scala.slick.jdbc.meta.{MTable}
-import scala.slick.jdbc.{GetResult, StaticQuery => Q}
+import slick.driver.{JdbcDriver, JdbcProfile, H2Driver, MySQLDriver}
+import slick.jdbc.meta.{MTable}
+import slick.jdbc.GetResult
 import java.sql.Timestamp
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 case class SiteStatistics(numUsers: Int, numFeeds: Int, numUsersInLastWeek: Int, numUsersInLastDay: Int)
 case class BlogEntry(id: Option[Int], authorId: Int, postDate: Timestamp, subject: String, body: String)
 
-class DataTables(val driver: ExtendedProfile) {
-  import driver.simple._
+class DataTables(val driver: JdbcProfile) {
+  import driver.api._
   
   // The amount we need to subtract the add date by so we
   // don't end up getting posts that are years old in the
   // results.
-  val OLDEST_POST_DIFFERENCE_MS = 1000 * 60 * 60 * 24 * 14
+  val OLDEST_POST_DIFFERENCE_MS : Long = 1000 * 60 * 60 * 24 * 14
   val OLDEST_POST_DIFFERENCE_SEC = OLDEST_POST_DIFFERENCE_MS / 1000
   
   // UNIX_TIMESTAMP support
@@ -26,12 +29,13 @@ class DataTables(val driver: ExtendedProfile) {
       id: Option[Int],
       isDown: Boolean)
   
-  object SiteSettings extends Table[SiteSetting]("SiteSettings") {
+  class SiteSettings(tag: Tag) extends Table[SiteSetting](tag, "SiteSettings") {
     def id = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
     def isDown = column[Boolean]("isDown")
     
-    def * = id ~ isDown <> (SiteSetting, SiteSetting.unapply _)
+    def * = (id, isDown) <> (SiteSetting.tupled, SiteSetting.unapply)
   }
+  val SiteSettings = TableQuery[SiteSettings]
   
   case class FeedFailureLog(
     id: Option[Int],
@@ -39,25 +43,27 @@ class DataTables(val driver: ExtendedProfile) {
       failureDate: Timestamp,
       failureMessage: String)
     
-  object FeedFailureLogs extends Table[FeedFailureLog]("FeedFailureLogs") {
+  class FeedFailureLogs(tag: Tag) extends Table[FeedFailureLog](tag, "FeedFailureLogs") {
     def id = column[Option[Int]]("id", O.PrimaryKey, O.AutoInc)
     def feedId = column[Int]("feedId")
     def failureDate = column[Timestamp]("failureDate")
     def failureMessage = column[String]("failureMessage")
     
-    def * = id ~ feedId ~ failureDate ~ failureMessage <> (FeedFailureLog, FeedFailureLog.unapply _)
+    def * = (id, feedId, failureDate, failureMessage) <> (FeedFailureLog.tupled, FeedFailureLog.unapply)
     
     def feed = foreignKey("feedIdentifierLogKey", feedId, NewsFeeds)(_.id)
   }
+  val FeedFailureLogs = TableQuery[FeedFailureLogs]
   
-  object Categories extends Table[Category]("Categories") {
+  class Categories(tag: Tag) extends Table[Category](tag, "Categories") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
   
-    def * = id.? ~ name <> (Category, Category.unapply _)
+    def * = (id.?, name) <> (Category.tupled, Category.unapply)
   }
+  val Categories = TableQuery[Categories]
   
-  object NewsFeeds extends Table[NewsFeed]("NewsFeeds") {
+  class NewsFeeds(tag: Tag) extends Table[NewsFeed](tag, "NewsFeeds") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def title = column[String]("title")
     def link = column[String]("link")
@@ -81,23 +87,25 @@ class DataTables(val driver: ExtendedProfile) {
     def hash = column[String]("hash")
     
     def * = 
-      id.? ~ title ~ link ~ description ~ feedUrl ~ language ~ copyright ~ managingEditor ~ 
-      webMaster ~ pubDate ~ lastBuildDate ~ generator ~ docs ~ ttl ~ imageUrl ~ 
-      imageTitle ~ imageLink ~ lastUpdate ~ hash <> (NewsFeed, NewsFeed.unapply _)
+      (id.?, title, link, description, feedUrl, language, copyright, managingEditor, 
+      webMaster, pubDate, lastBuildDate, generator, docs, ttl, imageUrl, 
+      imageTitle, imageLink, lastUpdate, hash) <> (NewsFeed.tupled, NewsFeed.unapply)
   }
+  val NewsFeeds = TableQuery[NewsFeeds]
   
-  object NewsFeedCategories extends Table[(Int, Int, Int)]("NewsFeedCategories") {
+  class NewsFeedCategories(tag: Tag) extends Table[(Int, Int, Int)](tag, "NewsFeedCategories") {
       def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
       def feedId = column[Int]("feedId")
       def categoryId = column[Int]("categoryId")
     
-      def * = id ~ feedId ~ categoryId
+      def * = (id, feedId, categoryId)
     
       def feed = foreignKey("feedIdentifierKey", feedId, NewsFeeds)(_.id)
       def category = foreignKey("categoryIdKey", categoryId, Categories)(_.id)
   }
-    
-  object UserNewsFeedArticles extends Table[UserNewsFeedArticle]("UserNewsFeedArticles") {
+  val NewsFeedCategories = TableQuery[NewsFeedCategories]
+  
+  class UserNewsFeedArticles(tag: Tag) extends Table[UserNewsFeedArticle](tag, "UserNewsFeedArticles") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def userId = column[Int]("userId")
     def feedId = column[Int]("feedId")
@@ -119,15 +127,16 @@ class DataTables(val driver: ExtendedProfile) {
     def isSaved = column[Boolean]("isSaved")
     
     def * = 
-      id.? ~ userId ~ feedId ~ title ~ link ~ description ~ author ~ comments ~
-      enclosureUrl ~ enclosureLength ~ enclosureType ~ guid ~ isGuidPermalink ~
-      pubDate ~ source ~ isRead ~ isSaved <> (UserNewsFeedArticle, UserNewsFeedArticle.unapply _)
+      (id.?, userId, feedId, title, link, description, author, comments,
+      enclosureUrl, enclosureLength, enclosureType, guid, isGuidPermalink,
+      pubDate, source, isRead, isSaved) <> (UserNewsFeedArticle.tupled, UserNewsFeedArticle.unapply)
       
     def feed = foreignKey("feedIdKey", feedId, NewsFeeds)(_.id)
     def user = foreignKey("userIdKey", userId, Users)(_.id)
   }
+  val UserNewsFeedArticles = TableQuery[UserNewsFeedArticles]
   
-  object Users extends Table[User]("Users") {
+  class Users(tag: Tag) extends Table[User](tag, "Users") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def username = column[String]("username")
     def password = column[String]("password")
@@ -136,45 +145,60 @@ class DataTables(val driver: ExtendedProfile) {
     def optOutSharing = column[Boolean]("optOutSharing")
     def isAdmin = column[Boolean]("isAdmin")
     
-    def * = id.? ~ username ~ password ~ email ~ friendlyName ~ optOutSharing ~ isAdmin <> (User, User.unapply _)
+    def * = 
+      (id.?, username, password, email, friendlyName, optOutSharing, isAdmin) <> (User.tupled, User.unapply)
   }
+  val Users = TableQuery[Users]
   
-  object UserSessions extends Table[UserSession]("UserSessions") {
+  class UserSessions(tag: Tag) extends Table[UserSession](tag, "UserSessions") {
     def userId = column[Int]("userId")
     def sessionId = column[String]("sessionId")
     def lastAccess = column[Timestamp]("lastAccess")
     def lastAccessIp = column[String]("lastAccessIp")
     
-    def * = userId ~ sessionId ~ lastAccess ~ lastAccessIp <> (UserSession, UserSession.unapply _)
-    def bIdx1 = index("userSessionKey", userId ~ sessionId, unique = true)
+    def * = (userId, sessionId, lastAccess, lastAccessIp) <> (UserSession.tupled, UserSession.unapply)
+    def bIdx1 = index("userSessionKey", (userId, sessionId), unique = true)
     def user = foreignKey("userSessionUserKey", userId, Users)(_.id)
   }
+  val UserSessions = TableQuery[UserSessions]
   
-  object UserFeeds extends Table[UserFeed]("UserFeeds") {
+  class UserFeeds(tag: Tag) extends Table[UserFeed](tag, "UserFeeds") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def userId = column[Int]("userId")
     def feedId = column[Int]("feedId")
     def addedDate = column[Timestamp]("addedDate")
     
-    def * = id.? ~ userId ~ feedId ~ addedDate <> (UserFeed, UserFeed.unapply _)
+    def * = (id.?, userId, feedId, addedDate) <> (UserFeed.tupled, UserFeed.unapply)
     
     def feed = foreignKey("userFeedIdKey", feedId, NewsFeeds)(_.id)
     def user = foreignKey("userFeedUserIdKey", userId, Users)(_.id)
   }
-    
-  object BlogEntries extends Table[BlogEntry]("BlogEntries") {
+  val UserFeeds = TableQuery[UserFeeds]
+  
+  class BlogEntries(tag: Tag) extends Table[BlogEntry](tag, "BlogEntries") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
       def authorId = column[Int]("authorId")
       def postDate = column[Timestamp]("postDate")
       def subject = column[String]("subject")
       def body = column[String]("body")
       
-      def * = id.? ~ authorId ~ postDate ~ subject ~ body <> (BlogEntry, BlogEntry.unapply _)
+      def * = (id.?, authorId, postDate, subject, body) <> (BlogEntry.tupled, BlogEntry.unapply)
       def user = foreignKey("blogEntryUserIdKey", authorId, Users)(_.id)
   }
+  val BlogEntries = TableQuery[BlogEntries]
   
-  def create()(implicit session: Session) = {
-      if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
+  private def executeNow[R](query: slick.dbio.DBIOAction[R, slick.dbio.NoStream, Nothing])(implicit db: Database) : R = {
+    Await.result(db.run(query), Duration.Inf)
+  }
+  
+  def create()(implicit db: Database) = {
+    val setup = DBIO.seq(
+        (Categories.schema ++ NewsFeeds.schema ++ NewsFeedCategories.schema ++
+         Users.schema ++ UserNewsFeedArticles.schema ++ UserFeeds.schema ++
+         UserSessions.schema ++ FeedFailureLogs.schema ++ BlogEntries.schema ++
+         SiteSettings.schema).create)
+    executeNow(setup)
+/*      if (!MTable.getTables.list.exists(_.name.name == Categories.tableName)) Categories.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == NewsFeeds.tableName)) NewsFeeds.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == NewsFeedCategories.tableName)) NewsFeedCategories.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == Users.tableName)) Users.ddl.create
@@ -185,77 +209,84 @@ class DataTables(val driver: ExtendedProfile) {
       if (!MTable.getTables.list.exists(_.name.name == UserSessions.tableName)) UserSessions.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == FeedFailureLogs.tableName)) FeedFailureLogs.ddl.create
       if (!MTable.getTables.list.exists(_.name.name == BlogEntries.tableName)) BlogEntries.ddl.create
-      if (!MTable.getTables.list.exists(_.name.name == SiteSettings.tableName)) SiteSettings.ddl.create
+      if (!MTable.getTables.list.exists(_.name.name == SiteSettings.tableName)) SiteSettings.ddl.create*/
   }
 
-  def isSiteDown()(implicit session: Session) : Boolean = {
+  def isSiteDown()(implicit db: Database) : Boolean = {
     val q = for { s <- SiteSettings } yield s.isDown
-    q.firstOption.getOrElse(false)
+    executeNow(q.result.map { x => x.headOption }).getOrElse(false)
   }
   
-  def getSiteStatistics()(implicit session: Session) : SiteStatistics = {
+  def getSiteStatistics()(implicit database: Database) : SiteStatistics = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
     val lastWeek = new java.sql.Timestamp(today.getTime() - 60*60*24*7*1000)
     val yesterday = new java.sql.Timestamp(today.getTime() - 60*60*24*1000)
     
+    val userCount = executeNow((for{t <- Users} yield t).result.map { x => x.length })
+    val feedCount = executeNow((for{t <- NewsFeeds} yield t).result.map { x => x.length })
+    val usersSinceLastWeek = executeNow((for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(lastWeek))} yield t.userId).groupBy(x=>x).map(_._1).result.map { x => x.length })
+    val usersSinceYesterday = executeNow((for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(yesterday))} yield t.userId).groupBy(x=>x).map(_._1).result.map { x => x.length })
     SiteStatistics(
-        (for{t <- Users} yield t).list.count(_ => true), 
-        (for{t <- NewsFeeds} yield t).list.count(_ => true),
-        (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(lastWeek))} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true),
-        (for{t <- UserSessions if unixTimestampFn(t.lastAccess) >= unixTimestampFn(Some(yesterday))} yield t.userId).groupBy(x=>x).map(_._1).list.count(_ => true))
+        userCount, 
+        feedCount,
+        usersSinceLastWeek,
+        usersSinceYesterday)
   }
   
-  def getBlogPosts(offset: Int)(implicit session: Session) : List[BlogEntry] = {
-    Query(BlogEntries).sortBy(_.postDate.desc).drop(offset).take(Constants.ITEMS_PER_PAGE).list
+  def getBlogPosts(offset: Int)(implicit db: Database) : List[BlogEntry] = {
+    val query = BlogEntries.sortBy(_.postDate.desc)
+                           .drop(offset)
+                           .take(Constants.ITEMS_PER_PAGE).to[List].result
+    executeNow(query)
   }
   
-  def getBlogPostById(id: Int)(implicit session: Session) : BlogEntry = {
-      Query(BlogEntries).filter(_.id === id).first
-    }
-  
-  def insertBlogPost(uid: Int, subject: String, body: String)(implicit session: Session) {
-    BlogEntries.insert(BlogEntry(None, uid, new java.sql.Timestamp(new java.util.Date().getTime()), subject, body))
+  def getBlogPostById(id: Int)(implicit db: Database) : BlogEntry = {
+    executeNow(BlogEntries.filter(_.id === id).result.map { x => x.head })
   }
   
-  def deleteBlogPost(id: Int)(implicit session: Session) {
+  def insertBlogPost(uid: Int, subject: String, body: String)(implicit db: Database) {
+    executeNow(BlogEntries += BlogEntry(None, uid, new java.sql.Timestamp(new java.util.Date().getTime()), subject, body))
+  }
+  
+  def deleteBlogPost(id: Int)(implicit db: Database) {
     val query = for { be <- BlogEntries if be.id === id } yield be
-    query.delete
+    executeNow(query.delete)
   }
   
-  def editBlogPost(id: Int, subject: String, body: String)(implicit session: Session) {
-      val query = for { be <- BlogEntries if be.id === id } yield be.subject ~ be.body
-      query.update(subject, body)
-    }
+  def editBlogPost(id: Int, subject: String, body: String)(implicit db: Database) {
+    val query = for { be <- BlogEntries if be.id === id } yield (be.subject, be.body)
+    executeNow(query.update(subject, body))
+  }
   
-  def getSubscribedFeeds(userId: Int)(implicit session: Session) : List[(NewsFeed, Int)] = {
+  def getSubscribedFeeds(userId: Int)(implicit db: Database) : List[(NewsFeed, Int)] = {
     implicit val getNewsFeedResult = GetResult(
         r => NewsFeed(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<,
                       r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.<<))
     
     val queryString = if (driver.isInstanceOf[H2Driver]) {
-       """
+       sql"""
        select "nf".*, (
-         select count("id") from "UserNewsFeedArticles" where "feedId" = "uf"."feedId" and "userId" = ? and "isRead" = false
+         select count("id") from "UserNewsFeedArticles" where "feedId" = "uf"."feedId" and "userId" = $userId and "isRead" = false
        ) as unread 
        from "NewsFeeds" "nf"
        inner join "UserFeeds" "uf" on "nf"."id" = "uf"."feedId"
-       where "uf"."userId" = ?
+       where "uf"."userId" = $userId
      """
    } else {
-     """
+     sql"""
        select nf.*, (
-         select count(id) from UserNewsFeedArticles where feedId = uf.feedId and userId = ? and isRead = false
+         select count(id) from UserNewsFeedArticles where feedId = uf.feedId and userId = $userId and isRead = false
        ) as unread 
        from NewsFeeds nf
        inner join UserFeeds uf on nf.id = uf.feedId
-       where uf.userId = ?
+       where uf.userId = $userId
      """
    }
-   val unreadCountQuery = Q.query[(Int, Int), (NewsFeed, Int)](queryString)
-   unreadCountQuery.list(userId, userId)
+   val unreadCountQuery = queryString.as[(NewsFeed, Int)]
+   executeNow(unreadCountQuery.map { x => x.toList })
   }
   
-  def getUnreadCountForFeed(userId: Int, feedId: Int)(implicit session: Session) : Int = {
+  def getUnreadCountForFeed(userId: Int, feedId: Int)(implicit db: Database) : Int = {
     val today = new Timestamp(new java.util.Date().getTime())
     
     val feed_posts = for { 
@@ -264,55 +295,59 @@ class DataTables(val driver: ExtendedProfile) {
     } yield (nfa, uf, nfa.isRead)
       
     val feed_posts2 = for {
-      (nfa, uf, read) <- feed_posts.list 
-        if nfa.pubDate.getOrElse(today).compareTo(new Timestamp(uf.addedDate.getTime() - OLDEST_POST_DIFFERENCE_MS)) >= 0
+      (nfa, uf, read) <- feed_posts 
+        if unixTimestampFn(nfa.pubDate.getOrElse(today)) >= (unixTimestampFn(uf.addedDate) - OLDEST_POST_DIFFERENCE_MS)
     } yield (nfa, read)
     
-    (for { (fp, fq) <- feed_posts2 if fq == false } yield fp ).length
+    val resultQuery = (for { (fp, fq) <- feed_posts2 if fq == false } yield fp )
+    executeNow(resultQuery.result.map { x => x.length })
   }
   
-  def getFeedFromUrl(url: String)(implicit session: Session) : Option[NewsFeed] = {
+  def getFeedFromUrl(url: String)(implicit db: Database) : Option[NewsFeed] = {
     val feedQuery = for { f <- NewsFeeds if f.feedUrl === url || f.link === url } yield f
-    feedQuery.firstOption
+    executeNow(feedQuery.result.map { x => x.headOption })
   }
   
-  def addSubscriptionIfNotExists(userId: Int, feedId: Int)(implicit session: Session) {    
+  def addSubscriptionIfNotExists(userId: Int, feedId: Int)(implicit db: Database) {    
     val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
-    userFeed.firstOption match {
+    val result : Option[UserFeed] = executeNow(userFeed.result.map { x => x.headOption })
+    result match {
       case Some(uf) => ()
       case None => {
-        UserFeeds.insert(UserFeed(None, userId, feedId, new Timestamp(new java.util.Date().getTime())))
+        executeNow(UserFeeds += UserFeed(None, userId, feedId, new Timestamp(new java.util.Date().getTime())))
         ()
       }
     }
   }
   
-  def unsubscribeFeed(userId: Int, feedId: Int)(implicit session: Session) {
+  def unsubscribeFeed(userId: Int, feedId: Int)(implicit db: Database) {
     val userFeed = for { uf <- UserFeeds if uf.userId === userId && uf.feedId === feedId } yield uf
-    userFeed.delete
+    executeNow(userFeed.delete)
     
-    val numSubscribed = for { uf <- UserFeeds if uf.feedId === feedId } yield uf
-    if (numSubscribed.list.count(_ => true) == 0)
+    val subscribedQuery = for { uf <- UserFeeds if uf.feedId === feedId } yield uf
+    val numSubscribed = executeNow(subscribedQuery.length.result)
+    if (numSubscribed == 0)
     {
-      val feed = for { f <- NewsFeeds if f.id === feedId } yield f.feedUrl
-      BackgroundJobManager.unscheduleFeedJob(feed.list.head)
+      val feedQuery = for { f <- NewsFeeds if f.id === feedId } yield f.feedUrl
+      val feed = executeNow(feedQuery.result.map { x => x.head })
+      BackgroundJobManager.unscheduleFeedJob(feed)
     }
   }
   
-  def getFeedByPostId(postId: Long)(implicit session: Session) : NewsFeed = {
+  def getFeedByPostId(postId: Long)(implicit db: Database) : NewsFeed = {
     val feed = for {
-      (nfa, nf) <- UserNewsFeedArticles innerJoin NewsFeeds on (_.feedId === _.id) if nfa.id === postId
+      (nfa, nf) <- UserNewsFeedArticles join NewsFeeds on (_.feedId === _.id) if nfa.id === postId
     } yield nf
-    return feed.first
+    return executeNow(feed.result.map { x => x.head })
   }
   
-  def getLatestPostsForUser(userId: Int)(implicit session: Session) : List[NewsFeedArticleInfo] = {
-    val userOptedOut = Query(Users).filter(_.id === userId).first.optOutSharing
+  def getLatestPostsForUser(userId: Int)(implicit db: Database) : List[NewsFeedArticleInfo] = {
+    val userOptedOut = executeNow(Users.filter(_.id === userId).result.map { x => x.head.optOutSharing })
     
     val articleQuery = 
       if (userOptedOut) {
         for {
-          (uf, u) <- UserFeeds innerJoin Users on (_.userId === _.id) if u.optOutSharing === false
+          (uf, u) <- UserFeeds join Users on (_.userId === _.id) if u.optOutSharing === false
           nf <- NewsFeeds if uf.feedId === nf.id
           nfa <- UserNewsFeedArticles if nfa.feedId === uf.feedId
         } yield nfa
@@ -323,20 +358,21 @@ class DataTables(val driver: ExtendedProfile) {
           uf <- UserFeeds if nf.id === uf.feedId
           u <- Users if u.id === uf.userId && u.id === userId
         } yield nfa
-      }
+      }.take(Constants.ITEMS_PER_PAGE)
     
-    articleQuery.take(Constants.ITEMS_PER_PAGE).list.map(x =>
-      NewsFeedArticleInfo(NewsFeedArticle(x.id, x.feedId, x.title, x.link, x.description, x.author, x.comments,
-                          x.enclosureUrl, x.enclosureLength, x.enclosureType, x.guid, x.isGuidPermalink,
-                          x.pubDate, x.source), false, false))
+    executeNow(articleQuery.result.map { x => x.map(y =>
+      NewsFeedArticleInfo(
+          NewsFeedArticle(y.id, y.feedId, y.title, y.link, y.description, y.author, 
+                          y.comments, y.enclosureUrl, y.enclosureLength, y.enclosureType, 
+                          y.guid, y.isGuidPermalink, y.pubDate, y.source), false, false)).toList })
   }
   
-  def getLinkForPost(postId: Long)(implicit session: Session): String = {
+  def getLinkForPost(postId: Long)(implicit db: Database): String = {
     val query = for { unfa <- UserNewsFeedArticles if unfa.id === postId } yield unfa.link;
-    query.first
+    executeNow(query.result.map { x => x.head })
   }
   
-  def getPostsForFeeds(userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session): List[NewsFeedArticleInfo] = {
+  def getPostsForFeeds(userId: Int, feedIds: List[Int], unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit db: Database): List[NewsFeedArticleInfo] = {
     val feed_posts = if (unreadOnly) {
       for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.feedId.inSet(feedIds) && 
                                             unfa.id <= latestPostId && unixTimestampFn(unfa.pubDate) < latestPostDate &&
@@ -347,16 +383,16 @@ class DataTables(val driver: ExtendedProfile) {
                                             } yield unfa
     }
     
-    feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries).list.map(x => {
+    val feedPostQuery = feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries)
+    executeNow(feedPostQuery.result.map { x => x.map(y =>
       NewsFeedArticleInfo(
-          NewsFeedArticle(x.id, x.feedId, x.title, x.link, x.description, x.author, x.comments,
-                          x.enclosureUrl, x.enclosureLength, x.enclosureType, x.guid, x.isGuidPermalink,
-                          x.pubDate, x.source),
-          x.isRead == false, x.isSaved)
-    })
+          NewsFeedArticle(y.id, y.feedId, y.title, y.link, y.description, y.author, 
+                          y.comments, y.enclosureUrl, y.enclosureLength, y.enclosureType, 
+                          y.guid, y.isGuidPermalink, y.pubDate, y.source),
+          y.isRead == false, y.isSaved)).toList })
   }
   
-  def getPostsForFeed(userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session) : List[NewsFeedArticleInfo] = {
+  def getPostsForFeed(userId: Int, feedId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit db: Database) : List[NewsFeedArticleInfo] = {
     val feed_posts = if (unreadOnly) {
       for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.feedId === feedId && 
                                             unfa.id <= latestPostId && unixTimestampFn(unfa.pubDate) < latestPostDate &&
@@ -367,16 +403,16 @@ class DataTables(val driver: ExtendedProfile) {
                                             } yield unfa
     }
     
-    feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries).list.map(x => {
+    val feedPostQuery = feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries)
+    executeNow(feedPostQuery.result.map{ x => x.map(y =>
       NewsFeedArticleInfo(
-          NewsFeedArticle(x.id, x.feedId, x.title, x.link, x.description, x.author, x.comments,
-                          x.enclosureUrl, x.enclosureLength, x.enclosureType, x.guid, x.isGuidPermalink,
-                          x.pubDate, x.source),
-          x.isRead == false, x.isSaved)
-    })
+          NewsFeedArticle(y.id, y.feedId, y.title, y.link, y.description, y.author, y.comments,
+                          y.enclosureUrl, y.enclosureLength, y.enclosureType, y.guid, y.isGuidPermalink,
+                          y.pubDate, y.source),
+          y.isRead == false, y.isSaved)).toList })
   }
   
-  def getPostsForAllFeeds(userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session) : List[NewsFeedArticleInfo] = {
+  def getPostsForAllFeeds(userId: Int, unreadOnly: Boolean, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit db: Database) : List[NewsFeedArticleInfo] = {
     val feed_posts = if (unreadOnly) {
       for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.id <= latestPostId &&
                                             unixTimestampFn(unfa.pubDate) < latestPostDate &&
@@ -387,203 +423,211 @@ class DataTables(val driver: ExtendedProfile) {
                                             } yield unfa
     }
     
-    feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries).list.map(x => {
+    val feedQuery = feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries)
+    executeNow(feedQuery.result.map { x => x.map(y =>
       NewsFeedArticleInfo(
-          NewsFeedArticle(x.id, x.feedId, x.title, x.link, x.description, x.author, x.comments,
-                          x.enclosureUrl, x.enclosureLength, x.enclosureType, x.guid, x.isGuidPermalink,
-                          x.pubDate, x.source),
-          x.isRead == false, x.isSaved)
-    })
+          NewsFeedArticle(y.id, y.feedId, y.title, y.link, y.description, y.author, y.comments,
+                          y.enclosureUrl, y.enclosureLength, y.enclosureType, y.guid, y.isGuidPermalink,
+                          y.pubDate, y.source),
+          y.isRead == false, y.isSaved)).toList })
   }
   
-  def getSavedPosts(userId: Int, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit session: Session) : List[NewsFeedArticleInfo] = {
+  def getSavedPosts(userId: Int, offset: Int, maxEntries: Int, latestPostDate: Long, latestPostId: Long)(implicit db: Database) : List[NewsFeedArticleInfo] = {
     val feed_posts = for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.id <= latestPostId &&
                                                            unixTimestampFn(unfa.pubDate) < latestPostDate &&
                                                            unfa.isSaved === true } yield unfa
     
-    feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries).list.map(x => {
+    val feedQuery = feed_posts.sortBy(_.pubDate.desc).drop(offset).take(maxEntries)
+    executeNow(feedQuery.result.map { x => x.map(y =>
       NewsFeedArticleInfo(
-          NewsFeedArticle(x.id, x.feedId, x.title, x.link, x.description, x.author, x.comments,
-                          x.enclosureUrl, x.enclosureLength, x.enclosureType, x.guid, x.isGuidPermalink,
-                          x.pubDate, x.source),
-          false, true)
-    })
+          NewsFeedArticle(y.id, y.feedId, y.title, y.link, y.description, y.author, y.comments,
+                          y.enclosureUrl, y.enclosureLength, y.enclosureType, y.guid, y.isGuidPermalink,
+                          y.pubDate, y.source),
+          false, true)).toList })
   }
   
-  def setPostStatusForAllPosts(userId: Int, feedId: Int, from: Long, upTo: Long, unread: Boolean)(implicit session: Session) : Boolean = {
+  def setPostStatusForAllPosts(userId: Int, feedId: Int, from: Long, upTo: Long, unread: Boolean)(implicit db: Database) : Boolean = {
     val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId && unfa.feedId === feedId && 
                                                             unixTimestampFn(unfa.pubDate) <= from &&
                                                             unixTimestampFn(unfa.pubDate) >= upTo &&
                                                             unfa.isRead === unread } yield unfa.isRead
-    feedPostsQuery.update(!unread)
+    executeNow(feedPostsQuery.update(!unread))
     true
   }
   
-  def setPostStatusForAllPosts(userId: Int, from: Long, upTo: Long, unread: Boolean)(implicit session: Session) : Boolean = {
+  def setPostStatusForAllPosts(userId: Int, from: Long, upTo: Long, unread: Boolean)(implicit db: Database) : Boolean = {
     val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                             unixTimestampFn(unfa.pubDate) <= from &&
                                                             unixTimestampFn(unfa.pubDate) >= upTo &&
                                                             unfa.isRead === unread } yield unfa.isRead
-    feedPostsQuery.update(!unread)
+    executeNow(feedPostsQuery.update(!unread))
     true
   }
   
-  def setPostStatus(userId: Int, feedId: Int, postId: Long, unread: Boolean)(implicit session: Session) : Boolean = {
+  def setPostStatus(userId: Int, feedId: Int, postId: Long, unread: Boolean)(implicit db: Database) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
-    my_feed.firstOption match {
+    val foundFeed : Option[UserFeed] = executeNow(my_feed.result.map { x => x.headOption })
+    foundFeed match {
       case Some(_) => {
         val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                                    unfa.feedId === feedId &&
                                                                    unfa.id === postId &&
                                                                    unfa.isRead === unread } yield unfa.isRead
-        feedPostsQuery.update(!unread)
+        executeNow(feedPostsQuery.update(!unread))
         true
       }
       case _ => false
     }
   }
   
-  def setPostStatus(userId: Int, postId: Long, unread: Boolean)(implicit session: Session) : Boolean = {
+  def setPostStatus(userId: Int, postId: Long, unread: Boolean)(implicit db: Database) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.userId === userId } yield uf
-    my_feed.firstOption match {
+    val foundFeed : Option[UserFeed] = executeNow(my_feed.result.map { x => x.headOption })
+    foundFeed match {
       case Some(_) => {
         val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                                    unfa.id === postId &&
                                                                    unfa.isRead === unread } yield unfa.isRead
-        feedPostsQuery.update(!unread)
+        executeNow(feedPostsQuery.update(!unread))
         true
       }
       case _ => false
     }
   }
   
-  def savePost(userId: Int, feedId: Int, postId: Long)(implicit session: Session) : Boolean = {
+  def savePost(userId: Int, feedId: Int, postId: Long)(implicit db: Database) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
-    my_feed.firstOption match {
+    val foundFeed : Option[UserFeed] = executeNow(my_feed.result.map { x => x.headOption })
+    foundFeed match {
       case Some(_) => {
         val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                                    unfa.feedId === feedId &&
                                                                    unfa.id === postId  } yield unfa.isSaved
-        feedPostsQuery.update(true)
+        executeNow(feedPostsQuery.update(true))
         true
       }
       case _ => false
     }
   }
   
-  def unsavePost(userId: Int, feedId: Int, postId: Long)(implicit session: Session) : Boolean = {
+  def unsavePost(userId: Int, feedId: Int, postId: Long)(implicit db: Database) : Boolean = {
     val my_feed = for { uf <- UserFeeds if uf.feedId === feedId && uf.userId === userId } yield uf
-    my_feed.firstOption match {
+    val foundFeed : Option[UserFeed] = executeNow(my_feed.result.map { x => x.headOption })
+    foundFeed match {
       case Some(_) => {
         val feedPostsQuery = for { unfa <- UserNewsFeedArticles if unfa.userId === userId &&
                                                                    unfa.feedId === feedId &&
                                                                    unfa.id === postId  } yield unfa.isSaved
-        feedPostsQuery.update(false)
+        executeNow(feedPostsQuery.update(false))
         true
       }
       case _ => false
     }
   }
   
-  def getUserSessionById(sessionId: String)(implicit session: Session) : UserSession = {
-    (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess).first
+  def getUserSessionById(sessionId: String)(implicit db: Database) : UserSession = {
+    val query = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
+    executeNow(query.result.map { x => x.head })
   }
   
-  def getUserSession(sessionId: String, ip: String)(implicit session: Session) : Option[UserSession] = {
+  def getUserSession(sessionId: String, ip: String)(implicit db: Database) : Option[UserSession] = {
     val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
-    q.firstOption match {
+    val foundResult : Option[UserSession] = executeNow(q.result.map { x => x.headOption })
+    foundResult match {
       case Some(s) => {
-        q.update(UserSession(s.userId, s.sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
+        executeNow(q.update(UserSession(s.userId, s.sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip)))
         Some(s)
       }
       case None => None
     }
   }
   
-  def getUserName(userId: Int)(implicit session: Session) : String = {
+  def getUserName(userId: Int)(implicit db: Database) : String = {
     val q = for { u <- Users if u.id === userId } yield u.username
-    q.firstOption.getOrElse("")
+    executeNow(q.result.map { x => x.headOption.getOrElse("") })
   }
   
-  def getUserInfoByUsername(username: String)(implicit session: Session) : Option[User] = {
+  def getUserInfoByUsername(username: String)(implicit db: Database) : Option[User] = {
     val q = for { u <- Users if u.username === username } yield u
-    q.firstOption
+    executeNow(q.result.map { x => x.headOption })
   }
   
-  def getUserInfo(userId: Int)(implicit session: Session) : User = {
+  def getUserInfo(userId: Int)(implicit db: Database) : User = {
     val q = for { u <- Users if u.id === userId } yield u
-    q.first
+    executeNow(q.result.map { x => x.head })
   }
   
-  def setOptOut(userId: Int, optOut: Boolean)(implicit session: Session) {
+  def setOptOut(userId: Int, optOut: Boolean)(implicit db: Database) {
     val user = getUserInfo(userId)
     val q = for { u <- Users if u.id === userId } yield u
-    q.update(User(user.id, user.username, user.password, user.email, user.friendlyName, optOut, user.isAdmin))
+    executeNow(q.update(User(user.id, user.username, user.password, user.email, user.friendlyName, optOut, user.isAdmin)))
   }
   
-  def invalidateSession(sessionId: String)(implicit session: Session) {
+  def invalidateSession(sessionId: String)(implicit db: Database) {
     val q = (for { sess <- UserSessions if sess.sessionId === sessionId } yield sess)
-    q.firstOption match {
-        case Some(s) => q.delete
+    val session : Option[UserSession] = executeNow(q.result.map { x => x.headOption })
+    session match {
+        case Some(s) => executeNow(q.delete)
         case None => ()
       }
   }
   
-  def startUserSession(sessionId: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {
+  def startUserSession(sessionId: String, email: String, ip: String, friendlyName: String)(implicit db: Database) {
     startUserSession(sessionId, email, email, ip, friendlyName) 
   }
   
-  def createUser(username: String, password: String, email: String)(implicit session: Session) = {
+  def createUser(username: String, password: String, email: String)(implicit db: Database) = {
     val q = for { u <- Users if u.username === username } yield u
-    if (q.firstOption.isDefined) { false }
+    val isUserDefined = executeNow(q.result.map { x => x.headOption }).isDefined
+    if (isUserDefined) { false }
     else {
-      Users.insert(User(None, username, AuthenticationTools.hashPassword(password), email, username, false, false))
+      executeNow(Users += User(None, username, AuthenticationTools.hashPassword(password), email, username, false, false))
       true
     }
   }
   
-  def setPassword(username: String, password: String)(implicit session: Session) = {
+  def setPassword(username: String, password: String)(implicit db: Database) = {
     val q = for { u <- Users if u.username === username } yield u.password
-    q.update(AuthenticationTools.hashPassword(password))
+    executeNow(q.update(AuthenticationTools.hashPassword(password)))
   }
   
-  def setPassword(uId: Int, password: String)(implicit session: Session) = {
+  def setPassword(uId: Int, password: String)(implicit db: Database) = {
     val q = for { u <- Users if u.id === uId } yield u.password
-    q.update(AuthenticationTools.hashPassword(password))
+    executeNow(q.update(AuthenticationTools.hashPassword(password)))
   }
   
-  def setEmail(uId: Int, email: String)(implicit session: Session) = {
+  def setEmail(uId: Int, email: String)(implicit db: Database) = {
     val q = for { u <- Users if u.id === uId } yield u.email
-    q.update(email)
+    executeNow(q.update(email))
   }
   
-  def startUserSession(sessionId: String, username: String, email: String, ip: String, friendlyName: String)(implicit session: Session) {
+  def startUserSession(sessionId: String, username: String, email: String, ip: String, friendlyName: String)(implicit db: Database) {
     val q = for { u <- Users if u.username === username } yield u
-    val userId = q.firstOption match {
+    var queryResult : Option[User] = executeNow(q.result.map { x => x.headOption })
+    val userId = queryResult match {
       case Some(u) => {
-        q.update(User(u.id, u.username, u.password, email, friendlyName, u.optOutSharing, u.isAdmin))
+        executeNow(q.update(User(u.id, u.username, u.password, email, friendlyName, u.optOutSharing, u.isAdmin)))
         u.id.get
       }
       case None => {
-        Users returning Users.id insert User(None, username, "", email, friendlyName, false, false)
+        executeNow(Users returning Users.map(_.id) += User(None, username, "", email, friendlyName, false, false))
       }
     }
-    UserSessions.insert(UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
+    executeNow(UserSessions += UserSession(userId, sessionId, new java.sql.Timestamp(new java.util.Date().getTime()), ip))
   }
   
-  private def updateOrInsertFeedInfo(feedUrl: String, feed: XmlFeed)(implicit session: Session) : NewsFeed = {
-    val feedQuery = Query(NewsFeeds)
+  private def updateOrInsertFeedInfo(feedUrl: String, feed: XmlFeed)(implicit db: Database) : NewsFeed = {
     val newsFeed = 
-      for { f <- NewsFeeds if f.feedUrl === feedUrl } yield
-      (f.copyright ~ f.description ~ f.docs ~ f.generator ~ f.imageLink ~
-       f.imageTitle ~ f.imageUrl ~ f.language ~ f.lastBuildDate ~ f.link ~
-       f.managingEditor ~ f.pubDate ~ f.title ~ f.ttl ~ f.webMaster ~ f.lastUpdate ~ f.hash)
-      
-    newsFeed.firstOption match {
+      for { f <- NewsFeeds if f.feedUrl === feedUrl } yield 
+      (f.copyright, f.description, f.docs, f.generator, f.imageLink,
+       f.imageTitle, f.imageUrl, f.language, f.lastBuildDate, f.link,
+       f.managingEditor, f.pubDate, f.title, f.ttl, f.webMaster, f.lastUpdate, f.hash)
+    val newsFeedOption = executeNow(newsFeed.result.map { x => x.headOption })  
+    newsFeedOption match {
       case Some(fd) => {
         if (fd._17 == feed.feedProperties.hash) throw new NotModifiedException
         
-        newsFeed.update(
+        executeNow(newsFeed.update(
           (feed.feedProperties.copyright, 
            feed.feedProperties.description,
            feed.feedProperties.docs, 
@@ -600,12 +644,13 @@ class DataTables(val driver: ExtendedProfile) {
            feed.feedProperties.ttl, 
            feed.feedProperties.webMaster,
            new java.sql.Timestamp(new java.util.Date().getTime()),
-           feed.feedProperties.hash))
+           feed.feedProperties.hash)))
         }
         case None => {
-          (NewsFeeds.feedUrl ~ NewsFeeds.copyright ~ NewsFeeds.description ~ NewsFeeds.docs ~ NewsFeeds.generator ~ NewsFeeds.imageLink ~
-           NewsFeeds.imageTitle ~ NewsFeeds.imageUrl ~ NewsFeeds.language ~ NewsFeeds.lastBuildDate ~ NewsFeeds.link ~
-           NewsFeeds.managingEditor ~ NewsFeeds.pubDate ~ NewsFeeds.title ~ NewsFeeds.ttl ~ NewsFeeds.webMaster ~ NewsFeeds.lastUpdate ~ NewsFeeds.hash).insert(
+          executeNow(NewsFeeds.map(x => (x.feedUrl, x.copyright, x.description, x.docs, x.generator, 
+                              x.imageLink, x.imageTitle, x.imageUrl, x.language, x.lastBuildDate, 
+                              x.link, x.managingEditor, x.pubDate, x.title, x.ttl, x.webMaster, 
+                              x.lastUpdate, x.hash)) += (
             feedUrl,
             feed.feedProperties.copyright, 
             feed.feedProperties.description,
@@ -623,15 +668,15 @@ class DataTables(val driver: ExtendedProfile) {
             feed.feedProperties.ttl, 
             feed.feedProperties.webMaster,
             new java.sql.Timestamp(new java.util.Date().getTime()),
-            feed.feedProperties.hash
-          )
+            feed.feedProperties.hash))
         }
       }
     
-    (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f).first
+    val resultQuery = (for { f <- NewsFeeds if f.feedUrl === feedUrl } yield f)
+    executeNow(resultQuery.result.map { x => x.head })
   }
   
-  def updateOrInsertFeed(userId: Int, feedUrl: String, feed: XmlFeed)(implicit session: Session) : NewsFeed = {
+  def updateOrInsertFeed(userId: Int, feedUrl: String, feed: XmlFeed)(implicit db: Database) : NewsFeed = {
     val f = updateOrInsertFeedInfo(feedUrl, feed)
     val newsFeedId = f.id.get
       
@@ -640,7 +685,7 @@ class DataTables(val driver: ExtendedProfile) {
     f
   }
   
-  def updateOrInsertFeed(feedUrl: String, feed: XmlFeed)(implicit session: Session) : NewsFeed = {
+  def updateOrInsertFeed(feedUrl: String, feed: XmlFeed)(implicit db: Database) : NewsFeed = {
     val f = updateOrInsertFeedInfo(feedUrl, feed)
     val newsFeedId = f.id.get
       
@@ -649,35 +694,60 @@ class DataTables(val driver: ExtendedProfile) {
       f <- NewsFeeds if f.feedUrl === feedUrl
       uf <- UserFeeds if uf.feedId === f.id
     } yield uf.userId
-    subscribed_users.list.foreach(uid =>
+    
+    val subscribedUsersList = executeNow(subscribed_users.result.map { x => x.toList })
+    subscribedUsersList.foreach(uid =>
       for { p <- feed.entries } insertOrUpdateEntry(uid, newsFeedId, p)
     )
     
     f
   }
   
-  private def insertOrUpdateEntry(userId: Int, feedId: Int, p: (NewsFeedArticle, List[String]))(implicit session: Session) {
-      val newPost = p._1
-    
-      // Insert or update article as needed.
-      val existingEntryId = for { 
-        e <- UserNewsFeedArticles if e.feedId === feedId && e.userId === userId && 
-                     ((e.link === newPost.link && !newPost.link.isEmpty()) ||
-                                 (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
-                                 (e.title === newPost.title && e.description === newPost.description))
-      } yield e.id
-      val entry = for { 
-        e <- UserNewsFeedArticles if e.feedId === feedId && e.userId === userId && 
-                     ((e.link === newPost.link && !newPost.link.isEmpty()) ||
-                                 (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
-                                 (e.title === newPost.title && e.description === newPost.description))
-      } yield (
-          e.title ~ e.link ~ e.description ~ e.author ~ e.comments ~ e.enclosureLength ~ 
-          e.enclosureType ~ e.enclosureUrl ~ e.guid ~ e.isGuidPermalink ~ e.pubDate ~
-          e.source)
-      val entryId = entry.firstOption match {
-        case Some(ent) => {
-          entry.update(
+  private def insertOrUpdateEntry(userId: Int, feedId: Int, p: (NewsFeedArticle, List[String]))(implicit db: Database) {
+    val newPost = p._1
+  
+    // Insert or update article as needed.
+    val existingEntryId = for { 
+      e <- UserNewsFeedArticles if e.feedId === feedId && e.userId === userId && 
+                   ((e.link === newPost.link && !newPost.link.isEmpty()) ||
+                               (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
+                               (e.title === newPost.title && e.description === newPost.description))
+    } yield e.id
+    val entry = for { 
+      e <- UserNewsFeedArticles if e.feedId === feedId && e.userId === userId && 
+                   ((e.link === newPost.link && !newPost.link.isEmpty()) ||
+                               (e.guid =!= (None : Option[String]) && e.guid === newPost.guid) || 
+                               (e.title === newPost.title && e.description === newPost.description))
+    } yield (
+        e.title, e.link, e.description, e.author, e.comments, e.enclosureLength, 
+        e.enclosureType, e.enclosureUrl, e.guid, e.isGuidPermalink, e.pubDate,
+        e.source)
+    val entryResult = executeNow(entry.result.map { x => x.headOption })
+    val entryId = entryResult match {
+      case Some(ent) => {
+        executeNow(entry.update(
+          newPost.title,
+          newPost.link,
+          newPost.description,
+          newPost.author,
+          newPost.comments,
+          newPost.enclosureLength,
+          newPost.enclosureType,
+          newPost.enclosureUrl,
+          newPost.guid,
+          newPost.isGuidPermalink,
+          ent._11,
+          newPost.source))
+        executeNow(existingEntryId.result.map { x => x.head })
+      }
+      case None => (
+          executeNow(UserNewsFeedArticles.map(p =>
+            (p.userId, p.feedId, p.title, p.link, p.description,
+             p.author, p.comments, p.enclosureLength, p.enclosureType, 
+             p.enclosureUrl, p.guid, p.isGuidPermalink, p.pubDate, p.source,
+             p.isRead, p.isSaved)) returning UserNewsFeedArticles.map(_.id) += (
+            userId,
+            feedId,
             newPost.title,
             newPost.link,
             newPost.description,
@@ -688,62 +758,41 @@ class DataTables(val driver: ExtendedProfile) {
             newPost.enclosureUrl,
             newPost.guid,
             newPost.isGuidPermalink,
-            ent._11,
-            newPost.source)
-          existingEntryId.first
-        }
-        case None => (
-            UserNewsFeedArticles.userId ~ UserNewsFeedArticles.feedId ~ UserNewsFeedArticles.title ~ UserNewsFeedArticles.link ~ UserNewsFeedArticles.description ~
-            UserNewsFeedArticles.author ~ UserNewsFeedArticles.comments ~ UserNewsFeedArticles.enclosureLength ~
-            UserNewsFeedArticles.enclosureType ~ UserNewsFeedArticles.enclosureUrl ~ UserNewsFeedArticles.guid ~
-            UserNewsFeedArticles.isGuidPermalink ~ UserNewsFeedArticles.pubDate ~ UserNewsFeedArticles.source ~
-            UserNewsFeedArticles.isRead ~ UserNewsFeedArticles.isSaved) returning UserNewsFeedArticles.id insert(
-              userId,
-              feedId,
-              newPost.title,
-              newPost.link,
-              newPost.description,
-              newPost.author,
-              newPost.comments,
-              newPost.enclosureLength,
-              newPost.enclosureType,
-              newPost.enclosureUrl,
-              newPost.guid,
-              newPost.isGuidPermalink,
-              newPost.pubDate,
-              newPost.source,
-              false,
-              false
-            )
+            newPost.pubDate,
+            newPost.source,
+            false,
+            false
+          )))
       }
   }
 
-  def logFeedFailure(feedUrl: String, message: String)(implicit session: Session) {
+  def logFeedFailure(feedUrl: String, message: String)(implicit db: Database) {
     val feed = for { nf <- NewsFeeds if nf.feedUrl === feedUrl } yield nf
-    feed.firstOption match {
+    val feedOption = executeNow(feed.result.map { x => x.headOption })
+    feedOption match {
       case Some(f) => {
-        FeedFailureLogs.insert(
-            FeedFailureLog(None, f.id.get, new java.sql.Timestamp(new java.util.Date().getTime()), message))
+        executeNow(FeedFailureLogs += (
+            FeedFailureLog(None, f.id.get, new java.sql.Timestamp(new java.util.Date().getTime()), message)))
       }
       case None => ()
     }
   }
   
-  def deleteOldPosts()(implicit session: Session) {
+  def deleteOldPosts()(implicit db: Database) {
     val threeMonthsAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*30*3*1000)
     val matchingOldPosts = for { unfa <- UserNewsFeedArticles if unixTimestampFn(unfa.pubDate) < unixTimestampFn(Some(threeMonthsAgo)) && unfa.isSaved === false } yield unfa
-    matchingOldPosts.delete
+    executeNow(matchingOldPosts.delete)
   }
   
-  def deleteOldSessions()(implicit session: Session) {
+  def deleteOldSessions()(implicit db: Database) {
     val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7*1000)
     val oldSessions = for { us <- UserSessions if unixTimestampFn(us.lastAccess) < unixTimestampFn(Some(oneWeekAgo)) } yield us
-    oldSessions.delete
+    executeNow(oldSessions.delete)
   }
   
-  def deleteOldFailLogs()(implicit session: Session) {
+  def deleteOldFailLogs()(implicit db: Database) {
     val oneWeekAgo = new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*7*1000)
     val oldFailLogs = for { fl <- FeedFailureLogs if unixTimestampFn(fl.failureDate) < unixTimestampFn(Some(oneWeekAgo)) } yield fl
-    oldFailLogs.delete
+    executeNow(oldFailLogs.delete)
   }
 }

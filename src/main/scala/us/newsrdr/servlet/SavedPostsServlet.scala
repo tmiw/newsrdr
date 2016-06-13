@@ -3,11 +3,10 @@ package us.newsrdr.servlet
 import scala.collection._
 import org.scalatra._
 import scalate.ScalateSupport
-import scala.slick.session.Database
 import us.newsrdr.models._
 import us.newsrdr.tasks._
 
-import scala.slick.session.{Database, Session}
+import slick.jdbc.JdbcBackend.Database
 
 // JSON-related libraries
 import org.json4s.{DefaultFormats, Formats}
@@ -37,9 +36,7 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
 
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
-    db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
-    }
+    super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr())(db).isDefined)
   }
   
   // Before every action runs, set the content type to be in JSON format.
@@ -56,75 +53,71 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
   get("/:uid") {
     contentType="text/html"
     
-    db withSession { implicit session: Session =>
-      val userId = try {
-        Integer.parseInt(params.get("uid").get)
-      } catch {
-        case _:Exception => halt(404)
+    val userId = try {
+      Integer.parseInt(params.get("uid").get)
+    } catch {
+      case _:Exception => halt(404)
+    }
+    
+    if (dao.getUserName(userId)(db).isEmpty())
+    {
+      halt(404)
+    }
+    else
+    {
+      val user = dao.getUserInfo(userId)(db)
+      val savedPosts = dao.getSavedPosts(userId, 0, 10, Long.MaxValue, Long.MaxValue)(db).map(p =>
+        NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)(db)))
+      val bootstrappedPosts = write(savedPosts)
+      
+      // Render the posts directly in the HTML only if the AdSense bot visited.
+      // Needed to produce relevant ads because AdSense can't grok JS.
+      val postList = if (request.getHeader("User-Agent") == "Mediapartners-Google") {
+        savedPosts
+      } else {
+        List[NewsFeedArticleInfoWithFeed]()
       }
       
-      if (dao.getUserName(userId).isEmpty())
-      {
-        halt(404)
-      }
-      else
-      {
-        val user = dao.getUserInfo(userId)
-        val savedPosts = dao.getSavedPosts(userId, 0, 10, Long.MaxValue, Long.MaxValue).map(p =>
-          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)))
-        val bootstrappedPosts = write(savedPosts)
-        
-        // Render the posts directly in the HTML only if the AdSense bot visited.
-        // Needed to produce relevant ads because AdSense can't grok JS.
-        val postList = if (request.getHeader("User-Agent") == "Mediapartners-Google") {
-          savedPosts
-        } else {
-          List[NewsFeedArticleInfoWithFeed]()
-        }
-        
-        ssp("/saved_posts",
-            "title" -> (user.friendlyName + "'s saved posts"), 
-            "bootstrappedPosts" -> bootstrappedPosts,
-            "postList" -> postList,
-            "uid" -> userId)
-      }
+      ssp("/saved_posts",
+          "title" -> (user.friendlyName + "'s saved posts"), 
+          "bootstrappedPosts" -> bootstrappedPosts,
+          "postList" -> postList,
+          "uid" -> userId)
     }
   }
   
   get("/:uid/feed") {
     contentType="application/rss+xml"
-    db withSession { implicit session: Session =>
-      val userId = Integer.parseInt(params.get("uid").get)
+    val userId = Integer.parseInt(params.get("uid").get)
+    
+    if (dao.getUserName(userId)(db).isEmpty())
+    {
+      halt(404)
+    }
+    else
+    {
+      val user = dao.getUserInfo(userId)(db)
+      val posts = dao.getSavedPosts(userId, 0, 10, Long.MaxValue, Long.MaxValue)(db)
+      val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
       
-      if (dao.getUserName(userId).isEmpty())
-      {
-        halt(404)
-      }
-      else
-      {
-        val user = dao.getUserInfo(userId)
-        val posts = dao.getSavedPosts(userId, 0, 10, Long.MaxValue, Long.MaxValue)
-        val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
-        
-        <rss version="2.0">
+      <rss version="2.0">
           <channel>
             <title>{(user.friendlyName + "'s saved posts")}</title>
             <link>{Constants.getURL(request, "/saved/" + userId.toString())}</link>
             <description>{(user.friendlyName + "'s saved posts")}</description>
             <lastBuildDate>{dateFormatter.format(new java.util.Date())}</lastBuildDate>
             {posts.map(p => {
-              val permalink = p.article.isGuidPermalink.getOrElse(true).toString()
-              <item>
+            val permalink = p.article.isGuidPermalink.getOrElse(true).toString()
+            <item>
                 <title>{p.article.title}</title>
                 <link>{p.article.link}</link>
                 <description>{scala.xml.PCData(p.article.description)}</description>
                 <pubDate>{dateFormatter.format(p.article.pubDate.getOrElse(new java.sql.Timestamp(new java.util.Date().getTime())))}</pubDate>
                 <guid isPermaLink={permalink}>{p.article.guid.getOrElse("")}</guid>
               </item>
-            })}
+          })}
           </channel>
         </rss>
-      }
     }
   }
   
@@ -138,26 +131,24 @@ class SavedPostsServlet(dao: DataTables, db: Database, implicit val swagger: Swa
         
   get("/:uid/posts", operation(getPosts)) {
     val offset = Integer.parseInt(params.getOrElse("page", "0")) * Constants.ITEMS_PER_PAGE
-  val userId = try {
-      Integer.parseInt(params.get("uid").get)
-    } catch {
-      case _:Exception => halt(404)
-    }
-      
-  val latestPostId = params.get("latest_post_id") match {
-      case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
-      case _ => Long.MaxValue
-    }
-      
-  val latestPostDate = params.get("latest_post_date") match {
-      case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
-      case _ => Long.MaxValue
-    }
-  db withSession { implicit session: Session =>
+    val userId = try {
+        Integer.parseInt(params.get("uid").get)
+      } catch {
+        case _:Exception => halt(404)
+      }
+        
+    val latestPostId = params.get("latest_post_id") match {
+        case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+        case _ => Long.MaxValue
+      }
+        
+    val latestPostDate = params.get("latest_post_date") match {
+        case Some(x) if !x.isEmpty() => java.lang.Long.parseLong(x)
+        case _ => Long.MaxValue
+      }
     SavedArticleListWithMaxId(
         latestPostId,
-        dao.getSavedPosts(userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId).map(p =>
-          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get))))
-    }
+        dao.getSavedPosts(userId, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)(db).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)(db))))
   }
 }

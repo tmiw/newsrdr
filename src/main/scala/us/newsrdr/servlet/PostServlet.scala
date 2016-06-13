@@ -2,11 +2,10 @@ package us.newsrdr.servlet
 
 import org.scalatra._
 import scalate.ScalateSupport
-import scala.slick.session.Database
 import us.newsrdr.models._
 import us.newsrdr.tasks._
 
-import scala.slick.session.{Database, Session}
+import slick.jdbc.JdbcBackend.{Database, Session}
 
 // JSON-related libraries
 import org.json4s.{DefaultFormats, Formats}
@@ -43,9 +42,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
-    db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
-    }
+    super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr())(db).isDefined)
   }
   
   val getPosts =
@@ -67,7 +64,7 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
             case _ => Long.MaxValue
         }
       
-      ArticleListApiResult(true, None, db withSession { implicit session: Session =>
+      ArticleListApiResult(true, None, { 
         val unreadOnly = params.get("unread_only") match {
           case Some(unread_only_string) if unread_only_string.toLowerCase() == "true" => true
           case _ => false
@@ -80,8 +77,8 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         
         ArticleListWithMaxId(
             latestPostId,
-            if (feedList.size > 0) dao.getPostsForFeeds(userId, feedList, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
-            else dao.getPostsForAllFeeds(userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)
+            if (feedList.size > 0) dao.getPostsForFeeds(userId, feedList, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)(db)
+            else dao.getPostsForAllFeeds(userId, unreadOnly, offset, Constants.ITEMS_PER_PAGE, latestPostDate, latestPostId)(db)
         )
       })
     }, {
@@ -90,16 +87,14 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   }
   
   get("/:pid/link") {
-      db withSession { implicit session: Session =>
-        val pid = Integer.parseInt(params.getOrElse("pid", halt(404, "not found")))
-        try {
-          redirect(dao.getLinkForPost(pid))
-        } catch {
-          case e:Exception => {
-            halt(404, "not found")
-          }
-        }
-      }  
+    val pid = Integer.parseInt(params.getOrElse("pid", halt(404, "not found")))
+    try {
+      redirect(dao.getLinkForPost(pid)(db))
+    } catch {
+      case e:Exception => {
+        halt(404, "not found")
+      }
+    }
   }
   
   val markReadCommand =
@@ -113,11 +108,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       var pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       var userId = getUserId(dao, db, session.getId, request).get
       
-      db withTransaction { implicit session: Session =>
-        dao.setPostStatus(userId, pid, false) match {
-          case true => ()
-          case _ => halt(404)
-        }
+      dao.setPostStatus(userId, pid, false)(db) match {
+        case true => ()
+        case _ => halt(404)
       }
       
       NoDataApiResult(true, None)
@@ -139,11 +132,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       val upTo = Integer.parseInt(params.getOrElse("upTo", "0"))
       val from = Integer.parseInt(params.getOrElse("from", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       
-      db withTransaction { implicit session: Session =>
-        dao.setPostStatusForAllPosts(userId, from, upTo, false) match {
-          case true => ()
-          case _ => halt(404)
-        }
+      dao.setPostStatusForAllPosts(userId, from, upTo, false)(db) match {
+        case true => ()
+        case _ => halt(404)
       }
       
       NoDataApiResult(true, None)
@@ -162,11 +153,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
       var pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
       var userId = getUserId(dao, db, session.getId, request).get
       
-      db withTransaction { implicit session: Session =>
-        dao.setPostStatus(userId, pid, true) match {
-          case true => ()
-          case _ => halt(404)
-        }
+      dao.setPostStatus(userId, pid, true)(db) match {
+        case true => ()
+        case _ => halt(404)
       }
       
       NoDataApiResult(true, None)
@@ -188,11 +177,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         val pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
         val userId = getUserId(dao, db, session.getId, request).get
         
-        db withTransaction { implicit session: Session =>
-          dao.savePost(userId, id, pid) match {
-            case true => ()
-            case _ => halt(404)
-          }
+        dao.savePost(userId, id, pid)(db) match {
+          case true => ()
+          case _ => halt(404)
         }
         
         NoDataApiResult(true, None)
@@ -213,11 +200,9 @@ class PostServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
         val pid = Integer.parseInt(params.getOrElse("pid", halt(422, NoDataApiResult(false, Some("validation_failed")))))
         val userId = getUserId(dao, db, session.getId, request).get
         
-        db withTransaction { implicit session: Session =>
-          dao.unsavePost(userId, id, pid) match {
-            case true => ()
-            case _ => halt(404)
-          }
+        dao.unsavePost(userId, id, pid)(db) match {
+          case true => ()
+          case _ => halt(404)
         }
         
         NoDataApiResult(true, None)

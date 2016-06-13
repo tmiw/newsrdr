@@ -3,7 +3,6 @@ package us.newsrdr.tasks
 import org.quartz.Job
 import org.quartz.JobExecutionContext
 import us.newsrdr.models._
-import scala.slick.session.{Database, Session}
 import scala.collection.JavaConversions._
 import org.quartz.impl.matchers._
 import org.quartz.impl.StdSchedulerFactory
@@ -65,15 +64,11 @@ class RebalanceJob extends Job {
 }
 class ServerMaintenanceJob extends Job {
   private def deleteOldSessions() {
-    BackgroundJobManager.db withSession { implicit session: Session =>
-      BackgroundJobManager.dao.deleteOldSessions
-    }
+    BackgroundJobManager.dao.deleteOldSessions()(BackgroundJobManager.db)
   }
   
   private def deleteOldFailLogs {
-    BackgroundJobManager.db withSession { implicit session: Session =>
-      BackgroundJobManager.dao.deleteOldFailLogs
-    }
+    BackgroundJobManager.dao.deleteOldFailLogs()(BackgroundJobManager.db)
   }
   
   private def deleteOldPosts {

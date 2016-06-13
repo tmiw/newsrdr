@@ -2,11 +2,10 @@ package us.newsrdr.servlet
 
 import org.scalatra._
 import scalate.ScalateSupport
-import scala.slick.session.Database
 import us.newsrdr.models._
 import us.newsrdr.tasks._
 
-import scala.slick.session.{Database, Session}
+import slick.jdbc.JdbcBackend.{Database, Session}
 
 // JSON-related libraries
 import org.json4s.{DefaultFormats, Formats}
@@ -49,70 +48,60 @@ class BlogServlet(dao: DataTables, db: Database, implicit val swagger: Swagger) 
   
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
-    db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
-    }
+    super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr())(db).isDefined)
   }
   
   get("/") {
     contentType="text/html"
-    
-    db withSession { implicit session: Session =>
-        val postList = dao.getBlogPosts(0)
-        ssp("/blog",
-            "title" -> "blog", 
-            "postList" -> postList,
-            "offset" -> 0)
-    }
+
+    val postList = dao.getBlogPosts(0)(db)
+    ssp("/blog",
+        "title" -> "blog", 
+        "postList" -> postList,
+        "offset" -> 0)
   }
   
   get("/page/:page") {
     contentType="text/html"
     
-    db withSession { implicit session: Session =>
-        val offset = Integer.parseInt(params.get("page").get)
-        val postList = dao.getBlogPosts(offset * Constants.ITEMS_PER_PAGE)
-        ssp("/blog",
-            "title" -> "blog", 
-            "postList" -> postList,
-            "offset" -> offset)
-    }
+    val offset = Integer.parseInt(params.get("page").get)
+    val postList = dao.getBlogPosts(offset * Constants.ITEMS_PER_PAGE)(db)
+    ssp("/blog",
+        "title" -> "blog", 
+        "postList" -> postList,
+        "offset" -> offset)
   }
   
   get("/post/:id") {
     contentType="text/html"
-    
-    db withSession { implicit session: Session =>
-        val post = dao.getBlogPostById(Integer.parseInt(params.get("id").get))
-        ssp("/blog_post",
-            "title" -> post.subject, 
-            "post" -> post)
-    }
+
+    val post = dao.getBlogPostById(Integer.parseInt(params.get("id").get))(db)
+    ssp("/blog_post",
+        "title" -> post.subject, 
+        "post" -> post)
   }
   
   get("/feed") {
     contentType="application/rss+xml"
-    db withSession { implicit session: Session =>
-        val posts = dao.getBlogPosts(0)
-        val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
-        
-        <rss version="2.0">
-          <channel>
-            <title>newsrdr blog</title>
-            <link>{Constants.getURL(request, "/blog/")}</link>
-            <description>newsrdr blog</description>
-            <lastBuildDate>{dateFormatter.format(new java.util.Date())}</lastBuildDate>
-            {posts.map(p => {
-              <item>
-                <title>{p.subject}</title>
-                <link>{Constants.getURL(request, "/blog/post/" + p.id.get.toString)}</link>
-                <description>{scala.xml.PCData(p.body)}</description>
-                <pubDate>{dateFormatter.format(p.postDate)}</pubDate>
-                <guid isPermaLink="false">{p.id}</guid>
-              </item>
-            })}
-          </channel>
-        </rss>
-    }
+    val posts = dao.getBlogPosts(0)(db)
+    val dateFormatter = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")
+    
+    <rss version="2.0">
+      <channel>
+        <title>newsrdr blog</title>
+        <link>{Constants.getURL(request, "/blog/")}</link>
+        <description>newsrdr blog</description>
+        <lastBuildDate>{dateFormatter.format(new java.util.Date())}</lastBuildDate>
+        {posts.map(p => {
+          <item>
+            <title>{p.subject}</title>
+            <link>{Constants.getURL(request, "/blog/post/" + p.id.get.toString)}</link>
+            <description>{scala.xml.PCData(p.body)}</description>
+            <pubDate>{dateFormatter.format(p.postDate)}</pubDate>
+            <guid isPermaLink="false">{p.id}</guid>
+          </item>
+        })}
+      </channel>
+    </rss>
   }
 }

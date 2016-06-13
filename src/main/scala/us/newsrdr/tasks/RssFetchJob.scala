@@ -3,15 +3,13 @@ package us.newsrdr.tasks
 import org.quartz.Job
 import org.quartz.JobExecutionContext
 import us.newsrdr.models._
-import scala.slick.session.{Database, Session}
+import slick.jdbc.JdbcBackend.Database
 import scala.xml._
 import scala.xml.transform._
 
 class RssFetchJob extends Job {
   def execute(ctxt: JobExecutionContext) {
-    val isDown = BackgroundJobManager.db.withSession { implicit session: Session =>
-      BackgroundJobManager.dao.isSiteDown
-    }
+    val isDown = BackgroundJobManager.dao.isSiteDown()(BackgroundJobManager.db)
     
     if (!isDown)
     {
@@ -20,13 +18,13 @@ class RssFetchJob extends Job {
     }
   }
   
-  private def preventDeadlock[T](f: Session => T) : T = {
+  private def preventDeadlock[T](f: Database => T)(implicit db : Database) : T = {
     // Allow up to three times to perform transaction.
     var count = 0
     while (count < 3)
     {
       try {
-        return BackgroundJobManager.db.withTransaction(f)
+        return f(db)
       } catch {
         case e:java.sql.SQLException => {
           if (e.toString().contains("Lock wait timeout exceeded"))
@@ -48,30 +46,28 @@ class RssFetchJob extends Job {
     // Hold off on updating again for 2x the previous interval (max 24 hours).
     // This will reduce the amount of load/bandwidth on the server if the feed
     // is not frequently updated.
-    BackgroundJobManager.db.withTransaction { implicit session: Session =>
-      val feed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)
-      feed match {
-        case Some(f) => {
-          val timeDiff = 2 * (today.getTime() - f.lastUpdate.getTime()) / 1000
-          val newInterval = 
-            if (timeDiff > 60*60*24)
-            {
-              60*60*24
-            }
-            else
-            {
-              timeDiff
-            }
-          BackgroundJobManager.rescheduleFeedJob(feedUrl, newInterval.asInstanceOf[Int])
-        }
-        case _ => ()
+    val feed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)(BackgroundJobManager.db)
+    feed match {
+      case Some(f) => {
+        val timeDiff = 2 * (today.getTime() - f.lastUpdate.getTime()) / 1000
+        val newInterval = 
+          if (timeDiff > 60*60*24)
+          {
+            60*60*24
+          }
+          else
+          {
+            timeDiff
+          }
+        BackgroundJobManager.rescheduleFeedJob(feedUrl, newInterval.asInstanceOf[Int])
       }
+      case _ => ()
     }
   }
   
   def fetch(userId: Option[Int], feedUrl: String, log: Boolean): NewsFeed = {
     val today = new java.sql.Timestamp(new java.util.Date().getTime())
-    val currentFeed = BackgroundJobManager.db withSession { implicit session: Session => BackgroundJobManager.dao.getFeedFromUrl(feedUrl) }
+    val currentFeed = BackgroundJobManager.dao.getFeedFromUrl(feedUrl)(BackgroundJobManager.db)
     val lastUpdatedTime = (
       if (currentFeed.isDefined) currentFeed.get.lastUpdate
       else new java.sql.Timestamp(0)
@@ -87,12 +83,12 @@ class RssFetchJob extends Job {
           else throw e
         }
       }
-      val ret = preventDeadlock { implicit session: Session =>
+      val ret = preventDeadlock { implicit db: Database =>
         // Update feed's contents with whatever we've fetched from the server.
         // If it doesn't already exist, create.
         if (userId.isDefined) BackgroundJobManager.dao.updateOrInsertFeed(userId.get, feedUrl, feed)
         else BackgroundJobManager.dao.updateOrInsertFeed(feedUrl, feed)
-      }
+      }(BackgroundJobManager.db)
       
       BackgroundJobManager.rescheduleFeedJob(feedUrl, 60*60)
       ret
@@ -110,14 +106,14 @@ class RssFetchJob extends Job {
           throw e
         } else {
           // log to error log
-          preventDeadlock { implicit session: Session =>
+          preventDeadlock { implicit db: Database =>
             val message = 
               if (e.isInstanceOf[HasNoFeedsException])
                 e.getClass().toString()
               else e.toString()
             
             BackgroundJobManager.dao.logFeedFailure(feedUrl, message)
-          }
+          }(BackgroundJobManager.db)
           reduceFeedUpdateFrequency(today, feedUrl)
           null
         }

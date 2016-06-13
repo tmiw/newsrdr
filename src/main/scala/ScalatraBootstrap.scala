@@ -4,11 +4,8 @@ import javax.servlet.ServletContext
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import org.slf4j.LoggerFactory
 import java.util.Properties
-
-import scala.slick.driver.{ExtendedProfile, H2Driver, MySQLDriver}
-import scala.slick.session.{Database, Session}
-import scala.slick.jdbc.{StaticQuery => Q}
-
+import slick.driver.{JdbcProfile, H2Driver, MySQLDriver}
+import slick.jdbc.JdbcBackend.{Database, Session}
 import us.newsrdr.models._;
 import us.newsrdr.tasks.BackgroundJobManager
 
@@ -66,9 +63,7 @@ class ScalatraBootstrap extends LifeCycle {
       conn.close()  
     }
     
-    db withTransaction { implicit session: Session =>
-      dao.create
-    }
+    dao.create()(db)
     
     // Start Quartz scheduler.
     BackgroundJobManager.dao = dao

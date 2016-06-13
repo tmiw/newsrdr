@@ -3,11 +3,10 @@ package us.newsrdr.servlet
 import org.scalatra._
 import scalate.ScalateSupport
 import servlet.{MultipartConfig, SizeConstraintExceededException, FileUploadSupport}
-import scala.slick.session.Database
 import us.newsrdr.models._
 import us.newsrdr.tasks._
 import us.newsrdr._
-import scala.slick.session.{Database, Session}
+import slick.jdbc.JdbcBackend.Database
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s._
 import org.json4s.JsonDSL._
@@ -43,9 +42,7 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
   
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
-    db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
-    }
+    super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr())(db).isDefined)
   }
   
   val register =
@@ -67,14 +64,12 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     
     if ("^[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+@[-0-9A-Za-z!#$%&'*+/=?^_`{|}~.]+".r.findFirstIn(email).isEmpty) halt(422, NoDataApiResult(false, Some("validation_failed")))
     
-    db withTransaction { implicit s: Session => 
-      val ret = dao.createUser(username, password, email)
-      if (ret) {
-        dao.startUserSession(sId, username, email, request.getRemoteAddr(), username)
-        session.setAttribute("authService", "newsrdr")
-      }
-      NoDataApiResult(ret, None)
+    val ret = dao.createUser(username, password, email)(db)
+    if (ret) {
+      dao.startUserSession(sId, username, email, request.getRemoteAddr(), username)(db)
+      session.setAttribute("authService", "newsrdr")
     }
+    NoDataApiResult(ret, None)
   }
   
   val getProfile =
@@ -89,10 +84,8 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
       // Only for newsrdr accounts.
       if (session.getAttribute("authService").toString() != "newsrdr") halt(401, NoDataApiResult(false, Some("auth_failed")))
       
-      db withSession { implicit s: Session =>
-        val email = dao.getUserInfo(userId).email
-        StringDataApiResult(true, None, email)
-      }
+      val email = dao.getUserInfo(userId)(db).email
+      StringDataApiResult(true, None, email)
     }, {
       halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
@@ -119,10 +112,8 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
         if (password2.isEmpty || password.get != password2.get || (password.get.length < 8 && password.get.length > 0)) halt(422, NoDataApiResult(false, Some("validation_failed")))
       }
     
-      db withTransaction { implicit s: Session => 
-        dao.setEmail(userId, email)
-        if (password.isDefined && password.get.length > 0) dao.setPassword(userId, password.get)
-      }
+      dao.setEmail(userId, email)(db)
+      if (password.isDefined && password.get.length > 0) dao.setPassword(userId, password.get)(db)
       
       NoDataApiResult(true, None)
     }, {
@@ -140,12 +131,8 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     
     try {
       val newRandomPassword = AuthenticationTools.randomPassword
-      val email = db withSession { implicit s: Session =>
-        dao.getUserInfoByUsername(username).get.email
-      }
-      db withTransaction { implicit s: Session => 
-        dao.setPassword(username, newRandomPassword)
-      }
+      val email = dao.getUserInfoByUsername(username)(db).get.email
+      dao.setPassword(username, newRandomPassword)(db)
       
       // Send email to owner
       val session = Session.getDefaultInstance(props)
@@ -188,10 +175,8 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     authenticationRequired(dao, session.getId, db, request, {
       val userId = getUserId(dao, db, session.getId, request).get
       
-      db withTransaction { implicit session: Session =>
-        dao.setOptOut(userId, true)
-        NoDataApiResult(true, None)
-      }
+      dao.setOptOut(userId, true)(db)
+      NoDataApiResult(true, None)
     }, {
       halt(401, NoDataApiResult(false, Some("auth_failed")))
     })
@@ -206,10 +191,8 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
     authenticationRequired(dao, session.getId, db, request, {
       val userId = getUserId(dao, db, session.getId, request).get
       
-      db withTransaction { implicit session: Session =>
-        dao.setOptOut(userId, false)
-        NoDataApiResult(true, None)
-      }
+      dao.setOptOut(userId, false)(db)
+      NoDataApiResult(true, None)
     }, {
       halt(401, NoDataApiResult(false, Some("auth_failed")))
     })

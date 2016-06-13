@@ -3,7 +3,7 @@ package us.newsrdr.servlet
 import org.scalatra._
 import scalate.ScalateSupport
 import us.newsrdr.models._
-import scala.slick.session.{Database, Session}
+import slick.jdbc.JdbcBackend.{Database, Session}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
@@ -28,19 +28,12 @@ import us.newsrdr.AuthenticationTools
 class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with NativeJsonSupport with AuthOpenId with GZipSupport {
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
     val sessionId = request.getSession().getId()
-    db withSession { implicit session: Session =>
-      super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr()).isDefined)
-    }
+    super.templateAttributes ++ mutable.Map("loggedIn" -> dao.getUserSession(sessionId, request.getRemoteAddr())(db).isDefined)
   }
   
   get("/") {
     contentType = "text/html"
-      
-    db withSession { implicit session: Session =>
-      //val randomPost = dao.getNewestRandomPost(session)
-      //val randomPostFeed = randomPost.map(p => dao.getFeedByPostId(session, p.article.id.get))
-      ssp("/index", "title" -> "", "randomPost" -> None, "randomPostFeed" -> None)
-    }
+    ssp("/index", "title" -> "", "randomPost" -> None, "randomPostFeed" -> None)
   }
   
   get("/privacy_policy") {
@@ -60,21 +53,17 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     
     // newsrdr account login is different because login is handled via AJAX.
     // If true is returned here /auth/login will set location.href to the correct redirect URL.
-    db withSession { implicit s: Session =>
-     val username = params.getOrElse("username", halt(422, NoDataApiResult(false, Some("validation_failed"))))
-     val password = params.getOrElse("password", halt(422, NoDataApiResult(false, Some("validation_failed"))))
-          
-     val userInfo = dao.getUserInfoByUsername(username)
-     if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401, NoDataApiResult(false, Some("auth_failed")))
-     else {
-       if (AuthenticationTools.validatePassword(userInfo.get, password)) {
-         db withTransaction { implicit s: Session =>
-           dao.startUserSession(sId, username, userInfo.get.email, request.getRemoteAddr(), userInfo.get.friendlyName)
-         }
-         session.setAttribute("authService", "newsrdr")
-         NoDataApiResult(true, None)
-       }
-     }
+    val username = params.getOrElse("username", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+    val password = params.getOrElse("password", halt(422, NoDataApiResult(false, Some("validation_failed"))))
+        
+    val userInfo = dao.getUserInfoByUsername(username)(db)
+    if (userInfo.isEmpty || userInfo.get.password == null || userInfo.get.password.length() == 0) halt(401, NoDataApiResult(false, Some("auth_failed")))
+    else {
+      if (AuthenticationTools.validatePassword(userInfo.get, password)) {
+          dao.startUserSession(sId, username, userInfo.get.email, request.getRemoteAddr(), userInfo.get.friendlyName)(db)
+        session.setAttribute("authService", "newsrdr")
+        NoDataApiResult(true, None)
+      }
     }
   }
   
@@ -87,12 +76,10 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     }
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
-    db withSession { implicit session: Session =>
-      dao.getUserSession(sId, request.getRemoteAddr()) match {
-        case Some(sess) => redirect(redirectUrl)
-        case None => {
-          redirect(Constants.getGoogleLoginURL(request))   
-        }
+    dao.getUserSession(sId, request.getRemoteAddr())(db) match {
+      case Some(sess) => redirect(redirectUrl)
+      case None => {
+        redirect(Constants.getGoogleLoginURL(request))   
       }
     }
   }
@@ -106,12 +93,10 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     }
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
-    db withSession { implicit session: Session =>
-      dao.getUserSession(sId, request.getRemoteAddr()) match {
-        case Some(sess) => redirect(redirectUrl)
-        case None => {
-          redirect(Constants.getFacebookLoginURL(request))    
-        }
+    dao.getUserSession(sId, request.getRemoteAddr())(db) match {
+      case Some(sess) => redirect(redirectUrl)
+      case None => {
+        redirect(Constants.getFacebookLoginURL(request))    
       }
     }
   }
@@ -126,16 +111,14 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     }
     val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
     
-    db withSession { implicit session: Session =>
-      dao.getUserSession(sId, request.getRemoteAddr()) match {
-        case Some(sess) => redirect(redirectUrl)
-        case None => {
-          val twitter = new TwitterFactory().getInstance()
-          request.getSession().setAttribute("twitter", twitter)
-          val requestToken = twitter.getOAuthRequestToken(Constants.getAuthenticatedURL(request, "twitter"))
-          userSession.setAttribute("requestToken", requestToken)
-          redirect(requestToken.getAuthenticationURL())
-        }
+    dao.getUserSession(sId, request.getRemoteAddr())(db) match {
+      case Some(sess) => redirect(redirectUrl)
+      case None => {
+        val twitter = new TwitterFactory().getInstance()
+        request.getSession().setAttribute("twitter", twitter)
+        val requestToken = twitter.getOAuthRequestToken(Constants.getAuthenticatedURL(request, "twitter"))
+        userSession.setAttribute("requestToken", requestToken)
+        redirect(requestToken.getAuthenticationURL())
       }
     }
   }
@@ -143,9 +126,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   get("/auth/logout") {
     try {
       val sId = session.getId()
-      db withTransaction { implicit session: Session =>
-        dao.invalidateSession(sId)
-      }
+      dao.invalidateSession(sId)(db)
     } catch {
       case _:Exception => () // ignore any exceptions here
     }
@@ -165,9 +146,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     session.setAttribute("authService", "twitter")
     
     val sId = session.getId()
-    db withTransaction { implicit session: Session =>
-      dao.startUserSession(sId, "tw:" + twitter.getId(), request.getRemoteAddr(), twitter.getScreenName())
-    }
+    dao.startUserSession(sId, "tw:" + twitter.getId(), request.getRemoteAddr(), twitter.getScreenName())(db)
     redirect("/auth/login/twitter")
   }
   
@@ -205,9 +184,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       val realName = (emailJson \\ "name").extract[String]
       
       val sId = session.getId()
-      db withTransaction { implicit session: Session =>
-        dao.startUserSession(sId, email, request.getRemoteAddr(), realName)
-      }
+      dao.startUserSession(sId, email, request.getRemoteAddr(), realName)(db)
       redirect("/auth/login/fb")
     }
   }
@@ -247,9 +224,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       val realName = (emailJson \\ "displayName").extract[String]
       
       val sId = session.getId()
-      db withTransaction { implicit session: Session =>
-        dao.startUserSession(sId, email, request.getRemoteAddr(), realName)
-      }
+      dao.startUserSession(sId, email, request.getRemoteAddr(), realName)(db)
       redirect("/auth/login/google")
   }
   
@@ -355,11 +330,9 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
-      db withSession { implicit session: Session =>
-        val userId = getUserId(dao, db, sid, request).get
-        val tail = if (multiParams("captures") == null) { "" } else { multiParams("captures").head }
-        redirect("/news/" + userId.toString + tail + qs)
-      }
+      val userId = getUserId(dao, db, sid, request).get
+      val tail = if (multiParams("captures") == null) { "" } else { multiParams("captures").head }
+      redirect("/news/" + userId.toString + tail + qs)
     }, {
       session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
       if (authService != "newsrdr")
@@ -386,53 +359,49 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
 
     authenticationRequired(dao, session.id, db, request, {
       val sid = session.getId
-      db withSession { implicit session: Session =>
-        val userId = getUserId(dao, db, sid, request).get
-        val user = dao.getUserInfo(userId)
-        
-        if (userId.toString != uidAsString)
-        {
-          sess.setAttribute("redirectUrlOnLogin", "/news/" + userId.toString + qs)
-          if (authService != "newsrdr")
-            redirect(Constants.LOGIN_URI + "/" + authService)
-          else
-            redirect(Constants.LOGIN_URI)
-        }
+      val userId = getUserId(dao, db, sid, request).get
+      val user = dao.getUserInfo(userId)(db)
+      
+      if (userId.toString != uidAsString)
+      {
+        sess.setAttribute("redirectUrlOnLogin", "/news/" + userId.toString + qs)
+        if (authService != "newsrdr")
+          redirect(Constants.LOGIN_URI + "/" + authService)
         else
-        {
-          implicit val formats = Serialization.formats(NoTypeHints)
-          val today = new java.util.Date().getTime()
-          val email = if (authService == "newsrdr") {
-            user.email
-          } else {
-            ""
-          }
-          val bootstrappedFeeds = write(dao.getSubscribedFeeds(userId).map(x => {
-            NewsFeedInfo(
-                  x._1, 
-                  x._1.id.get,
-                  x._2,
-                  if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
-            )
-          }))
-          ssp("/app", "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId, "email" -> email )
+          redirect(Constants.LOGIN_URI)
+      }
+      else
+      {
+        implicit val formats = Serialization.formats(NoTypeHints)
+        val today = new java.util.Date().getTime()
+        val email = if (authService == "newsrdr") {
+          user.email
+        } else {
+          ""
         }
+        val bootstrappedFeeds = write(dao.getSubscribedFeeds(userId)(db).map(x => {
+          NewsFeedInfo(
+                x._1, 
+                x._1.id.get,
+                x._2,
+                if ((today - x._1.lastUpdate.getTime()) > 60*60*24*1000) { true } else { false }
+          )
+        }))
+        ssp("/app", "layout" -> "WEB-INF/templates/layouts/app.ssp", "title" -> "", "bootstrappedFeeds" -> bootstrappedFeeds, "realName" -> user.friendlyName, "optOut" -> user.optOutSharing, "uid" -> userId, "email" -> email )
       }
     }, {
       if (request.getHeader("User-Agent") == "Mediapartners-Google") {
-        db withSession { implicit session: Session =>
-          val userId = Integer.parseInt(uidAsString)
-          val user = dao.getUserInfo(userId)
-          val savedPosts = dao.getLatestPostsForUser(userId).map(p =>
-            NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)))
-          val bootstrappedPosts = write(savedPosts)
-        
-          ssp("/saved_posts",
-              "title" -> "", 
-              "bootstrappedPosts" -> bootstrappedPosts,
-              "postList" -> savedPosts,
-              "uid" -> userId)
-        }
+        val userId = Integer.parseInt(uidAsString)
+        val user = dao.getUserInfo(userId)(db)
+        val savedPosts = dao.getLatestPostsForUser(userId)(db).map(p =>
+          NewsFeedArticleInfoWithFeed(p.article, dao.getFeedByPostId(p.article.id.get)(db)))
+        val bootstrappedPosts = write(savedPosts)
+      
+        ssp("/saved_posts",
+            "title" -> "", 
+            "bootstrappedPosts" -> bootstrappedPosts,
+            "postList" -> savedPosts,
+            "uid" -> userId)
       } else {
         session.setAttribute("redirectUrlOnLogin", request.getRequestURI() + qs)
         if (authService != "newsrdr")
