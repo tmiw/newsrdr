@@ -244,13 +244,10 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
             doneFn = () -> 
                 objSelf.scrollDisabled = false
                 $(window).scroll(objSelf._onScrollFn)
+                        
             $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
-            }, 500, "swing", () ->
-                if newArticleOffset.top != $("a[name='article" + newArticleId + "']").offset().top
-                    $('html, body').animate({
-                        scrollTop: $("a[name='article" + newArticleId + "']").offset().top - $("#top-nav-bar").height() - 10
-                    }, 500, "swing", () -> doneFn))
+            }, 500, "swing", () -> doneFn())
             e.preventDefault()
     
     _handleFeedKeys: (e) =>
@@ -314,11 +311,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                $(window).scroll(objSelf._onScrollFn)
            $('html, body').animate({
                 scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
-           }, 500, "swing", () ->
-                if newArticleOffset.top != $("a[name='article" + newArticleId + "']").offset().top
-                    $('html, body').animate({
-                        scrollTop: $("a[name='article" + newArticleId + "']").offset().top - $("#top-nav-bar").height() - 10
-                    }, 500, "swing", () -> doneFn))
+           }, 500, "swing", () -> doneFn())
                 
     _initializeKeyboardNavigation: ->
         # Set up keyboard navigation

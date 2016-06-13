@@ -124,6 +124,12 @@ and (orientation : landscape) {
     #feedPanel.affix > .navCollapse {
         max-height: 650px;
     }
+    
+    /* To prevent desktop browsers from seizing when scrolling past articles
+       that are just too short. */
+    #no-more-posts {
+    	margin-bottom: 50px;
+    }
 }
 
 .unread {
