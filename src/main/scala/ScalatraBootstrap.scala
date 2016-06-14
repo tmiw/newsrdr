@@ -68,7 +68,7 @@ class ScalatraBootstrap extends LifeCycle {
     // Start Quartz scheduler.
     BackgroundJobManager.dao = dao
     BackgroundJobManager.db = db
-    BackgroundJobManager.start(context)
+    BackgroundJobManager.start(context, getClass())
   }
   
   private def closeDbConnection() {
