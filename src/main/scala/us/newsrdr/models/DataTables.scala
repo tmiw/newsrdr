@@ -152,7 +152,7 @@ class DataTables(val driver: JdbcProfile) {
   
   class UserSessions(tag: Tag) extends Table[UserSession](tag, "UserSessions") {
     def userId = column[Int]("userId")
-    def sessionId = column[String]("sessionId")
+    def sessionId = column[String]("sessionId", O.SqlType("VARCHAR(128)"))
     def lastAccess = column[Timestamp]("lastAccess")
     def lastAccessIp = column[String]("lastAccessIp")
     
