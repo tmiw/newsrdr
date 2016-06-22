@@ -246,7 +246,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                 $(window).scroll(objSelf._onScrollFn)
                         
             $('html, body').animate({
-                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
+                scrollTop: newArticleOffset.top - 130
             }, 500, "swing", () -> doneFn())
             e.preventDefault()
     
@@ -310,7 +310,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                objSelf.scrollDisabled = false
                $(window).scroll(objSelf._onScrollFn)
            $('html, body').animate({
-                scrollTop: newArticleOffset.top - $("#top-nav-bar").height() - 10
+                scrollTop: newArticleOffset.top - 130
            }, 500, "swing", () -> doneFn())
                 
     _initializeKeyboardNavigation: ->
@@ -366,7 +366,7 @@ googletag.cmd.push(function() { googletag.display('div-gpt-ad-1379655552510-0');
                     $(".newsArticle .article-panel").removeClass "selected-article"
                     $(".newsArticle .article-panel").each(() ->
                         offset = $(this).offset()
-                        if (scrollTop + $("#top-nav-bar").height()) <= (offset.top + $(this).height()) and first == false
+                        if (scrollTop + 130) <= (offset.top + $(this).height()) and first == false
                             first = true
                             objSelf.currentArticle = index
                             $(this).addClass "selected-article"
