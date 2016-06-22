@@ -173,7 +173,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       session.setAttribute("fbToken", t)
       session.setAttribute("fbTokenExpires", new java.util.Date().getTime() + e*1000)
       
-      val getEmailSvc = dispatch.url("https://graph.facebook.com/me") <<?
+      val getEmailSvc = dispatch.url("https://graph.facebook.com/v2.6/me") <<?
         Map("access_token" -> t)
       val emailFuture = dispatch.Http(getEmailSvc OK as.String)
       val emailJsonString = emailFuture()
