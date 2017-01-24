@@ -24,6 +24,8 @@ import java.util.Properties
 import org.scalatra.swagger._
 import scala.collection._
 import us.newsrdr.AuthenticationTools
+import scala.concurrent._
+import scala.concurrent.duration._
 
 class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extends NewsrdrStack with NativeJsonSupport with AuthOpenId with GZipSupport {
   override protected def templateAttributes(implicit request: javax.servlet.http.HttpServletRequest): mutable.Map[String, Any] = {
@@ -172,12 +174,16 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       session.setAttribute("authService", "fb")
       session.setAttribute("fbToken", t)
       session.setAttribute("fbTokenExpires", new java.util.Date().getTime() + e*1000)
-      
-      val getEmailSvc = dispatch.url("https://graph.facebook.com/v2.6/me") <<?
-        Map("access_token" -> t)
+
+      val getEmailSvc = dispatch.url("https://graph.facebook.com/v2.8/me") <<?
+        Map("access_token" -> t,
+            "fields" -> "email,name")
       val emailFuture = dispatch.Http(getEmailSvc OK as.String)
       val emailJsonString = emailFuture()
-      
+      //val resp = Await.result(dispatch.Http(getEmailSvc.GET), 10 seconds);
+      //val emailJsonString = resp.getResponseBody();
+      //throw new RuntimeException(emailJsonString) 
+       
       implicit val formats = DefaultFormats 
       val emailJson = parse(emailJsonString)
       val email = (emailJson \\ "email").extract[String]
