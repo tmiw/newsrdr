@@ -35,7 +35,7 @@ object Constants {
   }
   
   def getFacebookLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
-    "https://www.facebook.com/dialog/oauth?client_id=" + FB_CLIENT_ID + 
+    "https://www.facebook.com/v2.9/dialog/oauth?client_id=" + FB_CLIENT_ID + 
     "&redirect_uri=" + getAuthenticatedURL(request, "fb") +
     "&response_type=code&scope=email"
   }
