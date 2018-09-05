@@ -168,7 +168,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       val resultFuture = dispatch.Http(codeToTokenSvc OK as.String)
       val result = resultFuture()
       
-      val tokenRegex = "access_token=([^&]+)&expires=(.+)".r
+      val tokenRegex = "{\"access_token\":\"([^\"]+)\".*\"expires_in\":(.+)}".r
       val tokenRegex(t, e) = result
       
       session.setAttribute("authService", "fb")
