@@ -10,21 +10,11 @@ object Constants {
   val GOOGLE_CLIENT_SECRET = "INSERT SECRET HERE"
   
   def getURL(request: javax.servlet.http.HttpServletRequest, uri: String) : String = {
-    var protocol = request.isSecure() match {
-      case true => "https://"
-      case _ => "http://"
-    }
-    
-    (protocol + request.getServerName() + ":" + request.getServerPort().toString() + uri)
+    ("https://" + request.getServerName() + ":" + request.getServerPort().toString() + uri)
   }
   
   def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest, service: String) : String = {
-    var protocol = request.isSecure() match {
-      case true => "https://"
-      case _ => "http://"
-    }
-    
-    (protocol + request.getServerName() + ":" + request.getServerPort().toString() + Constants.AUTHENTICATED_URI + "/" + service)
+    ("https://" + request.getServerName() + ":" + request.getServerPort().toString() + Constants.AUTHENTICATED_URI + "/" + service)
   }
   
   def getGoogleLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
