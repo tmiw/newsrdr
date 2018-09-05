@@ -5,11 +5,11 @@
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 <url>
-  <loc>http://newsrdr.us/</loc>
+  <loc>https://newsrdr.us/</loc>
   <changefreq>always</changefreq>
 </url>
 <url>
-  <loc>http://newsrdr.us/privacy_policy</loc>
+  <loc>https://newsrdr.us/privacy_policy</loc>
   <changefreq>always</changefreq>
 </url>
 </urlset>

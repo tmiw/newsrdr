@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 Disallow: /static/
-Sitemap: http://newsrdr.us/sitemap.xml
+Sitemap: https://newsrdr.us/sitemap.xml

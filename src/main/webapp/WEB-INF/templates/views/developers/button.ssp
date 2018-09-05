@@ -35,8 +35,8 @@
         function generateButtonHtml()
         {
             var html = 
-                "<a href='http://newsrdr.us/news/feeds/add?url=" + encodeURI($("#feedUrl").val()) + "'>\r\n" +
-                "<img src='http://newsrdr.us/static/img/button-32x32.png' height='32' width='32' alt='Subscribe with newsrdr' /> Subscribe\r\n" +
+                "<a href='https://newsrdr.us/news/feeds/add?url=" + encodeURI($("#feedUrl").val()) + "'>\r\n" +
+                "<img src='https://newsrdr.us/static/img/button-32x32.png' height='32' width='32' alt='Subscribe with newsrdr' /> Subscribe\r\n" +
                 "</a>";
             $("#btn-html").text(html);
             $("#btn-preview").html(html);

@@ -145,7 +145,7 @@ class UserServlet(dao: DataTables, db: Database,  props: Properties, implicit va
       message.setText("Someone (probably you) has requested the password for your account be reset.\r\n" +
       		"Your new password is: " + newRandomPassword + "\r\n" +
       		"\r\n" +
-      		"Visit http://newsrdr.us/auth/login to log in.")
+      		"Visit https://newsrdr.us/auth/login to log in.")
    
       val tr = session.getTransport("smtp")
       if (props.get("mail.smtp.auth") == "true")
