@@ -196,7 +196,7 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   }
   
   get("/auth/authenticated/google") {
-      val codeToTokenSvc = dispatch.url("https://accounts.google.com/o/oauth2/token") << 
+      val codeToTokenSvc = dispatch.url("https://www.googleapis.com/oauth2/v3/token") << 
         Map("client_id" -> Constants.GOOGLE_CLIENT_ID,
             "redirect_uri" -> Constants.getAuthenticatedURL(request, "google"),
             "client_secret" -> Constants.GOOGLE_CLIENT_SECRET,
@@ -213,22 +213,17 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
       session.setAttribute("googleToken", t)
       session.setAttribute("googleTokenExpires", new java.util.Date().getTime() + e*1000)
       
-      val getEmailSvc = dispatch.url("https://www.googleapis.com/plus/v1/people/me") <<?
-        Map("access_token" -> t)
-      val emailFuture = dispatch.Http(getEmailSvc OK as.String)
-      val emailJsonString = emailFuture()
-      
-      implicit val formats = DefaultFormats 
-      val emailJson = parse(emailJsonString)
-      val emailList = for {
-        JObject(child) <- (emailJson \\ "emails")
-        JField("type", JString(emailType)) <- child
-        JField("value", JString(emailValue)) <- child
-        if emailType.equals("account")
-      } yield emailValue
-      val email = emailList(0)
-      val realName = (emailJson \\ "displayName").extract[String]
-      
+      val idTokenComponents = (tokenJson \\ "id_token").extract[String].split('.')
+      val decodedIdToken = java.util.Base64.getDecoder().decode(idTokenComponents(1))
+      val idTokenAsString = new String(decodedIdToken, "UTF-8")
+      val jsonIdToken = parse(idTokenAsString)
+      val email = (jsonIdToken \\ "email").extract[String]
+      val realName = 
+        try {
+          (jsonIdToken \\ "name").extract[String]
+        } catch {
+          case e : Exception => email
+        }
       val sId = session.getId()
       dao.startUserSession(sId, email, request.getRemoteAddr(), realName)(db)
       redirect("/auth/login/google")
