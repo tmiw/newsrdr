@@ -14,7 +14,7 @@ object Constants {
   }
   
   def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest, service: String) : String = {
-    ("http://" + request.getServerName() + Constants.AUTHENTICATED_URI + "/" + service)
+    ("https://" + request.getServerName() + Constants.AUTHENTICATED_URI + "/" + service)
   }
   
   def getGoogleLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
