@@ -69,9 +69,6 @@ newsrdr: a news reader without the stuff you don't need</title>
                 <li id="top-facebook" class="item-padding">
                     <div class="fb-like" data-width="450" data-layout="button_count" data-show-faces="false"></div>
                 </li>
-                <li id="top-plusone" class="item-padding">
-                  <g:plusone action="share" size="medium" annotation="bubble"></g:plusone>
-                </li>
               </ul>
             </div>
           </div>
