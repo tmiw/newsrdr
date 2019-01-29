@@ -341,7 +341,6 @@
 <div id="share-items-{{article.id}}">
 <div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div>
 <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a>
-<g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone>
 </div>
 </script>
 
@@ -374,12 +373,6 @@ window.___gcfg = {
   lang: 'en-US',
   parsetags: 'explicit'
 };
-
-(function() {
-    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-    po.src = '//apis.google.com/js/plusone.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-})();
 
 !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
 

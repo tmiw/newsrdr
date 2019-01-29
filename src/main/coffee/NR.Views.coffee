@@ -555,7 +555,6 @@ class NR.Views.NewsArticle extends SimpleMVC.View
                 shareBtn.on("shown.bs.popover", () =>
                     ele = $("#share-items-" + this.model.article.id)
                     FB.XFBML.parse(ele[0])
-                    gapi.plusone.go(ele[0])
                     twttr.widgets.load(ele[0])
                 )
                 

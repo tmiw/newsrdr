@@ -189,7 +189,6 @@
 <div id="share-items-{{article.id}}">
 <div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div>
 <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a>
-<g:plusone href="{{{article.link}}}" action="share" size="medium" annotation="none" /></g:plusone>
 </div>
 </script>
 
