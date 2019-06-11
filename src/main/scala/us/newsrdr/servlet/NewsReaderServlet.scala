@@ -86,23 +86,6 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     }
   }
   
-  get("/auth/login/fb") {
-    val sId = session.getId()
-    
-    if (session.getAttribute("redirectUrlOnLogin") == null)
-    {
-      session.setAttribute("redirectUrlOnLogin", "/news/")
-    }
-    val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
-    
-    dao.getUserSession(sId, request.getRemoteAddr())(db) match {
-      case Some(sess) => redirect(redirectUrl)
-      case None => {
-        redirect(Constants.getFacebookLoginURL(request))    
-      }
-    }
-  }
-  
   get("/auth/login/twitter") {
     val sId = session.getId()
     val userSession = session
@@ -150,49 +133,6 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     val sId = session.getId()
     dao.startUserSession(sId, "tw:" + twitter.getId(), request.getRemoteAddr(), twitter.getScreenName())(db)
     redirect("/auth/login/twitter")
-  }
-  
-  get("/auth/authenticated/fb") {
-    if (params.contains("error"))
-    {
-      // TODO: show error on home page
-      redirect("/")
-    }
-    else
-    {
-      val codeToTokenSvc = dispatch.url("https://graph.facebook.com/v3.1/oauth/access_token") <<? 
-        Map("client_id" -> Constants.FB_CLIENT_ID,
-            "redirect_uri" -> Constants.getAuthenticatedURL(request, "fb"),
-            "client_secret" -> Constants.FB_CLIENT_SECRET,
-            "code" -> params.get("code").get)
-      val resultFuture = dispatch.Http(codeToTokenSvc OK as.String)
-      val result = resultFuture()
-      
-      val tokenRegex = "\\{\"access_token\":\"([^\"]+)\".*\"expires_in\":(.+)\\}".r
-      val tokenRegex(t, e) = result
-      
-      session.setAttribute("authService", "fb")
-      session.setAttribute("fbToken", t)
-      session.setAttribute("fbTokenExpires", new java.util.Date().getTime() + e*1000)
-
-      val getEmailSvc = dispatch.url("https://graph.facebook.com/v3.1/me") <<?
-        Map("access_token" -> t,
-            "fields" -> "email,name")
-      val emailFuture = dispatch.Http(getEmailSvc OK as.String)
-      val emailJsonString = emailFuture()
-      //val resp = Await.result(dispatch.Http(getEmailSvc.GET), 10 seconds);
-      //val emailJsonString = resp.getResponseBody();
-      //throw new RuntimeException(emailJsonString) 
-       
-      implicit val formats = DefaultFormats 
-      val emailJson = parse(emailJsonString)
-      val email = (emailJson \\ "email").extract[String]
-      val realName = (emailJson \\ "name").extract[String]
-      
-      val sId = session.getId()
-      dao.startUserSession(sId, email, request.getRemoteAddr(), realName)(db)
-      redirect("/auth/login/fb")
-    }
   }
   
   get("/auth/authenticated/google") {

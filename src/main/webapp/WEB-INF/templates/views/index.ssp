@@ -75,7 +75,7 @@
       <div class="row featurette">
         <div class="col-md-7">
           <h2 class="featurette-heading">Easily share your favorite posts with friends. <span class="text-muted">No assembly required.</span></h2>
-          <p class="lead">Share posts that you like on Facebook or Google+. Or if you want, you can post them on your own public page that others can add on newsrdr or elsewhere.</p>
+          <p class="lead">Share posts that you like on your social networks. Or if you want, you can post them on your own public page that others can add on newsrdr or elsewhere.</p>
         </div>
         <div class="col-md-5">
           <img class="featurette-image img-responsive" src="/static/img/front-promo-3.jpg" alt="Share posts">

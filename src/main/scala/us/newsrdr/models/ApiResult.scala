@@ -4,8 +4,6 @@ object Constants {
   val ITEMS_PER_PAGE = 10
   val LOGIN_URI = "/auth/login"
   val AUTHENTICATED_URI = "/auth/authenticated"
-  val FB_CLIENT_ID = "1375893982640236"
-  val FB_CLIENT_SECRET = "INSERT SECRET HERE"
   val GOOGLE_CLIENT_ID = "51702830260-toudua1ufu12a2f7rbge9c0jpbhoqej2.apps.googleusercontent.com"
   val GOOGLE_CLIENT_SECRET = "INSERT SECRET HERE"
   
@@ -22,12 +20,6 @@ object Constants {
     "https://accounts.google.com/o/oauth2/auth?scope=email+profile&state=xyz&redirect_uri=" +
     getAuthenticatedURL(request, "google") +
     "&response_type=code&client_id=" + GOOGLE_CLIENT_ID + "&access_type=online"
-  }
-  
-  def getFacebookLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
-    "https://www.facebook.com/v2.9/dialog/oauth?client_id=" + FB_CLIENT_ID + 
-    "&redirect_uri=" + getAuthenticatedURL(request, "fb") +
-    "&response_type=code&scope=email"
   }
 }
 

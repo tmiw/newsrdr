@@ -2,7 +2,6 @@
 <%@ val postList : List[us.newsrdr.models.NewsFeedArticleInfoWithFeed] %>
 <%@ val uid : Integer %>
 		<link rel="alternate" type="application/rss+xml" title="RSS" href="/saved/${uid}/feed" />
-		<div id="fb-root"></div>
 
 <div class="container">
 <div class="jumbotron">
@@ -187,7 +186,6 @@
 
 <script type="text/template" id="template-shareArticle">
 <div id="share-items-{{article.id}}">
-<div class="fb-like" data-href="{{{article.link}}}" data-width="450" data-layout="button_count" data-show-faces="false"></div>
 <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-text="{{{article.title}}}" data-via="newsrdr_dot_us" data-count="none" data-url="{{{article.link}}}">Tweet</a>
 </div>
 </script>
@@ -220,20 +218,8 @@ node.parentNode.insertBefore(gads, node);
 })();
     
     var bootstrappedPosts = <%= unescape(bootstrappedPosts) %>;
-    var initialized = false;
-    
-    window.fbAsyncInit = function() {
-        if (initialized == false)
-        {
-            initialized = true;
-            window.app = new NR.Application([], bootstrappedPosts, false, true);
-            window.app.start();
-            if (window.nextFbAsyncInit) { window.nextFbAsyncInit(); }
-        }
-    };
-    
-    // in case Facebook doesn't load.
-    setTimeout(function() { window.fbAsyncInit(); }, 5000);
+    window.app = new NR.Application([], bootstrappedPosts, false, true);
+    window.app.start();
 });
 // -->
 </script>

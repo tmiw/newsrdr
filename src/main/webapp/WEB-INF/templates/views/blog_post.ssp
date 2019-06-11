@@ -1,5 +1,4 @@
 <%@ val post : us.newsrdr.models.BlogEntry %>
-        <div id="fb-root"></div>
 
 <div class="container">
 <div class="jumbotron">
@@ -67,12 +66,9 @@ gads.src = (useSSL ? 'https:' : 'http:') +
 var node = document.getElementsByTagName('script')[0];
 node.parentNode.insertBefore(gads, node);
 })();
-    
-    window.fbAsyncInit = function() {
-        window.app = new NR.Application([], [], false, true);
-        window.app.start();
-        if (window.nextFbAsyncInit) { window.nextFbAsyncInit(); }
-    };
+
+window.app = new NR.Application([], [], false, true);
+window.app.start();
 });
 // -->
 </script>

@@ -3,8 +3,6 @@
 <%@ val subject: String %>
 <%@ val body: String %>
 
-        <div id="fb-root"></div>
-
 <div class="container">
 <div class="jumbotron">
       <div class="container">
