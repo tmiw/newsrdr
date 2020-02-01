@@ -114,7 +114,7 @@ class RssFetchJob extends Job {
             
             BackgroundJobManager.dao.logFeedFailure(feedUrl, message)
           }(BackgroundJobManager.db)
-          reduceFeedUpdateFrequency(today, feedUrl)
+          //reduceFeedUpdateFrequency(today, feedUrl)
           null
         }
       }
