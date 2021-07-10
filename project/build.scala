@@ -10,7 +10,7 @@ object NewsrdrBuild extends Build {
   val Organization = "us.newsrdr"
   val Name = "newsrdr"
   val Version = "0.2.0-SNAPSHOT"
-  val ScalaVersion = "2.11.8"
+  val ScalaVersion = "2.11.12"
   val ScalatraVersion = "2.4.0"
 
   lazy val project = Project (

@@ -22,6 +22,7 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.HttpsURLConnection
 import java.net.URLConnection
 import java.net.HttpURLConnection
+import java.util.Base64
 
 case class Category(
     id: Option[Int],
@@ -492,7 +493,7 @@ object XmlFeedFactory {
     else
     {
       val md = java.security.MessageDigest.getInstance("SHA-1")
-      val ha = new sun.misc.BASE64Encoder().encode(md.digest(doc.getBytes()))
+      val ha = Base64.getMimeEncoder().encodeToString(md.digest(doc.getBytes()))
 
       val feed = 
         if ((xmlDoc \\ "entry").count(x => true) > 0)
@@ -594,7 +595,7 @@ abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
             (m group 1) + '"' + XmlFeedFactory.fetch(urlWithoutQuotes, 0, (cType, stream) => {
               val binStream = Stream.continually(stream.read).takeWhile(_ != -1).map(_.toByte)
               val bytes = binStream.toArray
-              val b64 = new sun.misc.BASE64Encoder().encode(bytes)
+              val b64 = Base64.getMimeEncoder().encodeToString(bytes)
               "data:" + cType + ";base64," + b64
             })._2 + '"'
           } catch {
