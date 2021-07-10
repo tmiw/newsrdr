@@ -43,7 +43,6 @@ class ScalatraBootstrap extends LifeCycle {
     logger.info("Created c3p0 connection pool")
   
     val db = Database.forDataSource(cpds)  // create a Database which uses the DataSource
-    context.mount(new NewsReaderServlet(dao, db, appProperties), "/*")
     context.mount(new FeedServlet(dao, db, swagger), "/feeds/*")
     context.mount(new PostServlet(dao, db, swagger), "/posts/*")
     context.mount(new UserServlet(dao, db, appProperties, swagger), "/user/*")
@@ -51,6 +50,7 @@ class ScalatraBootstrap extends LifeCycle {
     context.mount(new SavedPostsServlet(dao, db, swagger), "/saved/*")
     context.mount(new BlogServlet(dao, db, swagger), "/blog/*")
     context mount(new ResourcesApp, "/api-docs/*")
+    context.mount(new NewsReaderServlet(dao, db, appProperties), "/*")
     
     if (dao.driver.isInstanceOf[H2Driver]) {
       // Add functions that are missing from H2 but exist in MySQL.
