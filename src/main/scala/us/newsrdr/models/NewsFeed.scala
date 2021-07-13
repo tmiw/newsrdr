@@ -586,7 +586,7 @@ abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
     }
     
     protected def replaceImagesWithBase64(prefetch: Boolean, x: String) : String = {
-      val cssRgx = """style=["'](.*?)position:\s*absolute;([^'"]+)['"]""".r
+      val cssRgx = """style=["']([^'"]*?)position:\s*absolute;([^'"]*?)['"]""".r
       val y = cssRgx replaceAllIn (x, m => {
           "style='" + (m group 1) + "position: relative;" + (m group 2) + "'"
       })
