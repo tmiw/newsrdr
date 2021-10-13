@@ -11,9 +11,6 @@ import org.json4s.native.Serialization.{read, write}
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s.JsonDSL._
 import org.scalatra.json._
-import dispatch._
-import Defaults._
-import dispatch.url
 import twitter4j.Twitter
 import twitter4j.TwitterException
 import twitter4j.TwitterFactory
@@ -136,14 +133,13 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
   }
   
   get("/auth/authenticated/google") {
-      val codeToTokenSvc = dispatch.url("https://www.googleapis.com/oauth2/v3/token") << 
-        Map("client_id" -> Constants.GOOGLE_CLIENT_ID,
-            "redirect_uri" -> Constants.getAuthenticatedURL(request, "google"),
-            "client_secret" -> Constants.GOOGLE_CLIENT_SECRET,
-            "code" -> params.get("code").get,
-            "grant_type" -> "authorization_code")
-      val resultFuture = dispatch.Http(codeToTokenSvc OK as.String)
-      val result = resultFuture()
+      val codeToTokenSvc = scalaj.http.Http("https://www.googleapis.com/oauth2/v3/token").postForm(Seq(
+          "client_id" -> Constants.GOOGLE_CLIENT_ID,
+          "redirect_uri" -> Constants.getAuthenticatedURL(request, "google"),
+          "client_secret" -> Constants.GOOGLE_CLIENT_SECRET,
+          "code" -> params.get("code").get,
+          "grant_type" -> "authorization_code")).asString
+      val result = codeToTokenSvc.body
       
       val tokenJson = parse(result)
       val t = (tokenJson \\ "access_token").extract[String]

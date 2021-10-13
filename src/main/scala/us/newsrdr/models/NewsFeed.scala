@@ -603,7 +603,7 @@ abstract class XmlFeed(base64Hash: String) extends XmlFeedParser {
               "data:" + cType + ";base64," + b64
             })._2 + '"'
           } catch {
-            case _ => (m group 1) + (m group 2)
+            case _ : Throwable => (m group 1) + (m group 2)
           }
         })
       }

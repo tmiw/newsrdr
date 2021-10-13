@@ -9,7 +9,7 @@ import coffeescript.Plugin._
 object NewsrdrBuild extends Build {
   val Organization = "us.newsrdr"
   val Name = "newsrdr"
-  val Version = "0.2.0-SNAPSHOT"
+  val Version = "0.3.0-SNAPSHOT"
   val ScalaVersion = "2.11.12"
   val ScalatraVersion = "2.4.0"
 
@@ -30,10 +30,10 @@ object NewsrdrBuild extends Build {
         "org.scalatra" %% "scalatra-specs2" % ScalatraVersion % "test",
         "org.scalatra" %% "scalatra-json" % ScalatraVersion,
         "org.scalatra" %% "scalatra-swagger"  % ScalatraVersion,
+        "org.scalaj" %% "scalaj-http" % "2.4.2",
         "org.json4s"   %% "json4s-native" % "3.3.0",
         "javax.mail" % "mail" % "1.4.7",
         "com.lambdaworks" % "scrypt" % "1.4.0",
-        "net.databinder.dispatch" %% "dispatch-core" % "0.11.3",
         "org.twitter4j" % "twitter4j-stream" % "4.0.4",
         "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2.1",
         "com.github.nscala-time" %% "nscala-time" % "2.12.0",
