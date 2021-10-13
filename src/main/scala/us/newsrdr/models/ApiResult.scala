@@ -12,9 +12,7 @@ object Constants {
   }
   
   def getAuthenticatedURL(request: javax.servlet.http.HttpServletRequest, service: String) : String = {
-      val portSegment = if (request.getServerPort() != 80 && request.getServerPort() != 443) (":" + request.getServerPort().toString()) else ""
-      val protocol = if (request.isSecure()) "https" else "http"
-    (protocol + "://" + request.getServerName() + portSegment +  Constants.AUTHENTICATED_URI + "/" + service)
+      (getURL(request, Constants.AUTHENTICATED_URI + "/" + service))
   }
   
   def getGoogleLoginURL(request: javax.servlet.http.HttpServletRequest) : String = {
