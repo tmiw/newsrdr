@@ -741,28 +741,30 @@ class DataTables(val driver: JdbcProfile) {
         executeNow(existingEntryId.result.map { x => x.head })
       }
       case None => (
-          executeNow(UserNewsFeedArticles.map(p =>
-            (p.userId, p.feedId, p.title, p.link, p.description,
-             p.author, p.comments, p.enclosureLength, p.enclosureType, 
-             p.enclosureUrl, p.guid, p.isGuidPermalink, p.pubDate, p.source,
-             p.isRead, p.isSaved)) returning UserNewsFeedArticles.map(_.id) += (
-            userId,
-            feedId,
-            newPost.title,
-            newPost.link,
-            newPost.description,
-            newPost.author,
-            newPost.comments,
-            newPost.enclosureLength,
-            newPost.enclosureType,
-            newPost.enclosureUrl,
-            newPost.guid,
-            newPost.isGuidPermalink,
-            newPost.pubDate,
-            newPost.source,
-            false,
-            false
-          )))
+          if (newPost.pubDate.get.getTime() >= new java.sql.Timestamp(new java.util.Date().getTime() - 60*60*24*30*3*1000).getTime()) {
+              executeNow(UserNewsFeedArticles.map(p =>
+                (p.userId, p.feedId, p.title, p.link, p.description,
+                 p.author, p.comments, p.enclosureLength, p.enclosureType, 
+                 p.enclosureUrl, p.guid, p.isGuidPermalink, p.pubDate, p.source,
+                 p.isRead, p.isSaved)) returning UserNewsFeedArticles.map(_.id) += (
+                userId,
+                feedId,
+                newPost.title,
+                newPost.link,
+                newPost.description,
+                newPost.author,
+                newPost.comments,
+                newPost.enclosureLength,
+                newPost.enclosureType,
+                newPost.enclosureUrl,
+                newPost.guid,
+                newPost.isGuidPermalink,
+                newPost.pubDate,
+                newPost.source,
+                false,
+                false
+              ))
+          })
       }
   }
 
