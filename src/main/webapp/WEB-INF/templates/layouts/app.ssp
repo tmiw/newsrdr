@@ -19,14 +19,14 @@ newsrdr: a news reader without the stuff you don't need</title>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
     <link href="/static/css/newsrdr.css" rel="stylesheet" />
     <script src="/static/js/jquery-2.0.3.min.js"></script> <!-- yes, this should be on the bottom. -->
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-43458631-1"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WR5SBQTY8S"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'UA-43458631-1');
+      gtag('config', 'G-WR5SBQTY8S');
     </script>
 </head>
 <body>
