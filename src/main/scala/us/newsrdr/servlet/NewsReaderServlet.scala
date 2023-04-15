@@ -11,10 +11,6 @@ import org.json4s.native.Serialization.{read, write}
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s.JsonDSL._
 import org.scalatra.json._
-import twitter4j.Twitter
-import twitter4j.TwitterException
-import twitter4j.TwitterFactory
-import twitter4j.auth.RequestToken
 import javax.mail._
 import javax.mail.internet._
 import java.util.Properties
@@ -83,28 +79,6 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     }
   }
   
-  get("/auth/login/twitter") {
-    val sId = session.getId()
-    val userSession = session
-    
-    if (session.getAttribute("redirectUrlOnLogin") == null)
-    {
-      session.setAttribute("redirectUrlOnLogin", "/news/")
-    }
-    val redirectUrl = session.getAttribute("redirectUrlOnLogin").toString
-    
-    dao.getUserSession(sId, request.getRemoteAddr())(db) match {
-      case Some(sess) => redirect(redirectUrl)
-      case None => {
-        val twitter = new TwitterFactory().getInstance()
-        request.getSession().setAttribute("twitter", twitter)
-        val requestToken = twitter.getOAuthRequestToken(Constants.getAuthenticatedURL(request, "twitter"))
-        userSession.setAttribute("requestToken", requestToken)
-        redirect(requestToken.getAuthenticationURL())
-      }
-    }
-  }
-  
   get("/auth/logout") {
     try {
       val sId = session.getId()
@@ -116,20 +90,6 @@ class NewsReaderServlet(dao: DataTables, db: Database, props: Properties) extend
     val authService = session.getValue("authService")
     session.invalidate
     redirect("/")
-  }
-  
-  get("/auth/authenticated/twitter") {
-  val twitter = session.getAttribute("twitter").asInstanceOf[Twitter]
-    val requestToken = session.getAttribute("requestToken").asInstanceOf[RequestToken]
-    val verifier = request.getParameter("oauth_verifier")
-    
-    twitter.getOAuthAccessToken(requestToken, verifier);
-    session.removeAttribute("requestToken");
-    session.setAttribute("authService", "twitter")
-    
-    val sId = session.getId()
-    dao.startUserSession(sId, "tw:" + twitter.getId(), request.getRemoteAddr(), twitter.getScreenName())(db)
-    redirect("/auth/login/twitter")
   }
   
   get("/auth/authenticated/google") {

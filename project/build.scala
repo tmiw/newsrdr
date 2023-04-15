@@ -34,7 +34,6 @@ object NewsrdrBuild extends Build {
         "org.json4s"   %% "json4s-native" % "3.3.0",
         "javax.mail" % "mail" % "1.4.7",
         "com.lambdaworks" % "scrypt" % "1.4.0",
-        "org.twitter4j" % "twitter4j-stream" % "4.0.4",
         "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2.1",
         "com.github.nscala-time" %% "nscala-time" % "2.12.0",
         "ch.qos.logback" % "logback-classic" % "1.1.7" % "runtime",

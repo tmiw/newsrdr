@@ -12,7 +12,6 @@
         <p class="lead">Please sign in with one of the options below:</p>
         <p><ul class="nav nav-stacked">
             <li><a class="btn btn-default" href="/auth/login/google">Google account</a></li>
-            <li><a class="btn btn-default" href="/auth/login/twitter">Twitter account</a></li>
         </ul></p>
         <p class="lead">Or enter your username and password below:</p>
         <p>
