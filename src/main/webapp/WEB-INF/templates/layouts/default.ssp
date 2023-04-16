@@ -19,7 +19,7 @@ newsrdr: a news reader without the stuff you don't need</title>
 	<link href='//fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic' rel='stylesheet' type='text/css' />
 	<link href="/static/css/bootstrap.min.css" rel="stylesheet" />
 	<link href="/static/css/newsrdr.css" rel="stylesheet" />
-	<script src="/static/js/jquery-2.0.3.min.js"></script> <!-- yes, this should be on the bottom. -->
+	<script src="/static/js/jquery-3.6.4.min.js"></script> <!-- yes, this should be on the bottom. -->
 </head>
 <body>
     <div class="navbar-wrapper">
